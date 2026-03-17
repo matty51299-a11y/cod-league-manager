@@ -2253,6 +2253,187 @@ body { margin: 0; }
 /* ── MAJOR PAGE WIDTH ────────────────────────────────────────────────────────── */
 .major-page { max-width: 1100px; }
 
+/* ── MAJOR INTRO OVERLAY ─────────────────────────────────────────────────────── */
+.mio-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+  z-index: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: mio-fade 0.2s ease;
+}
+
+@keyframes mio-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.mio-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--green);
+  border-radius: 12px;
+  padding: 36px 40px;
+  max-width: 460px;
+  width: 100%;
+  text-align: center;
+  animation: mio-enter 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes mio-enter {
+  from { opacity: 0; transform: translateY(14px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+.mio-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(0,230,118,0.14);
+  color: var(--green);
+  border: 1px solid rgba(0,230,118,0.30);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2.5px;
+  padding: 4px 14px;
+  border-radius: 4px;
+  margin-bottom: 18px;
+}
+
+.mio-live-pip {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  flex-shrink: 0;
+  animation: pulse 1.4s infinite;
+}
+
+.mio-name {
+  font-size: 30px;
+  font-weight: 900;
+  color: var(--text-head);
+  letter-spacing: 2.5px;
+  line-height: 1;
+  margin: 0 0 6px;
+}
+
+.mio-season {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 26px;
+}
+
+.mio-seed-block {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 20px;
+  margin-bottom: 12px;
+}
+
+.mio-seed-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+.mio-seed-num  { font-size: 22px; font-weight: 800; line-height: 1; }
+.mio-seed-tag  { font-size: 18px; font-weight: 800; line-height: 1; }
+
+.mio-not-qualified {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+
+.mio-matchup-block {
+  background: rgba(79,142,247,0.06);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 14px 20px;
+  margin-bottom: 24px;
+}
+
+.mio-matchup-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.mio-matchup-teams {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.mio-matchup-side {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.mio-matchup-side-b { flex-direction: row-reverse; }
+
+.mio-match-seed { font-size: 12px; color: var(--text-dim); font-weight: 700; }
+.mio-match-tag  { font-size: 26px; font-weight: 900; letter-spacing: 0.5px; line-height: 1; }
+
+.mio-you-pill {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  background: var(--accent);
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.mio-vs {
+  font-size: 14px;
+  color: var(--text-dim);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.mio-enter-btn {
+  display: block;
+  width: 100%;
+  padding: 14px 20px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  margin-bottom: 12px;
+}
+.mio-enter-btn:hover { opacity: 0.88; }
+
+.mio-dismiss-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+.mio-dismiss-btn:hover { color: var(--text); }
+
 /* ── SCROLLBAR ──────────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }

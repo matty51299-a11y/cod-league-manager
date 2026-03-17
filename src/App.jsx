@@ -1,8 +1,8 @@
 // src/App.jsx
 // Root application component.
-// Handles: save/load lifecycle, navigation, notifications.
+// Handles: save/load lifecycle, navigation, notifications, major-intro overlay.
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useGame, saveGame, loadGame, deleteSave } from "./store/gameStore.jsx";
 import TeamSelect from "./components/TeamSelect.jsx";
 import Dashboard from "./components/Dashboard.jsx";
@@ -13,6 +13,7 @@ import Prospects from "./components/Prospects.jsx";
 import MatchLog from "./components/MatchLog.jsx";
 import MajorBracket from "./components/MajorBracket.jsx";
 import OffseasonReport from "./components/OffseasonReport.jsx";
+import MajorIntroOverlay from "./components/MajorIntroOverlay.jsx";
 import { CDL_TEAMS } from "./data/teams.js";
 
 const TABS = [
@@ -26,10 +27,39 @@ const TABS = [
   { id: "log",       label: "Match Log" },
 ];
 
+// Stable key for a major event — used to track which intros have been seen.
+function majorKey(season, stageIdx) {
+  return `${season}_${stageIdx}`;
+}
+
+// Persist seen-intro keys in localStorage so they survive page reloads.
+function loadSeenIntros() {
+  try {
+    return JSON.parse(localStorage.getItem("cdl_seen_major_intros") || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveSeenIntros(arr) {
+  try {
+    localStorage.setItem("cdl_seen_major_intros", JSON.stringify(arr));
+  } catch {}
+}
+
 export default function App() {
   const { state, dispatch } = useGame();
-  const [tab, setTab] = useState("dashboard");
+  const [tab, setTab]             = useState("dashboard");
   const [confirmNew, setConfirmNew] = useState(false);
+
+  // Track previous schedule phase to detect fresh transitions (not page-reload state).
+  const prevPhaseRef = useRef(null);
+
+  // Which major intros the user has already seen (keyed by "season_stageIdx").
+  const [seenIntros, setSeenIntros] = useState(loadSeenIntros);
+
+  // Whether to show the intro overlay right now.
+  const [showMajorIntro, setShowMajorIntro] = useState(false);
 
   // On mount: auto-load a save if one exists
   useEffect(() => {
@@ -51,6 +81,47 @@ export default function App() {
       return () => clearTimeout(t);
     }
   }, [state?.notifications]);
+
+  // Detect fresh transition into major phase.
+  // prevPhaseRef.current is null on first render, so page-reloads into an
+  // already-live major will not trigger the overlay or force a tab switch.
+  useEffect(() => {
+    if (!state) return;
+
+    const phase    = state.schedule?.phase;
+    const stageIdx = state.schedule?.currentStage;
+    const prevPhase = prevPhaseRef.current;
+
+    if (
+      phase === "major" &&
+      prevPhase !== null &&          // ignore first render / page reload
+      prevPhase !== "major"          // only on actual transition
+    ) {
+      const key = majorKey(state.season, stageIdx);
+      if (!seenIntros.includes(key)) {
+        // Auto-navigate to Major tab and show the intro overlay
+        setTab("major");
+        setShowMajorIntro(true);
+      }
+    }
+
+    prevPhaseRef.current = phase;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state?.schedule?.phase, state?.schedule?.currentStage, state?.season]);
+
+  // ── Overlay handlers ──────────────────────────────────────────────────────
+  function dismissMajorIntro() {
+    const key = majorKey(state.season, state.schedule?.currentStage);
+    const updated = seenIntros.includes(key) ? seenIntros : [...seenIntros, key];
+    setSeenIntros(updated);
+    saveSeenIntros(updated);
+    setShowMajorIntro(false);
+  }
+
+  function enterMajor() {
+    setTab("major");
+    dismissMajorIntro();
+  }
 
   // No save loaded yet → show team select
   if (!state) {
@@ -106,7 +177,6 @@ export default function App() {
       {/* Navigation tabs */}
       <nav className="nav-tabs">
         {TABS.map(t => {
-          // Add a live indicator dot on the Major tab when a major is active
           const isMajorLive = t.id === "major" && state.schedule?.phase === "major";
           const hasDevData  = t.id === "devreport" && state.progressionLog?.length > 0;
           return (
@@ -134,6 +204,15 @@ export default function App() {
         {tab === "devreport" && <OffseasonReport />}
         {tab === "log"       && <MatchLog />}
       </main>
+
+      {/* Major intro overlay — shown once per major on fresh transition */}
+      {showMajorIntro && state.schedule?.phase === "major" && (
+        <MajorIntroOverlay
+          state={state}
+          onEnter={enterMajor}
+          onDismiss={dismissMajorIntro}
+        />
+      )}
     </div>
   );
 }
