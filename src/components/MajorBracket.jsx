@@ -111,14 +111,13 @@ function MajorIntro({ major, schedule, userTeamId, onEnter }) {
 function EventBanner({ major, roundName }) {
   return (
     <div className="major-event-banner">
-      <span className="meb-live">▶ LIVE</span>
-      <span className="meb-sep" />
-      <span className="meb-name">{major.name.toUpperCase()}</span>
+      <div className="meb-top">
+        <span className="meb-live-pip" />
+        <span className="meb-live">LIVE</span>
+        <span className="meb-name">{major.name.toUpperCase()}</span>
+      </div>
       {roundName && (
-        <>
-          <span className="meb-sep" />
-          <span className="meb-round">{roundName.toUpperCase()}</span>
-        </>
+        <div className="meb-round-line">{roundName}</div>
       )}
     </div>
   );
@@ -329,14 +328,14 @@ function MajorView({ major, isActive, schedule, userTeamId, dispatch }) {
         <EventBanner major={major} roundName={roundName} />
       )}
 
-      {/* Sim controls — only while live */}
-      {isActive && !major.completed && (
-        <TournamentControls dispatch={dispatch} roundName={roundName} />
-      )}
-
-      {/* Next match spotlight — only while live */}
+      {/* Next match spotlight — first thing you see in live mode */}
       {isActive && !major.completed && curRound >= 0 && (
         <NextMatchCard bracket={bracket} roundIdx={curRound} userTeamId={userTeamId} />
+      )}
+
+      {/* Sim controls — below spotlight */}
+      {isActive && !major.completed && (
+        <TournamentControls dispatch={dispatch} roundName={roundName} />
       )}
 
       {/* Champion banner */}
@@ -346,12 +345,7 @@ function MajorView({ major, isActive, schedule, userTeamId, dispatch }) {
         </div>
       )}
 
-      {/* Seedings */}
-      {bracket.seeds && (
-        <SeedList seeds={bracket.seeds} standings={schedule.standings} />
-      )}
-
-      {/* Rounds */}
+      {/* Rounds — bracket is the centrepiece */}
       <div className="bracket-rounds">
         {bracket.rounds.map((round, ri) => (
           <RoundSection
@@ -366,6 +360,13 @@ function MajorView({ major, isActive, schedule, userTeamId, dispatch }) {
           />
         ))}
       </div>
+
+      {/* Seedings — reference info, shown at bottom */}
+      {bracket.seeds && (
+        <div className="bracket-seeds-footer">
+          <SeedList seeds={bracket.seeds} standings={schedule.standings} />
+        </div>
+      )}
     </div>
   );
 }

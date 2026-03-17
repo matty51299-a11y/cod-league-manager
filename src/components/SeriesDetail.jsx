@@ -13,6 +13,20 @@ import { CDL_TEAMS } from "../data/teams.js";
 function tag(id)   { return CDL_TEAMS.find(t => t.id === id)?.tag   ?? id; }
 function color(id) { return CDL_TEAMS.find(t => t.id === id)?.color ?? "#aaa"; }
 
+const MODE_STYLES = {
+  "Hardpoint":         { bg: "rgba(255,152,0,0.15)",  color: "#ffa726", label: "HP"  },
+  "Search & Destroy":  { bg: "rgba(239,83,80,0.15)",  color: "#ef5350", label: "S&D" },
+  "Control":           { bg: "rgba(79,142,247,0.15)", color: "#4f8ef7", label: "CTL" },
+};
+
+function ModeBadge({ mode }) {
+  const s = MODE_STYLES[mode];
+  if (!s) return <span className="mode-badge mode-badge-default">{mode}</span>;
+  return (
+    <span className="mode-badge" style={{ background: s.bg, color: s.color }}>{s.label}</span>
+  );
+}
+
 function kdColor(kd) {
   if (kd >= 1.4) return "#00e676";
   if (kd >= 1.1) return "#69f0ae";
@@ -96,7 +110,7 @@ export default function SeriesDetail({ result }) {
           return (
             <div key={m.mapNum} className="map-row">
               <span className="map-num">Map {m.mapNum}</span>
-              <span className="map-mode">{m.mode}</span>
+              <ModeBadge mode={m.mode} />
 
               {/* Team A score */}
               <span className={`map-team ${aWon ? "win" : "loss"}`} style={{ color: color(teamAId) }}>

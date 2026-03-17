@@ -80,6 +80,9 @@ export default function PlayerProfile({ playerId, onClose, isUserTeam }) {
     <div className="profile-overlay" onClick={onClose}>
       <div className="profile-modal" onClick={e => e.stopPropagation()}>
 
+        {/* Team color stripe */}
+        <div className="profile-stripe" style={{ background: team?.color ?? "var(--border)" }} />
+
         {/* Close button */}
         <button className="profile-close" onClick={onClose} aria-label="Close">✕</button>
 
@@ -89,9 +92,10 @@ export default function PlayerProfile({ playerId, onClose, isUserTeam }) {
             <h2 className="profile-name">{player.name}</h2>
             <div className="profile-sub">
               {team
-                ? <span style={{ color: team.color }}>{team.name}</span>
+                ? <span style={{ color: team.color, fontWeight: 600 }}>{team.name}</span>
                 : <span className="muted">Free Agent</span>}
               {player.isSub && <span className="sub-label" style={{ marginLeft: 8 }}>SUB</span>}
+              {player.isProspect && <span className="arch-pill" style={{ marginLeft: 8, fontSize: 10 }}>CHALLENGER</span>}
             </div>
           </div>
           <div className="profile-ovr-block">

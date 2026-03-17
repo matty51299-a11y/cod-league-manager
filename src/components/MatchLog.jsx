@@ -1,13 +1,11 @@
 // src/components/MatchLog.jsx
 // Full season match log as expandable cards.
-// Click any card header to show/hide the series breakdown + player stats.
 
 import { useState } from "react";
 import { useGame } from "../store/gameStore.jsx";
 import { CDL_TEAMS } from "../data/teams.js";
 import SeriesDetail from "./SeriesDetail.jsx";
 
-function tag(id)   { return CDL_TEAMS.find(t => t.id === id)?.tag   ?? id; }
 function color(id) { return CDL_TEAMS.find(t => t.id === id)?.color ?? "#aaa"; }
 
 export default function MatchLog() {
@@ -24,60 +22,72 @@ export default function MatchLog() {
 
   return (
     <div className="matchlog-page">
-      <h2>Match Log – Season {state.season}</h2>
-      <p className="muted" style={{ marginBottom: 14 }}>
-        {log.length} match{log.length !== 1 ? "es" : ""} · click any row to expand the full series breakdown and player stats
+      <h2>Match Log</h2>
+      <p className="muted" style={{ marginBottom: 16 }}>
+        Season {state.season} · {log.length} match{log.length !== 1 ? "es" : ""} played
       </p>
 
       {log.length === 0 ? (
         <p className="muted">No matches played yet. Simulate a matchday to see results here.</p>
       ) : (
-        <div className="log-list">
+        <div className="ml-list">
           {log.map((r, i) => {
             const isUser  = r.winnerId === state.userTeamId || r.loserId === state.userTeamId;
             const userWon = r.winnerId === state.userTeamId;
             const isOpen  = expanded === i;
+            const maps    = r.mapResults?.map(m => m.short) ?? [];
 
             return (
               <div
                 key={i}
-                className={`log-entry ${isUser ? (userWon ? "user-win" : "user-loss") : ""}`}
+                className={`ml-card ${isUser ? (userWon ? "ml-user-win" : "ml-user-loss") : ""}`}
               >
-                {/* ── Clickable header ── */}
-                <div className="log-summary" onClick={() => toggle(i)}>
+                {/* ── Card header ── */}
+                <div className="ml-header" onClick={() => toggle(i)}>
 
-                  <span className="log-num muted">#{log.length - i}</span>
+                  {/* Left: match number + stage */}
+                  <div className="ml-meta">
+                    <span className="ml-num">#{log.length - i}</span>
+                    <span className="ml-stage">{r.stage}</span>
+                  </div>
 
-                  <span className="log-stage muted">{r.stage}</span>
-
-                  {/* Winner vs Loser with team colors */}
-                  <span className="log-teams">
-                    <span style={{ color: color(r.winnerId), fontWeight: 700 }}>
-                      {tag(r.winnerId)}
+                  {/* Centre: teams + score */}
+                  <div className="ml-matchup">
+                    <span className="ml-team-name" style={{ color: color(r.winnerId) }}>
+                      {r.winnerName}
                     </span>
-                    <span className="log-score">&nbsp;{r.score}&nbsp;</span>
-                    <span style={{ color: color(r.loserId) }}>
-                      {tag(r.loserId)}
+                    <span className="ml-score">{r.score}</span>
+                    <span className="ml-team-name ml-loser-name" style={{ color: color(r.loserId) }}>
+                      {r.loserName}
                     </span>
-                  </span>
+                  </div>
 
-                  {/* Map sequence if available */}
-                  {r.mapResults && (
-                    <span className="log-maps muted">
-                      {r.mapResults.map(m => m.short).join(" · ")}
-                    </span>
-                  )}
-
-                  {/* Standout player */}
-                  <span className="log-standout muted">
-                    ⭐ {r.standoutName ?? "—"}
-                    {r.standoutKD > 0 && ` (${r.standoutKD.toFixed(2)} K/D)`}
-                  </span>
-
-                  {/* Expand/collapse cue — always visible */}
-                  <button className="log-expand-btn" onClick={e => { e.stopPropagation(); toggle(i); }}>
-                    {isOpen ? "Hide ▲" : "Details ▼"}
-                  </button>
+                  {/* Right: standout + maps + expand */}
+                  <div className="ml-right">
+                    <div className="ml-details-row">
+                      {r.standoutName && (
+                        <span className="ml-standout">
+                          ⭐ {r.standoutName}
+                          {r.standoutKD > 0 && (
+                            <span className="ml-standout-kd"> {r.standoutKD.toFixed(2)} K/D</span>
+                          )}
+                        </span>
+                      )}
+                      {maps.length > 0 && (
+                        <span className="ml-maps">
+                          {maps.map((m, mi) => (
+                            <span key={mi} className="map-chip">{m}</span>
+                          ))}
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      className="ml-expand-btn"
+                      onClick={e => { e.stopPropagation(); toggle(i); }}
+                    >
+                      {isOpen ? "Hide ▲" : "Details ▼"}
+                    </button>
+                  </div>
 
                 </div>
 
