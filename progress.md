@@ -57,6 +57,12 @@
 - Decision model chooses no move / 1 / 2 / rare 3-player reset with philosophy and loyalty/volatility variance so bad teams do not react identically
 - Candidate selection weights role fit, chemistry delta, age, upside, and philosophy boosts; under-pressure/aging/low-upside teams get stronger Challengers call-up bias
 - Logs window activity to `rosterMovesLog` for debugging and multi-season verification
+- **Player tier + drop-protection system** (`getPlayerTier`, `TIER_CUT_BONUS`):
+  - S-tier (OVR ≥90): franchise cornerstone — cut-score receives −55, plus hard filter prevents dropping ever
+  - A-tier (OVR ≥85): elite starter — cut-score receives −28; team's best A-tier player only cuttable under extreme pressure (>65)
+  - B-tier (OVR ≥78): solid starter — cut-score receives −8
+  - C-tier (<78): replaceable, first in line
+  - Season K/D modifier on cut-score: ≥5 matches played → KD<0.80 adds +10, KD<0.90 adds +5, KD>1.20 subtracts −5
 
 ### Season Engine (`src/engine/seasonEngine.js`)
 - `buildSeason(n)` — creates stage + major schedule for season n

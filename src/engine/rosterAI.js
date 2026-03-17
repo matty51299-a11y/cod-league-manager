@@ -24,6 +24,26 @@ function clamp(v, min, max) {
   return Math.max(min, Math.min(max, v));
 }
 
+// ── PLAYER TIERS ──────────────────────────────────────────────────────────────
+// Classifies a player into a protection tier based on overall rating.
+//   S  (≥90) – franchise cornerstone; almost never dropped
+//   A  (≥85) – elite starter; rarely dropped
+//   B  (≥78) – solid starter; normal candidate
+//   C  (<78) – replaceable; first in line
+function getPlayerTier(player) {
+  const ovr = player.overall || 70;
+  if (ovr >= 90) return "S";
+  if (ovr >= 85) return "A";
+  if (ovr >= 78) return "B";
+  return "C";
+}
+
+// How much to subtract from cut-score per tier.
+// S: -55 makes franchise players essentially impossible to cut via scoring alone.
+// A: -28 makes elite starters rarely the highest cut candidate.
+// B: -8  gives solid starters modest protection over pure C players.
+const TIER_CUT_BONUS = { S: -55, A: -28, B: -8, C: 0 };
+
 function ensureContexts(gameState) {
   const existing = gameState.teamContexts || {};
   const next = { ...existing };
@@ -118,12 +138,37 @@ function decideMoveCount(evaluation, context, rng, windowType) {
   return { moveCount, nextPressure: clamp(pressureNow * 0.65 + (moveCount === 0 ? 2 : -8), 0, 100) };
 }
 
-function playerCutScore(player, evaluation) {
-  const agePenalty = (player.age || 22) >= 27 ? 10 : (player.age || 22) >= 25 ? 5 : 0;
-  const upside = (player.potential || player.overall || 70) - (player.overall || 70);
+// playerCutScore — higher score = more likely to be cut.
+// seasonStats (optional): { kills, deaths, matches } from state.playerSeasonStats
+function playerCutScore(player, evaluation, seasonStats) {
+  const ovr = player.overall || 70;
+
+  // Tier protection is the primary guard against elite players being dropped.
+  // S-tier gets -55, making their total score far below any normal player.
+  const tierProtection = TIER_CUT_BONUS[getPlayerTier(player)];
+
+  const agePenalty    = (player.age || 22) >= 27 ? 10 : (player.age || 22) >= 25 ? 5 : 0;
+  const upside        = (player.potential || ovr) - ovr;
   const lowUpsidePenalty = upside <= 2 ? 7 : upside <= 4 ? 3 : -2;
-  const roleFitPenalty = player.primary === "Flex" ? 1 : 0;
-  return 100 - (player.overall || 70) + agePenalty + lowUpsidePenalty + roleFitPenalty + (60 - evaluation.chemistry) * 0.14;
+  const roleFitPenalty   = player.primary === "Flex" ? 1 : 0;
+
+  // Season K/D modifier — only activates after ≥5 matches so early-season
+  // variance doesn't unfairly punish or protect players.
+  let perfPenalty = 0;
+  if (seasonStats && seasonStats.matches >= 5) {
+    const kd = seasonStats.deaths > 0 ? seasonStats.kills / seasonStats.deaths : 1.0;
+    if      (kd < 0.80) perfPenalty =  10;  // clearly underperforming
+    else if (kd < 0.90) perfPenalty =   5;  // slightly below average
+    else if (kd > 1.20) perfPenalty =  -5;  // standout performer
+  }
+
+  return 100 - ovr
+       + agePenalty
+       + lowUpsidePenalty
+       + roleFitPenalty
+       + (60 - evaluation.chemistry) * 0.14
+       + tierProtection
+       + perfPenalty;
 }
 
 function roleFitScore(candidate, neededRole) {
@@ -228,7 +273,28 @@ function runRosterWindow(gameState, { windowType, majorIdx }) {
     }
 
     let starters = getStarters(players, team.id);
-    const toCut = [...starters].sort((a, b) => playerCutScore(b, evaluation) - playerCutScore(a, evaluation)).slice(0, moveCount);
+    const seasonStatsMap = gameState.playerSeasonStats || {};
+
+    // Rank starters by cut-score (higher = more likely to go).
+    // Tier protection and season K/D are factored in here.
+    const rankedForCut = [...starters]
+      .map(p => ({ p, score: playerCutScore(p, evaluation, seasonStatsMap[p.id]) }))
+      .sort((a, b) => b.score - a.score);
+
+    // Hard drop-protection rules applied after scoring:
+    //   S-tier (OVR ≥90): never cut, period.
+    //   A-tier team peak: only released under extreme pressure (>65).
+    // These are belt-and-suspenders guards on top of the tier score bonus.
+    const teamPeak = starters.length ? Math.max(...starters.map(p => p.overall || 70)) : 0;
+    const toCut = rankedForCut
+      .slice(0, moveCount)
+      .filter(({ p }) => {
+        const tier = getPlayerTier(p);
+        if (tier === "S") return false;
+        if (tier === "A" && (p.overall || 70) >= teamPeak) return evaluation.pressure > 65;
+        return true;
+      })
+      .map(({ p }) => p);
 
     const additions = [];
     for (const cut of toCut) {
