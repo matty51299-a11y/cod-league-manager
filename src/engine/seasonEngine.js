@@ -13,6 +13,23 @@ import { CDL_TEAMS } from "../data/teams.js";
 import { runProgression } from "./progression.js";
 import { runAIMajorRosterWindow, runAIOffseasonRosterWindow } from "./rosterAI.js";
 
+// ── Stat accumulation helper ──────────────────────────────────────────────────
+// Merges one match's playerStats into the running season totals.
+// result.playerStats = { [id]: { kills, deaths, kd, name, teamId } }
+function accumulateMatchStats(existing, result) {
+  if (!result?.playerStats) return existing;
+  const updated = { ...existing };
+  for (const [id, stat] of Object.entries(result.playerStats)) {
+    const prev = updated[id] ?? { kills: 0, deaths: 0, matches: 0 };
+    updated[id] = {
+      kills:   prev.kills   + (stat.kills   || 0),
+      deaths:  prev.deaths  + (stat.deaths  || 0),
+      matches: prev.matches + 1,
+    };
+  }
+  return updated;
+}
+
 // ── PRNG / helpers ────────────────────────────────────────────────────────────
 function seededRng(seed) {
   let s = seed;
@@ -119,7 +136,7 @@ function _simOneMajorMatch(schedule, gameState) {
       break;
     }
   }
-  if (roundIdx === -1) return { roundIdx: -1, allComplete: true };
+  if (roundIdx === -1) return { roundIdx: -1, allComplete: true, result: null };
 
   const round    = bracket.rounds[roundIdx];
   const matchIdx = round.matches.findIndex(m => !m.played);
@@ -155,11 +172,11 @@ function _simOneMajorMatch(schedule, gameState) {
       // Grand Final done → major complete
       bracket.champion = winners[0];
       major.completed  = true;
-      return { roundIdx, allComplete: true };
+      return { roundIdx, allComplete: true, result };
     }
   }
 
-  return { roundIdx, allComplete: false };
+  return { roundIdx, allComplete: false, result };
 }
 
 // Internal: advance season phase after a major completes
@@ -194,9 +211,10 @@ export function simNextMajorMatch(gameState) {
   const major = schedule.majors[schedule.currentStage];
   if (!major || major.completed) return gameState;
 
-  const { allComplete } = _simOneMajorMatch(schedule, gameState);
-  let nextState = gameState;
-  if (allComplete) nextState = _advanceMajorPhase(schedule, gameState);
+  const { allComplete, result } = _simOneMajorMatch(schedule, gameState);
+  const updatedStats = accumulateMatchStats(gameState.playerSeasonStats ?? {}, result);
+  let nextState = { ...gameState, playerSeasonStats: updatedStats };
+  if (allComplete) nextState = _advanceMajorPhase(schedule, nextState);
 
   return { ...nextState, schedule: { ...schedule } };
 }
@@ -220,20 +238,22 @@ export function simMajorRound(gameState) {
   }
   if (startRound === -1) return gameState;
 
+  let accStats = gameState.playerSeasonStats ?? {};
   let safety = 0;
   while (safety++ < 20) {
     const bracket = schedule.majors[schedule.currentStage].bracket;
     const rnd     = bracket.rounds[startRound];
     if (!rnd || rnd.matches.every(m => m.played)) break;
 
-    const { allComplete } = _simOneMajorMatch(schedule, gameState);
+    const { allComplete, result } = _simOneMajorMatch(schedule, gameState);
+    if (result) accStats = accumulateMatchStats(accStats, result);
     if (allComplete) {
-      gameState = _advanceMajorPhase(schedule, gameState);
+      gameState = _advanceMajorPhase(schedule, { ...gameState, playerSeasonStats: accStats });
       break;
     }
   }
 
-  return { ...gameState, schedule: { ...schedule } };
+  return { ...gameState, playerSeasonStats: accStats, schedule: { ...schedule } };
 }
 
 // ── PUBLIC: Simulate the entire remaining bracket ─────────────────────────────
@@ -245,16 +265,18 @@ export function simMajor(gameState) {
   const major     = schedule.majors[targetIdx];
   if (!major || major.completed) return gameState;
 
+  let accStats = gameState.playerSeasonStats ?? {};
   let safety = 0;
   while (!schedule.majors[targetIdx].completed && safety++ < 100) {
-    const { allComplete } = _simOneMajorMatch(schedule, gameState);
+    const { allComplete, result } = _simOneMajorMatch(schedule, gameState);
+    if (result) accStats = accumulateMatchStats(accStats, result);
     if (allComplete) {
-      gameState = _advanceMajorPhase(schedule, gameState);
+      gameState = _advanceMajorPhase(schedule, { ...gameState, playerSeasonStats: accStats });
       break;
     }
   }
 
-  return { ...gameState, schedule: { ...schedule } };
+  return { ...gameState, playerSeasonStats: accStats, schedule: { ...schedule } };
 }
 
 // ── Stage simulation (unchanged) ──────────────────────────────────────────────
@@ -289,7 +311,8 @@ export function simNextMatch(gameState) {
   schedule.matchLog.push({ ...result, stage: stage.name });
   schedule.currentMatchday++;
 
-  return { ...gameState, schedule: { ...schedule } };
+  const updatedStats = accumulateMatchStats(gameState.playerSeasonStats ?? {}, result);
+  return { ...gameState, schedule: { ...schedule }, playerSeasonStats: updatedStats };
 }
 
 export function simMatchday(gameState) {
@@ -315,6 +338,8 @@ export function simMatchday(gameState) {
 
   if (todayIndices.length === 0) return simNextMatch(gameState);
 
+  let updatedStats = gameState.playerSeasonStats ?? {};
+
   for (const idx of todayIndices) {
     const match  = stage.matches[idx];
     if (match.played) continue;
@@ -332,6 +357,7 @@ export function simMatchday(gameState) {
     schedule.standings[result.loserId].points += 1;
 
     schedule.matchLog.push({ ...result, stage: stage.name });
+    updatedStats = accumulateMatchStats(updatedStats, result);
   }
 
   if (stage.matches.every(m => m.played)) {
@@ -340,7 +366,7 @@ export function simMatchday(gameState) {
   }
 
   schedule.currentMatchday++;
-  return { ...gameState, schedule: { ...schedule } };
+  return { ...gameState, schedule: { ...schedule }, playerSeasonStats: updatedStats };
 }
 
 export function simStage(gameState) {
@@ -353,8 +379,19 @@ export function simStage(gameState) {
 
 // ── Offseason ─────────────────────────────────────────────────────────────────
 export function advanceOffseason(gameState) {
-  const standings = gameState.schedule?.standings ?? {};
-  const newSeason = (gameState.schedule?.season ?? 1) + 1;
+  const standings   = gameState.schedule?.standings ?? {};
+  const endedSeason = gameState.schedule?.season ?? 1;
+  const newSeason   = endedSeason + 1;
+
+  // Archive current season stats into history before resetting
+  const currentStats  = gameState.playerSeasonStats  ?? {};
+  const priorHistory  = gameState.playerStatsHistory ?? {};
+  const newHistory    = { ...priorHistory };
+  for (const [id, s] of Object.entries(currentStats)) {
+    if (!s.matches) continue;  // skip players who never played
+    const kd = s.deaths > 0 ? +(s.kills / s.deaths).toFixed(2) : s.kills > 0 ? s.kills : 0;
+    newHistory[id] = [...(newHistory[id] ?? []), { season: endedSeason, kills: s.kills, deaths: s.deaths, matches: s.matches, kd }];
+  }
 
   // Step 1: age up all players and prospects, reset form
   const agedPlayers = (gameState.players || []).map(p => ({
@@ -377,11 +414,13 @@ export function advanceOffseason(gameState) {
 
   const withProgression = {
     ...gameState,
-    players:        updatedPlayers,
-    prospects:      updatedProspects,
-    progressionLog,                  // stored for OffseasonReport
-    schedule:       buildSeason(newSeason),
-    season:         newSeason,
+    players:            updatedPlayers,
+    prospects:          updatedProspects,
+    progressionLog,                      // stored for OffseasonReport
+    schedule:           buildSeason(newSeason),
+    season:             newSeason,
+    playerSeasonStats:  {},              // reset for new season
+    playerStatsHistory: newHistory,      // persisted across seasons
   };
 
   return runAIOffseasonRosterWindow(withProgression);

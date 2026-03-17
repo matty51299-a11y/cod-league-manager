@@ -21,6 +21,8 @@ function newGameState(userTeamId) {
     schedule: buildSeason(1),
     notifications: [],
     saveExists: true,
+    playerSeasonStats:  {},  // { [playerId]: { kills, deaths, matches } } – reset each season
+    playerStatsHistory: {},  // { [playerId]: [{ season, kills, deaths, matches, kd }] }
   };
 }
 

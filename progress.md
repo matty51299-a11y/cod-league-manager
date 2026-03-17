@@ -85,6 +85,8 @@
 - React Context + `useReducer`
 - `state.players[]` — all signed pros + moved prospects (Roster reads only from here)
 - `state.prospects[]` — unsigned challengers pool
+- `state.playerSeasonStats` — `{ [playerId]: { kills, deaths, matches } }` — cumulative totals for current season; reset to `{}` at offseason
+- `state.playerStatsHistory` — `{ [playerId]: [{ season, kills, deaths, matches, kd }] }` — archived per-season records; appended at each offseason
 - `SIGN_PLAYER`: moves prospect from `prospects[]` into `players[]`; updates teamId for pro free agents
 - `RELEASE_PLAYER`: returns prospect to `prospects[]`; nulls teamId for pros
 - Actions: NEW_GAME, LOAD_GAME, SIM_NEXT_MATCH, SIM_MATCHDAY, SIM_STAGE, SIM_MAJOR, SIM_NEXT_MAJOR_MATCH, SIM_MAJOR_ROUND, ADVANCE_OFFSEASON, SIGN_PLAYER, RELEASE_PLAYER, CLEAR_NOTIF
@@ -130,6 +132,13 @@
 
 **Match Log** (`src/components/MatchLog.jsx`)
 - All played matches; clickable rows expand full series breakdown
+
+**Player Profile** (`src/components/PlayerProfile.jsx`) — modal overlay, opened by clicking any player row on the Roster screen
+- Shows name, age, team, role, secondary role, OVR (color-coded), POT, dev curve, experience
+- Current season stats panel: matches played, kills, deaths, K/D (color-coded)
+- Season history table (most-recent-first): one row per completed season with kills/deaths/matches/K/D
+- Hidden traits panel shown only for the user's own players
+- Closes on overlay click or Escape key
 
 ### Shared Components
 - `SeriesDetail` (`src/components/SeriesDetail.jsx`) — reusable BO5 breakdown: map-by-map scores, winner labels, two-column player K/D stat tables (color-coded)

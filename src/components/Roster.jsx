@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useGame } from "../store/gameStore.jsx";
 import { CDL_TEAMS } from "../data/teams.js";
 import { calcChemistry, chemLabel } from "../engine/chemistry.js";
+import PlayerProfile from "./PlayerProfile.jsx";
 
 const RATING_KEYS = [
   { key: "gunny",        label: "Gunny" },
@@ -30,7 +31,7 @@ function ratingColor(v) {
 export default function Roster() {
   const { state, dispatch } = useGame();
   const [selectedTeam, setSelectedTeam] = useState(state?.userTeamId ?? "boston");
-  const [expandedPlayer, setExpandedPlayer] = useState(null);
+  const [profilePlayerId, setProfilePlayerId] = useState(null);
 
   if (!state) return null;
 
@@ -53,7 +54,7 @@ export default function Roster() {
             key={t.id}
             className={`tab-btn ${selectedTeam === t.id ? "active" : ""}`}
             style={selectedTeam === t.id ? { borderBottomColor: t.color, color: t.color } : {}}
-            onClick={() => { setSelectedTeam(t.id); setExpandedPlayer(null); }}
+            onClick={() => { setSelectedTeam(t.id); setProfilePlayerId(null); }}
           >
             {t.tag}
           </button>
@@ -84,98 +85,54 @@ export default function Roster() {
           </thead>
           <tbody>
             {sorted.map(p => (
-              <>
-                <tr
-                  key={p.id}
-                  className={`player-row ${p.isSub ? "sub-row" : ""} ${expandedPlayer === p.id ? "expanded" : ""}`}
-                  onClick={() => setExpandedPlayer(expandedPlayer === p.id ? null : p.id)}
-                >
-                  <td className="player-name">
-                    {p.name} {p.isSub && <span className="sub-label">SUB</span>}
-                  </td>
-                  <td>{p.age}</td>
-                  <td><span className="role-pill">{p.primary}</span></td>
-                  <td><span style={{ color: ratingColor(p.overall), fontWeight: "bold" }}>{p.overall}</span></td>
-                  <td><span style={{ color: ratingColor(p.potential) }}>{p.potential}</span></td>
+              <tr
+                key={p.id}
+                className={`player-row ${p.isSub ? "sub-row" : ""}`}
+                style={{ cursor: "pointer" }}
+                onClick={() => setProfilePlayerId(p.id)}
+              >
+                <td className="player-name">
+                  {p.name} {p.isSub && <span className="sub-label">SUB</span>}
+                </td>
+                <td>{p.age}</td>
+                <td><span className="role-pill">{p.primary}</span></td>
+                <td><span style={{ color: ratingColor(p.overall), fontWeight: "bold" }}>{p.overall}</span></td>
+                <td><span style={{ color: ratingColor(p.potential) }}>{p.potential}</span></td>
+                <td>
+                  <div className="form-bar">
+                    <div className="form-fill" style={{ width: `${p.form}%`, background: ratingColor(p.form) }} />
+                  </div>
+                  <span className="form-num">{Math.round(p.form)}</span>
+                </td>
+                {RATING_KEYS.map(r => (
+                  <td key={r.key} style={{ color: ratingColor(p[r.key]) }}>{p[r.key]}</td>
+                ))}
+                <td className="salary">${(p.salary / 1000).toFixed(0)}k</td>
+                {selectedTeam === userTeamId && (
                   <td>
-                    <div className="form-bar">
-                      <div className="form-fill" style={{ width: `${p.form}%`, background: ratingColor(p.form) }} />
-                    </div>
-                    <span className="form-num">{Math.round(p.form)}</span>
+                    <button
+                      className="btn-danger-sm"
+                      onClick={e => { e.stopPropagation(); dispatch({ type: "RELEASE_PLAYER", playerId: p.id }); }}
+                    >
+                      Release
+                    </button>
                   </td>
-                  {RATING_KEYS.map(r => (
-                    <td key={r.key} style={{ color: ratingColor(p[r.key]) }}>{p[r.key]}</td>
-                  ))}
-                  <td className="salary">${(p.salary / 1000).toFixed(0)}k</td>
-                  {selectedTeam === userTeamId && (
-                    <td>
-                      <button
-                        className="btn-danger-sm"
-                        onClick={e => { e.stopPropagation(); dispatch({ type: "RELEASE_PLAYER", playerId: p.id }); }}
-                      >
-                        Release
-                      </button>
-                    </td>
-                  )}
-                </tr>
-                {expandedPlayer === p.id && (
-                  <tr key={`${p.id}-expand`} className="expand-row">
-                    <td colSpan={selectedTeam === userTeamId ? 15 : 14}>
-                      <PlayerDetail player={p} isUserTeam={selectedTeam === userTeamId} />
-                    </td>
-                  </tr>
                 )}
-              </>
+              </tr>
             ))}
           </tbody>
         </table>
       )}
-    </div>
-  );
-}
 
-// Expanded detail panel shows hidden traits (visible since they're on your team or you're scouting)
-function PlayerDetail({ player, isUserTeam }) {
-  const traits = [
-    { label: "Ego",             key: "ego",             desc: "High ego = ego clashes, volatile", invert: true },
-    { label: "Work Ethic",      key: "workEthic",        desc: "Higher = faster development" },
-    { label: "Tilt Resistance", key: "tiltResistance",   desc: "Higher = bounces back from losses" },
-    { label: "Leadership",      key: "leadership",       desc: "Boosts team chemistry" },
-    { label: "Meta Dependence", key: "metaDependence",   desc: "High = risky on meta shifts", invert: true },
-  ];
-
-  function traitColor(val, invert) {
-    const effective = invert ? 6 - val : val;
-    if (effective >= 4) return "#00e676";
-    if (effective >= 3) return "#ffeb3b";
-    return "#ef5350";
-  }
-
-  return (
-    <div className="player-detail">
-      <div className="detail-col">
-        <strong>Secondary Role:</strong> {player.secondary}
-        <br /><strong>Region:</strong> {player.region ?? "NA"}
-        <br /><strong>Dev Curve:</strong> {player.developmentCurve ?? "standard"}
-        <br /><strong>Experience:</strong> {player.experience} seasons
-      </div>
-      {isUserTeam && (
-        <div className="detail-col">
-          <strong>Hidden Traits:</strong>
-          {traits.map(t => (
-            <div key={t.key} className="trait-row">
-              <span className="trait-label">{t.label}</span>
-              <span className="trait-dots">
-                {[1,2,3,4,5].map(d => (
-                  <span key={d} className={`dot-pip ${d <= player[t.key] ? "filled" : ""}`}
-                    style={d <= player[t.key] ? { background: traitColor(player[t.key], t.invert) } : {}} />
-                ))}
-              </span>
-              <span className="trait-desc muted">{t.desc}</span>
-            </div>
-          ))}
-        </div>
+      {/* Player profile modal */}
+      {profilePlayerId && (
+        <PlayerProfile
+          playerId={profilePlayerId}
+          isUserTeam={selectedTeam === userTeamId}
+          onClose={() => setProfilePlayerId(null)}
+        />
       )}
     </div>
   );
 }
+
