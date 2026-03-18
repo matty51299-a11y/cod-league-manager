@@ -95,7 +95,13 @@ Each player has `contractYears` (integer, years remaining).
    - AI teams: any player on 1-yr contract auto-renews to 2 yrs (prevents star exodus)
    - All signed players: `contractYears -= 1`
    - Players hitting 0: `teamId = null` → become free agents
-7. Then: age, retire, progress, AI offseason roster window, new season built
+7. Then: age, retire, progress, **prospect pool refresh**, AI offseason roster window, new season built
+
+**Prospect Pool Refresh** (runs after progression each offseason):
+- Removes unsigned challengers: age 26+ & OVR < 70 (hard), age 25+ & OVR < 67 (70% chance), age 24+ & OVR < 62 (80% chance)
+- Generates ~20 new prospects per year: 2–4 elite (OVR 75–83, POT 87–95), 4–6 mid-tier, rest lower
+- New prospects are mostly age 18–20 (occasional 21)
+- Pool hard-capped at 60 unsigned challengers total
 
 **Signing:** `SIGN_PLAYER` gives all newly signed players `contractYears: 2`.
 
@@ -215,7 +221,6 @@ Core philosophy: **focus → action → result → world update**
 - Match loop not fully implemented yet (NextMatchOverlay exists but flow not complete)
 - Navigation system mid-transition (some legacy top-tab remnants)
 - No league narrative (news, storylines)
-- Prospect pool does not refresh yearly
 - No opponent roster viewer
 - No contract salary negotiation (re-signing is free / year-only decision)
 
@@ -237,7 +242,7 @@ Core philosophy: **focus → action → result → world update**
 
 ## MID PRIORITY
 
-3. Prospect pool regeneration (yearly fresh wave)
+3. ~~Prospect pool regeneration (yearly fresh wave)~~ ✅ Done
 4. History / records screen
 5. Contract salary cost on re-signing
 

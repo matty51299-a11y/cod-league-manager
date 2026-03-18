@@ -635,10 +635,16 @@ export function advanceOffseason(gameState) {
   const { updatedPlayers, updatedProspects, progressionLog } =
     runProgression(activePlayers, activeProspects, standings, newSeason);
 
+  // ── Refresh prospect pool for the incoming season ─────────────────────────
+  // Runs after progression so newly-aged prospects are evaluated with their
+  // updated overalls. Only touches unsigned challengers (updatedProspects).
+  // Signed former-prospects are in updatedPlayers and are never affected.
+  const refreshedProspects = refreshProspectPool(updatedProspects, newSeason);
+
   const withProgression = {
     ...gameState,
     players:          updatedPlayers,
-    prospects:        updatedProspects,
+    prospects:        refreshedProspects,
     progressionLog,
     playerSeasonStats,
     retiredPlayers:   [...(gameState.retiredPlayers || []), ...retired],
@@ -647,6 +653,216 @@ export function advanceOffseason(gameState) {
   };
 
   return runAIOffseasonRosterWindow(withProgression);
+}
+
+// ── Prospect Pool Refresh ─────────────────────────────────────────────────────
+// Called each offseason after progression to:
+//   1. Remove old/weak unsigned challengers so the pool doesn't bloat
+//   2. Inject ~20 fresh young prospects for the coming season
+//
+// Tier breakdown per class (total ~20):
+//   elite — 2–4 players: age 18–20, OVR 75–83, POT 87–95  (rare; 2–4 per year)
+//   mid   — 4–6 players: age 18–21, OVR 65–74, POT 75–88
+//   low   — remainder:   age 18–21, OVR 56–68, POT 65–80
+//
+// Cleanup rules:
+//   • age 26+ AND overall < 70  → always removed
+//   • age 25+ AND overall < 67  → 70 % chance to remove
+//   • age 24+ AND overall < 62  → 80 % chance to remove
+//   Pool hard-capped at 60 total after additions.
+
+// CDL-style gamertag name pool for generated prospects
+const FRESH_PROSPECT_NAMES = [
+  "Ace","Akro","Alch","Ambit","Anvil","Apex","Arc","Arcen","Ardyn","Arkz",
+  "Arrow","Ash","Astro","Atlas","Attax","Axen","Azek","Bane","Baron","Bash",
+  "Beam","Blade","Blitz","Bloom","Bolt","Boxer","Brand","Brash","Briar","Brisk",
+  "Calix","Calyx","Capo","Caste","Caven","Chalk","Chaos","Char","Chase","Cipher",
+  "Clash","Clef","Clone","Cobal","Colt","Cruz","Cutt","Daven","Decim","Delta",
+  "Demon","Derex","Devox","Dexon","Drake","Drive","Dusk","Echo","Edge","Eikon",
+  "Elan","Ember","Emile","Enkil","Epoch","Ethos","Exile","Falco","Fang","Fate",
+  "Faze","Felix","Fenix","Fiero","Final","Flare","Flex","Flint","Forge","Frost",
+  "Ghost","Gild","Glaze","Glyph","Grind","Grit","Gust","Haze","Heft","Helm",
+  "Hilt","Hydra","Jace","Jax","Jaxon","Jinx","Jolt","Kael","Kane","Kaos",
+  "Lance","Laser","Leon","Locus","Logan","Lotus","Lumen","Mach","Macro","Mako",
+  "Mars","Mave","Merge","Midas","Morph","Nash","Navex","Nexus","Nito","Onyx",
+  "Optic","Orbit","Parse","Payne","Penta","Phase","Pivot","Pixel","Plax","Prime",
+  "Probe","Proxy","Raze","Realm","Reflex","Reign","Renzo","Revo","Rimax","Rivet",
+  "Rome","Rouse","Sabre","Saxon","Scale","Scope","Scout","Shade","Shift","Sigil",
+  "Siren","Skill","Slash","Slade","Solar","Sonic","Spark","Spawn","Spike","Sprint",
+  "Steel","Storm","Strike","Surge","Talon","Tempo","Thorn","Titan","Token","Torque",
+  "Trace","Tron","Turbo","Valor","Vault","Vector","Venom","Vertex","Viper","Warden",
+  "Warp","Wolf","Wren","Xeon","Xero","Zane","Zeal","Zephyr","Zero","Zinc",
+  "Zion","Zulu","Arco","Axle","Grid","Iron","Knox","Lynx","Null","Peak",
+  "Rex","Rush","Sage","Salt","Silk","Slab","Smog","Snap","Spec","Spin",
+  "Sync","Tide","Tilt","Trix","Vale","Void","Wave","Yoke","Dash","Flair",
+  "Crypt","Coal","Prism","Sear","Rend","Veil","Gale","Krux","Daze","Wick",
+  "Axiom","Blaze","Breach","Crest","Dusk","Flick","Gloom","Havoc","Influx","Juke",
+  "Krypt","Latch","Manor","Niche","Overt","Patch","Quill","Rinse","Shard","Thrax",
+  "Umbra","Vault","Wraith","Xylon","Yardx","Zarak","Ardex","Brixon","Cadex","Devoc",
+  "Eclip","Fovex","Gaven","Hilex","Idron","Javik","Kenvex","Laxon","Maxen","Noxen",
+];
+
+const _REGIONS = ["NA","NA","NA","NA","EU","EU","EU","MENA","MENA"];
+
+// Build one generated prospect for the annual refresh class.
+// Uses seeded RNG for stats (reproducible per season+idx) and Math.random() for
+// name / region / age so each save's class feels different.
+function _buildFreshProspect(tier, idx, season) {
+  const tierSeed = tier === "elite" ? 1 : tier === "mid" ? 2 : 3;
+  const rng = seededRng(season * 99991 + idx * 1301 + tierSeed * 37);
+
+  const ri = (min, max) => Math.floor(rng() * (max - min + 1)) + min;
+  const clamp = (v, lo = 41, hi = 99) => Math.max(lo, Math.min(hi, Math.round(v)));
+
+  // Name — Math.random() so classes vary between saves
+  const name = FRESH_PROSPECT_NAMES[Math.floor(Math.random() * FRESH_PROSPECT_NAMES.length)];
+
+  // Age — mostly 18–20 for all tiers; ~15 % chance of 21
+  const age = Math.random() < 0.85 ? ri(18, 20) : 21;
+
+  // Role
+  const role = Math.random() < 0.55 ? "SMG" : "AR";
+
+  // Region — random draw from weighted pool
+  const region = _REGIONS[Math.floor(Math.random() * _REGIONS.length)];
+
+  // Primary role within the weapon class
+  const smgPrimaries = ["Entry SMG", "Slayer SMG"];
+  const arPrimaries  = ["Main AR", "Flex", "Objective", "Search Specialist"];
+  const priPool = role === "SMG" ? smgPrimaries : arPrimaries;
+  const primary = priPool[Math.floor(rng() * priPool.length)];
+
+  const allPrimaries = ["Entry SMG","Slayer SMG","Flex","Main AR","Objective","Search Specialist"];
+  const secondary = allPrimaries[Math.floor(rng() * allPrimaries.length)];
+
+  // Archetype — skew toward raw_upside for youth
+  const eliteArchPool = ["raw_upside","raw_upside","raw_upside","smg_heavy","ar_flex","risky_ego"];
+  const midArchPool   = ["raw_upside","raw_upside","polished","smg_heavy","ar_flex","glue","search_spec"];
+  const lowArchPool   = ["polished","polished","glue","obj_spec","ar_flex","smg_heavy"];
+  const archPool = tier === "elite" ? eliteArchPool : tier === "mid" ? midArchPool : lowArchPool;
+  const archetype = archPool[Math.floor(rng() * archPool.length)];
+
+  // Development curve
+  const curvePick = rng();
+  const developmentCurve = curvePick < 0.25 ? "early" : curvePick < 0.75 ? "standard" : "late";
+
+  // Overall + potential per tier
+  let overall, potential;
+  if (tier === "elite") {
+    overall   = ri(75, 83);
+    potential = clamp(overall + ri(10, 15), 87, 95);
+  } else if (tier === "mid") {
+    overall   = ri(65, 74);
+    potential = clamp(overall + ri(8, 14), 75, 88);
+  } else {
+    overall   = ri(56, 68);
+    potential = clamp(overall + ri(5, 12), 65, 80);
+  }
+
+  // Individual stats
+  const isSmg    = primary === "Entry SMG" || primary === "Slayer SMG";
+  const isSearch = primary === "Search Specialist";
+  const isObj    = primary === "Objective";
+
+  const gunny        = clamp(overall + (isSmg    ? ri(2, 10)  : ri(-7, 4)));
+  const awareness    = clamp(overall + (isSearch ? ri(4, 12)  : ri(-6, 6)));
+  const objective    = clamp(overall + (isObj    ? ri(4, 12)  : ri(-7, 5)));
+  const searchIQ     = clamp(overall + (isSearch ? ri(6, 14)  : ri(-6, 6)));
+  const clutch       = clamp(overall + ri(-8,  8));
+  const teamwork     = clamp(overall + ri(-10, 10));
+  const composure    = clamp(overall + ri(-10, 8));
+  const adaptability = clamp(overall + ri(-8,  10));
+
+  // Mental traits (1–5)
+  const ego            = ri(1, 5);
+  const workEthic      = ri(1, 5);
+  const tiltResistance = ri(1, 5);
+  const leadership     = ri(1, 5);
+  const metaDependence = ri(1, 5);
+
+  // Salary (prospect formula matching prospects.js)
+  const salary = Math.round((overall / 99) * 50 + 15) * 1000;
+
+  // Scouted estimates with noise
+  const scoutedOverall   = clamp(overall   + ri(-8, 8),  40, 99);
+  const scoutedPotential = clamp(potential + ri(-6, 6),  40, 99);
+
+  return {
+    id:              `prospect_gen_${season}_${idx}_${tierSeed}`,
+    name,
+    age,
+    role,
+    region,
+    teamId:          null,
+    primary,
+    secondary,
+    archetype,
+    developmentCurve,
+    salary,
+    overall,
+    potential,
+    gunny,
+    awareness,
+    objective,
+    searchIQ,
+    clutch,
+    teamwork,
+    composure,
+    adaptability,
+    ego,
+    workEthic,
+    tiltResistance,
+    leadership,
+    metaDependence,
+    scoutedOverall,
+    scoutedPotential,
+    scouted:         false,
+    form:            65,
+    experience:      0,
+    isProspect:      true,
+  };
+}
+
+// Cleans up stale unsigned challengers and injects a fresh ~20-player class.
+// Only operates on the prospects array (unsigned challengers).
+// Signed prospects are in gameState.players and are never touched here.
+export function refreshProspectPool(prospects, season) {
+  // ── Step 1: Remove old / weak unsigned challengers ───────────────────────
+  const cleaned = prospects.filter(p => {
+    const age = p.age || 20;
+    const ovr = p.overall || 70;
+    // Hard rule: age 26+ and below 70 OVR — always retired out
+    if (age >= 26 && ovr < 70) return false;
+    // Soft rule: age 25+ and below 67 OVR — 70 % chance to remove
+    if (age >= 25 && ovr < 67 && Math.random() < 0.70) return false;
+    // Soft rule: age 24+ and below 62 OVR — 80 % chance to remove
+    if (age >= 24 && ovr < 62 && Math.random() < 0.80) return false;
+    return true;
+  });
+
+  // ── Step 2: Generate this season's incoming class ────────────────────────
+  // Elite count: 2–4 per year (rare but guaranteed presence)
+  const eliteCount = Math.floor(Math.random() * 3) + 2;   // 2–4
+  const midCount   = Math.floor(Math.random() * 3) + 4;   // 4–6
+  const lowCount   = Math.max(0, 20 - eliteCount - midCount);
+
+  const newClass = [];
+  let idx = 0;
+  for (let i = 0; i < eliteCount; i++) newClass.push(_buildFreshProspect("elite", idx++, season));
+  for (let i = 0; i < midCount;   i++) newClass.push(_buildFreshProspect("mid",   idx++, season));
+  for (let i = 0; i < lowCount;   i++) newClass.push(_buildFreshProspect("low",   idx++, season));
+
+  // ── Step 3: Combine + enforce pool cap (max 60) ──────────────────────────
+  const combined = [...cleaned, ...newClass];
+  if (combined.length <= 60) return combined;
+
+  // Over cap: sort oldest-and-weakest to front, then trim excess from there
+  const sorted = [...combined].sort((a, b) => {
+    const ageA = a.age || 20, ageB = b.age || 20;
+    if (ageA !== ageB) return ageB - ageA;              // older → front (removed first)
+    return (a.overall || 70) - (b.overall || 70);       // lower OVR → front
+  });
+  return sorted.slice(combined.length - 60);
 }
 
 // ── Helper ────────────────────────────────────────────────────────────────────
