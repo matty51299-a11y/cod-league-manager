@@ -69,7 +69,7 @@ function buildProspect(seedRow, idx, rng, seed) {
   const leadership = ri(1, 5, rng);
   const metaDependence = ri(1, 5, rng);
 
-  const salary = Math.round((overall / 99) * 80 + 15) * 1000;
+  const salary = Math.round((overall / 99) * 50 + 15) * 1000;
   const scoutedOverall = clamp(overall + ri(-8, 8, rng), 40, 99);
   const scoutedPotential = clamp(potential + ri(-6, 6, rng), 40, 99);
 

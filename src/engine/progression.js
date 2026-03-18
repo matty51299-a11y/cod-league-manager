@@ -233,10 +233,14 @@ export function developPlayer(player, rng, teamPerf = 0) {
     updated[stat] = Math.max(40, Math.min(99, (updated[stat] || 70) + perStat));
   }
 
-  // Recalculate salary
-  const salBase  = player.isProspect ? 80  : 180;
-  const salFloor = player.isProspect ? 15  : 40;
-  updated.salary = Math.round((updated.overall / 99) * salBase + salFloor) * 1000;
+  // Recalculate salary using the same curves as players.js / prospects.js so
+  // salaries stay consistent with the free agency UI after progression.
+  if (player.isProspect) {
+    updated.salary = Math.round((updated.overall / 99) * 50 + 15) * 1000;
+  } else {
+    const t = Math.max(0, (updated.overall - 70) / 29);
+    updated.salary = Math.round((Math.pow(t, 2.5) * 575 + 25)) * 1000;
+  }
 
   return { player: updated, eventType: eventType || null };
 }

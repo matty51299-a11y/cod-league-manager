@@ -12,7 +12,7 @@ function mkPlayer(name, teamId, age, primary, secondary, ratings, hidden) {
     age,
     primary,       // primary role
     secondary,     // secondary role
-    salary: Math.round((ratings.overall / 99) * 180 + 40) * 1000, // rough $k
+    salary: (() => { const t = Math.max(0, (ratings.overall - 70) / 29); return Math.round((Math.pow(t, 2.5) * 575 + 25)) * 1000; })(),
     ...ratings,
     // hidden traits – not shown to player unless scouted
     ego: hidden.ego,
