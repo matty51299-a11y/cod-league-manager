@@ -34,16 +34,16 @@ function mkPlayer(name, teamId, age, primary, secondary, ratings, hidden) {
 export function buildInitialRoster() {
   return [
     // ── BOSTON BREACH ──────────────────────────────────────────────────────────
-    mkPlayer("Cammy",   "boston", 23, "Slayer SMG",      "Entry SMG",
+    mkPlayer("Cammy",   "boston", 23, "Main AR",      "Entry SMG",
       { overall:80, potential:87, gunny:88, awareness:80, objective:72, searchIQ:78, clutch:85, teamwork:82, composure:83, adaptability:80 },
       { ego:2, workEthic:4, tiltResistance:3, leadership:3, metaDependence:2 }),
     mkPlayer("Purj",    "boston", 21, "Entry SMG",       "Flex",
       { overall:74, potential:88, gunny:82, awareness:76, objective:78, searchIQ:74, clutch:77, teamwork:79, composure:75, adaptability:82 },
       { ego:2, workEthic:4, tiltResistance:3, leadership:2, metaDependence:2 }),
-    mkPlayer("Snoopy",  "boston", 22, "Main AR",         "Flex",
+    mkPlayer("Snoopy",  "boston", 22, "Slayer SMG",         "Flex",
       { overall:75, potential:85, gunny:79, awareness:84, objective:80, searchIQ:82, clutch:80, teamwork:85, composure:82, adaptability:79 },
       { ego:1, workEthic:5, tiltResistance:4, leadership:4, metaDependence:2 }),
-    mkPlayer("Nastie",  "boston", 20, "Objective",       "Slayer SMG",
+    mkPlayer("Nastie",  "boston", 20, "Flex",       "Slayer SMG",
       { overall:83, potential:90, gunny:76, awareness:78, objective:85, searchIQ:72, clutch:74, teamwork:80, composure:72, adaptability:84 },
       { ego:2, workEthic:4, tiltResistance:3, leadership:2, metaDependence:3 }),
 
@@ -79,13 +79,13 @@ export function buildInitialRoster() {
     mkPlayer("Simp",    "faze", 24, "Slayer SMG",        "Entry SMG",
       { overall:93, potential:94, gunny:95, awareness:89, objective:78, searchIQ:88, clutch:94, teamwork:84, composure:91, adaptability:85 },
       { ego:3, workEthic:4, tiltResistance:4, leadership:3, metaDependence:2 }),
-    mkPlayer("Drazah",  "faze", 23, "Entry SMG",         "Slayer SMG",
+    mkPlayer("Drazah",  "faze", 23, "Main AR",         "Slayer SMG",
       { overall:88, potential:91, gunny:90, awareness:83, objective:78, searchIQ:84, clutch:87, teamwork:82, composure:84, adaptability:84 },
       { ego:2, workEthic:4, tiltResistance:4, leadership:3, metaDependence:2 }),
-    mkPlayer("04",      "faze", 22, "Flex",              "Main AR",
+    mkPlayer("04",      "faze", 22, "Entry SMG",              "Main AR",
       { overall:85, potential:90, gunny:83, awareness:86, objective:83, searchIQ:85, clutch:83, teamwork:84, composure:83, adaptability:87 },
       { ego:2, workEthic:4, tiltResistance:3, leadership:3, metaDependence:2 }),
-    mkPlayer("Abuzah",  "faze", 23, "Main AR",           "Flex",
+    mkPlayer("Abuzah",  "faze", 23, "Flex",           "Flex",
       { overall:84, potential:87, gunny:80, awareness:87, objective:81, searchIQ:84, clutch:82, teamwork:86, composure:85, adaptability:82 },
       { ego:1, workEthic:5, tiltResistance:4, leadership:4, metaDependence:2 }),
 
@@ -104,10 +104,10 @@ export function buildInitialRoster() {
       { ego:2, workEthic:4, tiltResistance:3, leadership:3, metaDependence:3 }),
 
     // ── LOS ANGELES THIEVES ───────────────────────────────────────────────────
-    mkPlayer("HyDra",   "lat", 26, "Main AR",            "Flex",
+    mkPlayer("HyDra",   "lat", 26, "Slayer SMG",            "Flex",
       { overall:90, potential:87, gunny:83, awareness:90, objective:83, searchIQ:87, clutch:86, teamwork:89, composure:90, adaptability:83 },
       { ego:1, workEthic:5, tiltResistance:5, leadership:5, metaDependence:1 }),
-    mkPlayer("Scrap",   "lat", 24, "Slayer SMG",         "Entry SMG",
+    mkPlayer("Scrap",   "lat", 24, "Main AR",         "Entry SMG",
       { overall:92, potential:88, gunny:89, awareness:82, objective:74, searchIQ:83, clutch:87, teamwork:83, composure:83, adaptability:83 },
       { ego:2, workEthic:4, tiltResistance:4, leadership:3, metaDependence:2 }),
     mkPlayer("aBeZy",   "lat", 25, "Entry SMG",          "Slayer SMG",
@@ -132,13 +132,13 @@ export function buildInitialRoster() {
       { ego:2, workEthic:4, tiltResistance:4, leadership:3, metaDependence:2 }),
 
     // ── OPTIC TEXAS ───────────────────────────────────────────────────────────
-    mkPlayer("Dashy",   "optic", 25, "Slayer SMG",       "Entry SMG",
+    mkPlayer("Dashy",   "optic", 25, "Main AR",       "Entry SMG",
       { overall:92, potential:92, gunny:93, awareness:87, objective:76, searchIQ:87, clutch:92, teamwork:82, composure:88, adaptability:84 },
       { ego:3, workEthic:4, tiltResistance:3, leadership:2, metaDependence:3 }),
     mkPlayer("Shotzzy", "optic", 24, "Entry SMG",        "Slayer SMG",
       { overall:92, potential:93, gunny:91, awareness:88, objective:82, searchIQ:89, clutch:92, teamwork:83, composure:88, adaptability:87 },
       { ego:3, workEthic:4, tiltResistance:3, leadership:3, metaDependence:2 }),
-    mkPlayer("Huke",    "optic", 25, "Main AR",          "Flex",
+    mkPlayer("Huke",    "optic", 25, "Slayer SMG",          "Flex",
       { overall:89, potential:90, gunny:86, awareness:90, objective:83, searchIQ:88, clutch:88, teamwork:86, composure:88, adaptability:85 },
       { ego:2, workEthic:5, tiltResistance:4, leadership:4, metaDependence:2 }),
     mkPlayer("Mercules","optic", 23, "Flex",             "Objective",
@@ -152,10 +152,10 @@ export function buildInitialRoster() {
     mkPlayer("Envoy",   "paris", 24, "Search Specialist","Flex",
       { overall:86, potential:87, gunny:81, awareness:88, objective:78, searchIQ:91, clutch:85, teamwork:84, composure:87, adaptability:81 },
       { ego:2, workEthic:4, tiltResistance:4, leadership:3, metaDependence:2 }),
-    mkPlayer("Sib",     "paris", 22, "Slayer SMG",       "Entry SMG",
+    mkPlayer("Sib",     "paris", 22, "Flex",       "Entry SMG",
       { overall:88, potential:89, gunny:87, awareness:79, objective:73, searchIQ:79, clutch:83, teamwork:79, composure:80, adaptability:84 },
       { ego:2, workEthic:4, tiltResistance:3, leadership:2, metaDependence:3 }),
-    mkPlayer("Neptune", "paris", 21, "Entry SMG",        "Flex",
+    mkPlayer("Neptune", "paris", 21, "Slayer SMG",        "Flex",
       { overall:92, potential:91, gunny:83, awareness:77, objective:76, searchIQ:76, clutch:80, teamwork:79, composure:74, adaptability:86 },
       { ego:2, workEthic:4, tiltResistance:3, leadership:2, metaDependence:3 }),
 
