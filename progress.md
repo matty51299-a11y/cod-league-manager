@@ -9,20 +9,20 @@
 
 The game simulates a full CDL-style season with:
 
-
+```
 Stage 1 → Major 1
 Stage 2 → Major 2
 Stage 3 → Major 3
 Stage 4 → Major 4
 → Pre-Champs
 → Champs
-→ Offseason
-
+→ Offseason → Contract Period → next season
+```
 
 Key principles:
 - Match-driven gameplay loop
 - Event-based presentation (Majors & Champs as overlays)
-- Transitioning toward Football Manager–style navigation with a cleaner, modern UI
+- Football Manager–style navigation with a clean, modern UI
 
 ---
 
@@ -33,12 +33,12 @@ Key principles:
 - 4 stages and 4 Majors per season
 - Pre-Champs roster window
 - Championship tournament
-- Offseason progression and reset
+- Offseason: contract review → progression → AI roster window → new season
 
 State fields:
 - `stageIdx` → current stage
 - `majorIdx` → current major
-- `phase` → `"stage" | "major" | "preChamps" | "champs" | "offseason"`
+- `phase` → `"stage" | "major" | "preChamps" | "offseason" | "contracts"`
 
 ---
 
@@ -46,13 +46,8 @@ State fields:
 
 Two parallel standings models:
 
-- `standings`
-  - cumulative across entire season
-  - used for Champs seeding
-
-- `stageStandings`
-  - resets every stage
-  - used for Major seeding
+- `standings` — cumulative across entire season; used for Champs seeding
+- `stageStandings` — resets every stage; used for Major seeding
 
 UI behavior:
 - Stage/Major → defaults to **This Stage**
@@ -62,37 +57,51 @@ UI behavior:
 
 ## Match Simulation
 
-- BO5 CDL format:
-
-HP → S&D → CTL → HP → S&D
-
+- BO5 CDL format: HP → S&D → CTL → HP → S&D
 - Series ends at 3 map wins
-
-Simulation includes:
-- map-by-map results
-- player stats (kills, deaths, K/D)
-- standout player detection
+- Includes map-by-map results, player stats (kills, deaths, K/D), standout detection
 
 ---
 
 ## Player Stats System
 
-Stored in:
-
-
+```
 playerSeasonStats: {
-[playerId]: [
-{ season, kills, deaths, matches }
-]
+  [playerId]: [{ season, kills, deaths, matches }]
 }
+```
 
+- Current season K/D
+- Career K/D (true cumulative)
+- Season-by-season history via player modal
 
-Features:
-- current season K/D
-- career K/D (true cumulative, not averaged)
-- season-by-season history
+---
 
-Displayed via player modal overlay.
+## Contract System
+
+Each player has `contractYears` (integer, years remaining).
+
+**Initial values:** 1–3 years, assigned deterministically via name hash in `players.js`.
+
+**Offseason flow:**
+1. Champs ends → `phase = "offseason"`
+2. Dashboard shows **"Review Contracts →"** button
+3. `ENTER_CONTRACT_PHASE` action → `phase = "contracts"` (migrates legacy saves without `contractYears`)
+4. `ContractReviewPanel` in Dashboard shows:
+   - **Expiring** players (`contractYears === 1`) — with +1/+2/+3 yr re-sign buttons
+   - **Locked** players — shows years remaining after the upcoming decrement
+5. User clicks **"Advance Offseason →"** → `ADVANCE_OFFSEASON` action
+6. `advanceOffseason()` processes contracts:
+   - AI teams: any player on 1-yr contract auto-renews to 2 yrs (prevents star exodus)
+   - All signed players: `contractYears -= 1`
+   - Players hitting 0: `teamId = null` → become free agents
+7. Then: age, retire, progress, AI offseason roster window, new season built
+
+**Signing:** `SIGN_PLAYER` gives all newly signed players `contractYears: 2`.
+
+**Re-sign action:** `RESIGN_PLAYER` sets `contractYears` to the chosen value (before decrement).
+
+**Roster display:** Roster table shows a "Yrs" column (red if expiring). Player modal bio shows contract remaining with ⚠ warning when 1 yr left.
 
 ---
 
@@ -105,138 +114,110 @@ Displayed via player modal overlay.
 
 ---
 
+## Retirement System
+
+Age-curve based retirement probabilities:
+- < 27: 0% | 27: 3% | 28: 8% | 29: 20% | 30: 35% | 31: 50% | 32: 65% | 33+: 80%
+
+Modifiers: elite players (90+ OVR) retire much later; players far below potential retire sooner.
+Retirees are removed from rosters; AI fills gaps in the offseason window.
+
+---
+
+## Budget / Economy System
+
+- Each franchise has a `budgetTier` (2–6) defined in `teams.js`
+- `BUDGET_CAPS` maps tier → max combined signing cost for 4 starters
+- `getSigningCost()` uses a power curve (OVR-based): $25k (70 OVR) → $600k (99 OVR)
+- Prospects cheaper: $15k–$65k
+- Hard cap enforced on SIGN_PLAYER; AI respects budget in all windows
+
+---
+
 ## Roster / AI System
 
-- CPU teams use philosophy-based decision making
-- Can:
-  - sign players
-  - release players
-  - call up challengers
-- Decisions influenced by:
-  - standings
-  - age
-  - chemistry
-  - upside
+- CPU teams use philosophy-based decision making (`win_now`, `youth_upside`, `chemistry_stability`, `balanced_value`, `high_risk_gamble`)
+- Windows: after each Major, after Champs (offseason)
+- AI decisions influenced by: standings, chemistry, age, upside, budget, K/D performance
+- Drop protection: elite (87+ OVR) and top-2 starters rarely cut
+- Champion teams protected by strong stability bias
+- Minimum roster guarantee: AI teams always filled to 4 starters
+
+---
+
+## Free Agency / Challengers
+
+- Pro FAs: players with `teamId === null` in `players` array
+- Challengers: unsigned prospects in `prospects` array
+- User signs from both via Free Agency and Prospects screens
+- Budget shown on both screens
 
 ---
 
 # 🔹 3. UI Architecture (CURRENT)
 
-## Event Overlay System (CORE DESIGN)
-
-The game now uses overlays instead of navigation for key moments.
+## Event Overlay System
 
 ### Major Entry
-
-- `MajorEntryOverlay`
-- full-screen takeover
-- animated sequence:
-  - badge → title → matchup → seedings → CTA
-- non-dismissable
-- only exits via `Enter Tournament`
-
----
+- `MajorEntryOverlay` — full-screen takeover, animated sequence, non-dismissable
 
 ### Major Tournament Mode
+- `MajorTournamentOverlay` — full-screen event mode (no tab navigation)
+- Bracket, seedings, sim controls, champion screen
 
-- `MajorTournamentOverlay`
-- full-screen event mode (no tab navigation)
-- includes:
-  - cinematic hero header
-  - round label + teams remaining
-  - featured next match (primary focus)
-  - bracket (QF / SF / GF)
-  - sim controls
-  - collapsible seeding info
+### Next Match Overlay
+- `NextMatchOverlay` — triggered from top-right control
+- Shows opponent, match context, play/sim options
 
----
-
-### Champion Screen
-
-- appears after final match
-- shows:
-  - champion team
-  - final score
-  - MVP
-- `Return to Season →` exits event via `DISMISS_MAJOR`
+### Team Hub Overlay
+- `TeamHubOverlay` — team info, recent form, roster overview
 
 ---
 
-## Match Flow (PARTIALLY IMPLEMENTED / IN PROGRESS)
+## Navigation
 
-Target loop:
-
-
-Next Match → Sim → Result → Other Results → Repeat
-
-
-Planned/partially implemented:
-- persistent "Next Match" control
-- match overlay
-- result reveal flow
-
----
-
-## Navigation (TRANSITIONING)
-
-Current state:
-- Major tab removed
-- overlays replace event navigation
-- top-tab system still partially in use
-
-Next step:
-- move to left sidebar navigation (FM-style)
-- introduce top-right "Next Match" progression control
+- Left sidebar (FM-style) with screen routing
+- Top bar: season badge, team badge, Next Match control
+- Screens: Dashboard, Standings, Schedule, K/D Leaders, Roster, Free Agency, Challengers, Dev Report, Match Log
 
 ---
 
 ## Dashboard
 
-Acts as league-mode hub.
-
-Currently shows:
-- team summary
-- standings snapshot
-- recent results
-- phase-based controls
+Phase-aware hub. Shows:
+- Phase card (stage/major/preChamps/offseason/contracts)
+- Contract review panel during `"contracts"` phase
+- Standing snapshot, recent results, team stats
+- Phase-specific CTAs (next match, enter major, review contracts, advance offseason)
 
 ---
 
 ## Player UI
 
-- clicking player opens modal
-- displays:
-  - attributes
-  - K/D stats
-  - history
-  - bio info
+- Clicking player opens modal overlay
+- Shows: attributes grid, K/D stats, season history table, hidden traits (user team only), bio (age, salary, contract, dev curve)
 
 ---
 
 # 🔹 4. Design Direction
 
-The game is evolving toward:
-
-- fast, addictive match-driven loop
-- strong event moments (Majors / Champs)
+- Fast, addictive match-driven loop
+- Strong event moments (Majors & Champs)
 - Football Manager–inspired structure
-- cleaner, more modern UI (less clutter than FM)
+- Clarity, speed, and visual hierarchy over dense information
 
-Core philosophy:
-- **focus → action → result → world update**
+Core philosophy: **focus → action → result → world update**
 
 ---
 
 # 🔹 5. Known Limitations
 
-- Match loop not fully implemented yet
-- Navigation system still mid-transition
-- No persistent sidebar yet
+- Match loop not fully implemented yet (NextMatchOverlay exists but flow not complete)
+- Navigation system mid-transition (some legacy top-tab remnants)
 - No league narrative (news, storylines)
-- No player contracts or salary system
-- No retirement system
 - Prospect pool does not refresh yearly
 - No opponent roster viewer
+- No contract salary negotiation (re-signing is free / year-only decision)
 
 ---
 
@@ -244,32 +225,29 @@ Core philosophy:
 
 ## HIGH PRIORITY
 
-1. UI architecture overhaul
-   - left sidebar navigation
-   - remove top tabs fully
-   - top-right Next Match system
+1. Core match loop
+   - result reveal flow after user match
+   - other results shown after user match resolves
 
-2. Core match loop
-   - match overlay
-   - result reveal
-   - other results after user match
+2. UI polish
+   - finalize sidebar navigation
+   - remove any remaining legacy top-tab usage
 
 ---
 
 ## MID PRIORITY
 
-3. K/D Leaders screen
-4. Schedule / fixtures screen
-5. History / records screen
+3. Prospect pool regeneration (yearly fresh wave)
+4. History / records screen
+5. Contract salary cost on re-signing
 
 ---
 
 ## LOW PRIORITY
 
 6. Narrative system (news, storylines)
-7. Contracts / salary cap
-8. Player retirement
-9. Prospect regeneration
+7. Opponent roster viewer
+8. Contract salary negotiation
 
 ---
 
@@ -280,31 +258,45 @@ Core philosophy:
 - `stageStandings` must reset every stage
 - `standings` must remain cumulative
 - Player history must persist across seasons
-- UI should prioritize **clarity and flow over density**
+- Contract years must decrement **once per offseason** in `advanceOffseason()`
+- AI teams auto-renew 1-yr contracts before decrement (do not change this — prevents star churn)
+- `phase = "contracts"` must come **between** `"offseason"` and `ADVANCE_OFFSEASON` dispatch
+- Budget caps are hard limits — never sign over cap in AI or user flows
+- Roster minimum is 4 starters — AI fill runs after every window
 
 ---
 
-# 🔹 8. Summary
+# 🔹 8. State Shape Reference
 
-The project has moved from:
+```js
+{
+  userTeamId,
+  season,           // current season number
+  players,          // all pros + signed prospects; teamId null = free agent
+  prospects,        // unsigned challengers only
+  schedule: {
+    season, phase, stageIdx, majorIdx,
+    stages[], majors[], standings, stageStandings,
+    matchLog[], currentMatchday
+  },
+  notifications[],
+  enteredMajorIdx,
+  playerSeasonStats: { [playerId]: [{ season, kills, deaths, matches }] },
+  progressionLog[],
+  retiredPlayers[],
+  rosterMovesLog[],
+  teamContexts: { [teamId]: { philosophy, loyalty, volatility, challengerTrust, pressure } },
+}
+```
 
-> basic simulation with tabs
-
-to:
-
-> event-driven sports management game
-> ## 🔹 Current UX Direction (IMPORTANT)
-
-Core gameplay loop:
-Next Match → Sim → Result → Other Results → Repeat
-
-UI direction:
-- Left sidebar navigation (Football Manager style)
-- Top-right "Next Match" as the primary action
-- Event overlays for Majors and Champs (not separate screens)
-- Focus on clarity, speed, and visual hierarchy over dense information
-
-Next phase:
-- refine core loop
-- finalize UI architecture
-- increase immersion and presentation quality
+Player shape (key fields):
+```js
+{
+  id, name, teamId, age, primary, secondary,
+  overall, potential, salary,
+  contractYears,   // years remaining; 0 = expired → FA
+  form, experience, isProspect,
+  gunny, awareness, objective, searchIQ, clutch, teamwork, composure, adaptability,
+  ego, workEthic, tiltResistance, leadership, metaDependence,
+}
+```
