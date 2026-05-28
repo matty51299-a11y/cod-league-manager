@@ -52,7 +52,7 @@ Key principles:
 State fields:
 - `stageIdx` → current stage
 - `majorIdx` → current major
-- `phase` → `"stage" | "major" | "preChamps" | "offseason" | "contracts"`
+- `phase` → `"stage" | "challengerQualifier" | "major" | "preChamps" | "offseason" | "contracts"`
 
 ---
 
@@ -354,6 +354,7 @@ Core philosophy: **focus → action → result → world update**
 - Contract years must decrement **once per offseason** in `advanceOffseason()`
 - AI teams auto-renew 1-yr contracts before decrement (do not change this — prevents star churn)
 - `phase = "contracts"` must come **between** `"offseason"` and `ADVANCE_OFFSEASON` dispatch
+- `phase = "challengerQualifier"` is a normal playable/persistable post-stage phase; validation must not treat it as invalid or route the app back to team selection.
 - Budget caps are hard limits — never sign over cap in AI or user flows
 - Roster minimum is 4 starters — AI fill runs after every window
 
@@ -370,7 +371,9 @@ Core philosophy: **focus → action → result → world update**
   schedule: {
     season, phase, stageIdx, majorIdx,
     stages[], majors[], standings, stageStandings,
-    matchLog[], currentMatchday
+    matchLog[], currentMatchday,
+    challengerQualifierResults[], currentChallengerQualifier,
+    currentMajorEventTeams
   },
   notifications[],
   enteredMajorIdx,
@@ -423,3 +426,17 @@ Player shape (key fields):
   - Empty state when no qualifier has run
   - Compact qualifier history cards with season/major, winner, and top-4 qualified teams
 - Major Entry overlay now explicitly shows **Challenger Qualifiers (Seeds 13–16)** with qualifier ordering, team identity, region, and OVR so qualifier entrants are clearly visible before the event starts.
+
+
+## Update 2026-05-28 — New Game / Sim Rest of Stage reset status
+- Recent New Game stability fix intentionally separates explicit reset from fresh game creation:
+  - `App.handleNewGame()` deletes the persisted save and dispatches `RESET_TO_TEAM_SELECT`.
+  - `RESET_TO_TEAM_SELECT` returns reducer state to `null`, which correctly shows team selection/start.
+  - `TeamSelect` dispatches `NEW_GAME` with the selected team, which calls `createInitialGameState(teamId)`.
+- Regression found after that fix: **Sim Rest of Stage** was correctly simming remaining stage matches and advancing to `schedule.phase = "challengerQualifier"`, but app-level validation did not list `"challengerQualifier"` as a valid phase.
+- Because `App.jsx` renders `TeamSelect` whenever `isValidGameState(state)` is false, the normal post-stage Challenger Qualifier transition looked like an unintended New Game/reset.
+- Current fix: `src/store/gameValidation.js` now treats `"challengerQualifier"` as valid, so Sim Rest of Stage remains in the save, preserves `userTeamId`, preserves rosters/standings/progress, and shows the Challenger Qualifier/Major flow instead of returning to team selection.
+- Important separation going forward:
+  - Only explicit New Game/reset flows should clear localStorage or null out game state.
+  - Normal simulation actions (`SIM_STAGE`, matchday sims, qualifier sims, Major sims) must never rely on validation fallback to recover by starting over.
+  - If a future phase transition is incomplete, fix/create the missing phase data or surface a recoverable error; do **not** silently reset to team selection.

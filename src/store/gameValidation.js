@@ -1,6 +1,6 @@
 import { CDL_TEAMS } from "../data/teams.js";
 
-const VALID_PHASES = new Set(["stage", "major", "preChamps", "offseason", "contracts"]);
+const VALID_PHASES = new Set(["stage", "challengerQualifier", "major", "preChamps", "offseason", "contracts"]);
 
 export function isValidTeamId(teamId) {
   return CDL_TEAMS.some(t => t.id === teamId);
