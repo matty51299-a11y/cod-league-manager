@@ -44,10 +44,11 @@ Key principles:
 - Teams alive = teams with fewer than 2 losses
 - Engine: `buildMajorBracketDE()` in `seasonEngine.js`; `_simOneMajorMatchDE()` wires each round
 
-### Champs Format (Single Elimination — unchanged)
-- Top-8 teams by cumulative season standings
-- 3 rounds: Quarterfinals → Semifinals → Grand Final
-- Engine: `buildMajorBracket()` in `seasonEngine.js` (unchanged)
+### Champs Format (Double Elimination)
+- Top-8 teams by cumulative season standings (no byes — all enter WB Round 1)
+- 8 rounds: WB R1 → LB R1 → WB Semis → LB R2 → WB Final → LB Semis → LB Final → Grand Final
+- Engine: `buildChampsDE()`, `_simOneChampsMatchDE()`, `_tryPopulateChampsLBFinal()` in `seasonEngine.js`
+- `DEBracketView` renders both Champs and Major brackets dynamically by `round.type` ("WB"/"LB"/"GF")
 
 State fields:
 - `stageIdx` → current stage
@@ -223,14 +224,13 @@ Retirees are removed from rosters; AI fills gaps in the offseason window.
 
 ### Major Entry
 - `MajorEntryOverlay` — full-screen takeover, animated sequence, non-dismissable
-- DE (Majors): shows all 12 seeds; seeds 1–4 display "WB Round 1 Bye" banner; seeds 5–12 show opening WB Round 1 matchup
-- SE (Champs): shows top-8 seeds with QF matchups (unchanged)
+- DE Majors: shows all 12 seeds; seeds 1–4 display "WB Round 1 Bye" banner; seeds 5–12 show opening WB Round 1 matchup
+- DE Champs: shows top-8 seeds with opening WB Round 1 matchups (no byes)
 
 ### Major Tournament Mode
 - `MajorTournamentOverlay` — full-screen event mode (no tab navigation)
 - Bracket, seedings, sim controls, champion screen
-- DE bracket: split into WB / LB / GF color-coded sections
-- SE bracket: original 3-column single-elimination layout (Champs only)
+- DE bracket: split into WB / LB / GF color-coded sections; works for both 12-team Majors and 8-team Champs via dynamic `round.type` grouping
 
 ### Match Center Overlay
 - `MatchCenterOverlay` — map-by-map interactive match player; launched via `openMatchCenter("stage" | "major")`
