@@ -10114,3 +10114,416 @@ body { background: #111317; }
   .hub-topic-panel { max-height: none; }
   .hub-context-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PREMIUM ESPORTS SURFACE REDESIGN
+   Visual styling layer only — no layout, data or gameplay changes.
+   Replaces the flat grey cockpit surfaces with a deep-navy broadcast look:
+   ambient blue/purple atmosphere, layered glassy cards with depth, a real
+   hero treatment, premium stat tiles, richer tables and CTA buttons.
+   Global atmosphere stays navy/blue/purple; the franchise accent is reserved
+   for the shell, edges, underlines and primary actions.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. Tokens ──────────────────────────────────────────────────────────── */
+:root {
+  --bg: #070b16;
+  --bg2: #0d1628;
+  --bg3: #16213c;
+  --panel: #0d1628;
+  --panel-elevated: #17223e;
+  --border: rgba(132, 156, 210, 0.18);
+  --text: #d9e2f5;
+  --text-dim: #93a3c6;
+  --text-head: #f2f6ff;
+  --shadow: 0 14px 34px rgba(2, 6, 18, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+  /* Premium surface tokens */
+  --surface-hero:
+    radial-gradient(620px 220px at 0% 0%, rgba(64, 120, 255, 0.13), transparent 68%),
+    radial-gradient(680px 260px at 100% 120%, rgba(132, 94, 255, 0.13), transparent 64%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 22%),
+    linear-gradient(160deg, #1a2747 0%, #121c36 46%, #0d1527 100%);
+  --surface-primary:
+    radial-gradient(420px 150px at 92% -16%, rgba(96, 145, 255, 0.09), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent 18%),
+    linear-gradient(168deg, #17223f 0%, #101a31 52%, #0c1426 100%);
+  --surface-secondary:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 16%),
+    linear-gradient(172deg, #131d36 0%, #0e1729 58%, #0c1322 100%);
+  --card-border: 1px solid rgba(136, 160, 216, 0.17);
+  --card-shadow: 0 14px 34px rgba(2, 6, 18, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --card-shadow-strong: 0 22px 52px rgba(2, 6, 18, 0.52), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  --tile-bg: linear-gradient(180deg, rgba(164, 186, 236, 0.085), rgba(120, 142, 196, 0.028));
+  --tile-border: 1px solid rgba(142, 166, 220, 0.16);
+}
+
+/* ── 2. Atmosphere — deep navy base + blue/purple ambient glows ─────────── */
+body { background: #04070f; }
+
+.app {
+  background:
+    radial-gradient(1100px 720px at 10% -6%, rgba(52, 104, 255, 0.14), transparent 60%),
+    radial-gradient(1000px 780px at 98% 106%, rgba(138, 86, 255, 0.13), transparent 62%),
+    linear-gradient(180deg, #0a1122 0%, #070d1b 55%, #060a14 100%);
+}
+
+.main-content {
+  background:
+    /* vignette keeps the centre dark + readable */
+    radial-gradient(130% 95% at 50% 42%, transparent 58%, rgba(2, 5, 12, 0.42) 100%),
+    /* faint grid texture */
+    repeating-linear-gradient(0deg, rgba(148, 170, 220, 0.016) 0 1px, transparent 1px 64px),
+    repeating-linear-gradient(90deg, rgba(148, 170, 220, 0.016) 0 1px, transparent 1px 64px),
+    /* ambient colour */
+    radial-gradient(960px 600px at 8% -10%, rgba(56, 110, 255, 0.15), transparent 62%),
+    radial-gradient(900px 660px at 100% 108%, rgba(140, 88, 255, 0.13), transparent 60%),
+    linear-gradient(180deg, #0a1122 0%, #080e1d 52%, #060b16 100%);
+  padding: 12px 16px;
+}
+
+/* ── 3. Shared card surface — depth instead of flat grey boxes ──────────── */
+.ui-page-header,
+.db-club-banner,
+.major-event-banner,
+.cm-hero,
+.card,
+.ui-section-card,
+.oh-card,
+.profile-stat,
+.fm-panel,
+.fm-club-strip,
+.th-panel,
+.nf-panel,
+.premium-card {
+  background: var(--surface-secondary);
+  border: var(--card-border);
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+}
+
+/* ── 4. Hierarchy — hero / primary / secondary surfaces ─────────────────── */
+
+/* Primary cards: key dashboard panels get extra depth + accent presence */
+.fm-panel--primary,
+.fm-next-panel,
+.fm-dynamics-widget,
+.fm-league-table,
+.fm-board-widget,
+.fm-results-panel,
+.ui-section-card,
+.oh-card,
+.premium-card--primary {
+  background: var(--surface-primary);
+  border-color: rgba(146, 170, 226, 0.20);
+  box-shadow: var(--card-shadow-strong);
+}
+
+/* Hero cards: page headers + identity banners */
+.ui-page-header,
+.db-club-banner,
+.major-event-banner,
+.cm-hero,
+.oh-hero,
+.premium-card--hero {
+  background: var(--surface-hero);
+  border-color: rgba(150, 174, 230, 0.22);
+  border-radius: 14px;
+  box-shadow: 0 26px 60px rgba(2, 6, 18, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.premium-card--secondary { background: var(--surface-secondary); }
+
+/* ── 5. Dashboard hero — the command panel ──────────────────────────────── */
+.fm-club-strip {
+  position: relative;
+  min-height: 96px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(150, 174, 230, 0.22);
+  border-left: 4px solid var(--accent);
+  background: var(--surface-hero);
+  box-shadow:
+    0 26px 60px rgba(2, 6, 18, 0.55),
+    0 0 42px var(--user-accent-softer, rgba(96, 165, 250, 0.07)),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.fm-club-strip {
+  /* keep the edge on the shell accent so the hero matches the franchise
+     theme even when the raw data colour differs (overrides inline style) */
+  border-left-color: var(--user-accent, var(--accent)) !important;
+}
+.fm-club-strip::after {
+  /* soft internal lighting sweep */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(420px 130px at 18% 0%, rgba(255, 255, 255, 0.06), transparent 70%);
+  pointer-events: none;
+}
+.fm-club-strip > * { position: relative; z-index: 1; }
+.fm-club-logo {
+  filter:
+    drop-shadow(0 0 16px var(--user-accent-border, rgba(96, 165, 250, 0.45)))
+    drop-shadow(0 6px 14px rgba(0, 0, 0, 0.55));
+}
+.fm-club-main h2 {
+  font-size: 21px;
+  letter-spacing: -0.01em;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.55);
+}
+.fm-kicker { letter-spacing: 0.1em; }
+
+/* Hero stat tiles read as premium tiles, not spreadsheet cells */
+.fm-club-strip .fm-mini-metric {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), transparent 36%),
+    linear-gradient(180deg, rgba(28, 40, 72, 0.92), rgba(16, 24, 46, 0.92));
+  border: 1px solid rgba(154, 178, 232, 0.2);
+  border-top: 2px solid var(--user-accent-border, rgba(96, 165, 250, 0.4));
+  border-radius: 9px;
+  padding: 7px 9px;
+  box-shadow: 0 8px 18px rgba(2, 6, 18, 0.38);
+}
+.fm-club-strip .fm-mini-metric strong { font-size: 15px; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4); }
+
+/* Sim Stage / hero CTA — real call-to-action presence */
+.fm-compact-cta {
+  padding: 9px 16px;
+  border-radius: 9px;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+}
+
+/* ── 6. Panel headers — title bars, not text slapped on boxes ───────────── */
+.fm-panel-title {
+  position: relative;
+  height: 32px;
+  padding: 0 10px;
+  background: linear-gradient(180deg, rgba(6, 11, 24, 0.55), rgba(10, 16, 32, 0.18));
+  border-bottom: 1px solid rgba(132, 156, 210, 0.16);
+}
+.fm-panel-title h3 {
+  color: #c7d3ee;
+  letter-spacing: 0.09em;
+  font-size: 10px;
+}
+.fm-panel-title::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  bottom: -1px;
+  width: 30px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--user-accent, var(--accent));
+  box-shadow: 0 0 10px var(--user-accent-border, rgba(96, 165, 250, 0.45));
+  opacity: 0.55;
+}
+.fm-panel--primary .fm-panel-title::after,
+.fm-next-panel .fm-panel-title::after,
+.fm-dynamics-widget .fm-panel-title::after,
+.fm-league-table .fm-panel-title::after,
+.fm-board-widget .fm-panel-title::after { width: 46px; opacity: 0.9; }
+
+/* Section headers on other screens get the same treatment */
+.ui-section-head,
+.panel-header {
+  position: relative;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(132, 156, 210, 0.14);
+}
+.ui-section-head::after,
+.panel-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 38px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--user-accent, var(--accent));
+  box-shadow: 0 0 10px var(--user-accent-border, rgba(96, 165, 250, 0.45));
+  opacity: 0.7;
+}
+.ui-section-head h3 {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 11px;
+  color: #c7d3ee;
+}
+
+/* ── 7. Stat tiles ──────────────────────────────────────────────────────── */
+.fm-mini-metric,
+.stat-tile {
+  background: var(--tile-bg);
+  border: var(--tile-border);
+  border-radius: 8px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055);
+}
+
+/* ── 8. Tables — broadcast leaderboard, not spreadsheet ─────────────────── */
+.standings-table th, .roster-table th, .stats-table th, .kd-table th,
+.kd-history-table th, .oh-market-table th, .dev-table th, .staff-table th,
+.scout-table th, .table-premium th {
+  background: linear-gradient(180deg, #1b2546 0%, #131c36 100%);
+  color: #9fb0d8;
+  border-bottom: 1px solid rgba(140, 164, 220, 0.24);
+}
+.standings-table td, .roster-table td, .stats-table td, .kd-table td,
+.kd-history-table td, .oh-market-table td, .dev-table td, .staff-table td,
+.scout-table td, .table-premium td {
+  background: transparent;
+  border-color: rgba(132, 156, 210, 0.08);
+  padding: 6px 8px;
+}
+.standings-table tbody tr:nth-child(even) td,
+.roster-table tbody tr:nth-child(even) td,
+.stats-table tbody tr:nth-child(even) td,
+.kd-table tbody tr:nth-child(even) td,
+.kd-history-table tbody tr:nth-child(even) td,
+.oh-market-table tbody tr:nth-child(even) td,
+.dev-table tbody tr:nth-child(even) td,
+.staff-table tbody tr:nth-child(even) td,
+.scout-table tbody tr:nth-child(even) td,
+.table-premium tbody tr:nth-child(even) td { background: rgba(148, 172, 224, 0.035); }
+.standings-table tbody tr:hover td,
+.roster-table tbody tr:hover td,
+.stats-table tbody tr:hover td,
+.kd-table tbody tr:hover td,
+.kd-history-table tbody tr:hover td,
+.oh-market-table tbody tr:hover td,
+.dev-table tbody tr:hover td,
+.staff-table tbody tr:hover td,
+.scout-table tbody tr:hover td,
+.table-premium tbody tr:hover td {
+  background: rgba(106, 148, 255, 0.085);
+  box-shadow: inset 0 1px 0 rgba(126, 160, 255, 0.12), inset 0 -1px 0 rgba(126, 160, 255, 0.12);
+}
+.user-row td, .kd-user-row td, .staff-row--myteam td, .dev-row--myteam td,
+.oh-market-table tr.user-row td {
+  background:
+    linear-gradient(90deg, var(--user-accent-soft, rgba(96, 165, 250, 0.12)), var(--user-accent-softer, rgba(96, 165, 250, 0.05)) 70%) !important;
+}
+.ui-table-wrap {
+  border-radius: 10px;
+  border: 1px solid rgba(132, 156, 210, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+/* Dashboard mini league table */
+.fm-table-head {
+  background: linear-gradient(180deg, rgba(6, 11, 24, 0.5), rgba(10, 16, 32, 0.14));
+  border-bottom: 1px solid rgba(132, 156, 210, 0.18);
+  color: #9fb0d8;
+}
+.fm-table-row { border-bottom: 1px solid rgba(148, 172, 224, 0.05); transition: background 0.12s ease; }
+.fm-table-row:nth-child(even) { background: rgba(148, 172, 224, 0.03); }
+.fm-table-row:hover { background: rgba(106, 148, 255, 0.085); }
+.fm-table-row.is-top { background: linear-gradient(90deg, rgba(52, 211, 153, 0.13), transparent 78%); }
+.fm-table-row.is-bottom { background: linear-gradient(90deg, rgba(248, 113, 113, 0.12), transparent 78%); }
+.fm-table-row.is-you {
+  outline: none;
+  background: linear-gradient(90deg, var(--user-accent-soft, rgba(96, 165, 250, 0.13)), transparent 88%);
+  box-shadow: inset 3px 0 0 var(--user-accent, var(--accent)), inset 0 0 0 1px var(--user-accent-softer, rgba(96, 165, 250, 0.07));
+}
+
+/* Dashboard list rows pick up the same soft separators */
+.fm-list-row,
+.fm-player-stat-row, .fm-news-row, .fm-dev-row,
+.fm-result-row,
+.fm-squad-list > div { border-bottom-color: rgba(148, 172, 224, 0.07); }
+.fm-result-row { transition: background 0.12s ease; }
+.fm-result-row:hover { background: rgba(106, 148, 255, 0.07); }
+
+/* ── 9. Buttons — premium CTAs, quieter secondaries ─────────────────────── */
+.nmc-btn,
+.btn-primary,
+.btn-primary-sm,
+.btn-cta,
+.filter-btn.active,
+.nmo-play-btn,
+.mto-play-match-btn,
+.ui-action-primary,
+.primary-action {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 42%),
+    linear-gradient(180deg, var(--shell-topbar-bg, #2563eb), var(--shell-topbar-secondary, #1e3a8a));
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  border-radius: 8px;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  box-shadow:
+    0 8px 20px rgba(2, 6, 18, 0.42),
+    0 0 18px var(--user-accent-softer, rgba(96, 165, 250, 0.1)),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transition: filter 0.12s ease, transform 0.12s ease, box-shadow 0.12s ease;
+}
+.nmc-btn:hover,
+.btn-primary:hover,
+.btn-primary-sm:hover,
+.btn-cta:hover,
+.nmo-play-btn:hover,
+.mto-play-match-btn:hover,
+.ui-action-primary:hover,
+.primary-action:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+  box-shadow:
+    0 12px 26px rgba(2, 6, 18, 0.5),
+    0 0 26px var(--user-accent-soft, rgba(96, 165, 250, 0.16)),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+.btn-cta:active, .btn-primary:active, .nmc-btn:active { transform: translateY(0); }
+.btn-secondary,
+.btn-secondary-sm {
+  background: linear-gradient(180deg, rgba(164, 186, 236, 0.09), rgba(120, 142, 196, 0.04));
+  border: 1px solid rgba(142, 166, 220, 0.2);
+  border-radius: 8px;
+  color: var(--text);
+}
+.btn-secondary:hover,
+.btn-secondary-sm:hover {
+  background: linear-gradient(180deg, rgba(164, 186, 236, 0.14), rgba(120, 142, 196, 0.07));
+  border-color: var(--user-accent-border, rgba(96, 165, 250, 0.4));
+}
+
+/* ── 10. De-grey remaining hardcoded surfaces (modals, hubs, profile) ───── */
+.player-modal, .profile-modal {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 14%),
+    linear-gradient(175deg, #14203c 0%, #0e1729 60%, #0c1322 100%);
+  border: 1px solid rgba(140, 164, 220, 0.2);
+}
+.pm-header {
+  background:
+    radial-gradient(380px 120px at 0% 0%, var(--user-accent-softer, rgba(96, 165, 250, 0.07)), transparent 70%),
+    linear-gradient(90deg, #1b2849 0%, #121d38 100%);
+  border-bottom: 1px solid rgba(140, 164, 220, 0.18);
+}
+.pm-history-shell, .pm-section { background: rgba(9, 15, 30, 0.55); border-color: rgba(132, 156, 210, 0.15); }
+.pm-history-title { border-bottom-color: rgba(132, 156, 210, 0.15); }
+.pm-career-table th { background: #16203c; }
+.pm-career-table td { border-bottom-color: rgba(148, 172, 224, 0.06); }
+.pm-career-table tbody tr:nth-child(even) td { background: rgba(148, 172, 224, 0.028); }
+.pm-career-table tbody tr:hover td, .pm-career-table tr.is-active td { background: rgba(106, 148, 255, 0.12); }
+.oh-hero {
+  background:
+    radial-gradient(circle at 0 0, var(--user-accent-soft, rgba(96, 165, 250, 0.12)), transparent 42%),
+    var(--surface-hero);
+}
+.oh-card { background: var(--surface-primary); border-color: rgba(140, 164, 220, 0.17); }
+.oh-rank-row, .oh-move-row, .oh-grad-row, .oh-available-row, .oh-recap-row,
+.oh-major-winners > div { background: rgba(148, 172, 224, 0.05); }
+.toast {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 30%),
+    linear-gradient(180deg, #16213c, #0e1729);
+}
+
+/* ── 11. Readability + breathing room (density preserved) ───────────────── */
+.fm-dashboard { gap: 10px; }
+.fm-home-top, .fm-widget-grid { gap: 10px; }
+.fm-panel-title > span { color: #8e9fc4; }
+.fm-empty { color: #8e9fc4; }
