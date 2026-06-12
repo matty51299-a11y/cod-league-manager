@@ -10114,3 +10114,291 @@ body { background: #111317; }
   .hub-topic-panel { max-height: none; }
   .hub-context-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PREMIUM ATMOSPHERE POLISH PASS  (visual only — no layout / logic changes)
+   Deep navy/charcoal shell with subtle blue + purple ambient light, layered
+   panel surfaces with soft elevation, tiered emphasis for hero/key panels,
+   and polished primary buttons. The team-accent variable system from
+   teamTheme.js is preserved and layered on top of the new shell.
+   Reusable surface classes: .panel-primary  .panel-secondary  .tile-premium
+   .hero-card
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root {
+  /* shell atmosphere */
+  --shell-base:   #0c101a;
+  --atmo-blue:    rgba(63, 116, 234, 0.10);
+  --atmo-purple:  rgba(126, 84, 226, 0.080);
+
+  /* layered surface system */
+  --surface-hi:   #222938;
+  --surface:      #1a2030;
+  --surface-lo:   #161b28;
+  --edge-hi:      rgba(255, 255, 255, 0.05);
+  --panel-border: rgba(154, 170, 207, 0.15);
+  --panel-shadow: 0 6px 18px rgba(3, 7, 18, 0.30), inset 0 1px 0 var(--edge-hi);
+  --hero-shadow:  0 12px 30px rgba(3, 7, 18, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+
+  /* retint the base palette from flat charcoal to navy/charcoal */
+  --bg:        #10141f;
+  --bg2:       #1a2030;
+  --bg3:       #242b3d;
+  --panel:     #1a2030;
+  --panel-elevated: #232a3b;
+  --border:    rgba(154, 170, 207, 0.16);
+  --text:      #e2e8f5;
+  --text-dim:  #9da9c4;
+  --text-head: #f5f8ff;
+  --shadow:    0 6px 18px rgba(3, 7, 18, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* ── 1. Main shell / background atmosphere ─────────────────────────────────── */
+body { background: #0a0d15; }
+.app { background: var(--shell-base); }
+
+/* Ambient light lives on the non-scrolling wrapper so it stays put while the
+   content scrolls. A faint team-accent wash near the sidebar blends the
+   accented chrome into the navy workspace. */
+.app-body {
+  background:
+    radial-gradient(1100px 520px at 82% -8%, var(--atmo-blue), transparent 62%),
+    radial-gradient(950px 660px at -12% 34%, var(--atmo-purple), transparent 60%),
+    radial-gradient(620px 300px at 10% -4%, var(--user-accent-softer, transparent), transparent 64%),
+    radial-gradient(760px 420px at 52% 110%, rgba(64, 99, 198, 0.05), transparent 64%),
+    linear-gradient(168deg, #141927 0%, #0f1320 52%, #0b0e18 100%);
+}
+
+/* Translucent so the ambient light shows through; inset shadow = soft vignette
+   that stays fixed to the viewport edges of the scroll container. */
+.main-content {
+  padding: 12px 14px;
+  background: linear-gradient(180deg, rgba(10, 14, 24, 0.08), rgba(7, 10, 18, 0.30));
+  box-shadow: inset 0 0 110px rgba(3, 6, 14, 0.40);
+}
+
+.main-content::-webkit-scrollbar { width: 10px; height: 10px; }
+.main-content::-webkit-scrollbar-track { background: transparent; }
+.main-content::-webkit-scrollbar-thumb {
+  background: rgba(154, 170, 207, 0.18);
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background-clip: padding-box;
+}
+.main-content::-webkit-scrollbar-thumb:hover { background-color: rgba(154, 170, 207, 0.32); }
+
+/* ── 2. Card / panel styling (secondary surface = the default) ─────────────── */
+.ui-page-header,
+.db-club-banner,
+.major-event-banner,
+.cm-hero,
+.card,
+.ui-section-card,
+.oh-card,
+.profile-stat,
+.fm-club-strip,
+.fm-panel,
+.th-panel,
+.nf-panel,
+.pm-section,
+.pm-history-shell,
+.staff-bonuses-card,
+.contract-panel,
+.panel-secondary {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0) 38%),
+    linear-gradient(180deg, var(--surface-hi) 0%, var(--surface) 55%, var(--surface-lo) 100%);
+  border-radius: 6px;
+  box-shadow: var(--panel-shadow);
+}
+
+.fm-panel-title {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012));
+  border-bottom: 1px solid rgba(154, 170, 207, 0.13);
+}
+
+.pm-section,
+.pm-history-shell,
+.oh-rank-row, .oh-move-row, .oh-grad-row, .oh-available-row, .oh-recap-row,
+.oh-major-winners > div {
+  background: linear-gradient(180deg, #1d2332, #181d2b);
+}
+
+/* ── 3. Hero / key section emphasis (primary panels) ───────────────────────── */
+.fm-next-panel,
+.fm-dynamics-widget,
+.fm-league-table,
+.fm-board-widget,
+.fm-panel:has(.fm-finance-bars),
+.contract-panel,
+.panel-primary {
+  background:
+    radial-gradient(420px 120px at 12% 0%, var(--user-accent-softer, rgba(96, 165, 250, 0.07)), transparent 72%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0) 40%),
+    linear-gradient(180deg, #252d40 0%, #1c2233 56%, #181d2c 100%);
+  border-top: 2px solid var(--user-accent, var(--accent));
+  border-color: color-mix(in srgb, var(--user-accent, #60a5fa) 24%, rgba(154, 170, 207, 0.18));
+  border-top-color: var(--user-accent, var(--accent));
+  box-shadow:
+    var(--hero-shadow),
+    inset 0 14px 26px -22px var(--user-accent-border, rgba(96, 165, 250, 0.30));
+}
+
+/* Home hero / club strip — the most premium surface on the screen */
+.fm-club-strip,
+.hero-card {
+  background:
+    radial-gradient(520px 150px at 0% 0%, var(--user-accent-soft, rgba(96, 165, 250, 0.13)), transparent 70%),
+    radial-gradient(420px 130px at 100% 100%, rgba(126, 84, 226, 0.07), transparent 70%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0) 42%),
+    linear-gradient(165deg, #2a3349 0%, #1d2435 58%, #181e2e 100%);
+  border-color: color-mix(in srgb, var(--user-accent, #60a5fa) 30%, rgba(154, 170, 207, 0.20));
+  border-left: 3px solid var(--user-accent, var(--accent));
+  box-shadow: var(--hero-shadow);
+}
+.fm-club-main h2 {
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
+  letter-spacing: -0.01em;
+}
+
+.ui-page-header {
+  background:
+    radial-gradient(520px 140px at 4% 0%, var(--user-accent-softer, rgba(96, 165, 250, 0.07)), transparent 70%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0) 40%),
+    linear-gradient(170deg, #262e42 0%, #1c2233 60%, #181d2c 100%);
+  box-shadow: var(--hero-shadow);
+}
+
+/* Premium stat tiles */
+.fm-mini-metric,
+.ui-stat-card,
+.tile-premium {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.015));
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 5px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 2px 6px rgba(3, 7, 18, 0.22);
+}
+.fm-mini-metric strong,
+.ui-stat-card strong,
+.tile-premium strong {
+  color: #fff;
+  text-shadow: 0 1px 10px rgba(255, 255, 255, 0.10);
+}
+
+/* ── 4. Team accent integration in the workspace ───────────────────────────── */
+.fm-table-row.is-you {
+  outline: 1px solid var(--user-accent-border, rgba(96, 165, 250, 0.42));
+  background: var(--user-accent-softer, rgba(96, 165, 250, 0.10));
+}
+.fm-compact-cta span { color: inherit; opacity: 0.85; }
+
+/* ── 5. Buttons and CTAs ───────────────────────────────────────────────────── */
+.nmc-btn,
+.btn-primary,
+.btn-primary-sm,
+.btn-cta,
+.filter-btn.active,
+.nmo-play-btn,
+.mto-play-match-btn,
+.ui-action-primary {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0) 46%),
+    linear-gradient(180deg, var(--shell-topbar-bg, #2563eb), var(--shell-topbar-secondary, #1d4ed8));
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.30);
+  box-shadow:
+    0 4px 12px rgba(3, 7, 18, 0.35),
+    0 0 18px -7px var(--user-accent-border, rgba(96, 165, 250, 0.35)),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transition: filter 0.12s, transform 0.12s, box-shadow 0.12s;
+}
+.nmc-btn:hover,
+.btn-primary:hover,
+.btn-primary-sm:hover,
+.btn-cta:hover,
+.nmo-play-btn:hover,
+.mto-play-match-btn:hover,
+.ui-action-primary:hover {
+  filter: brightness(1.12);
+  opacity: 1;
+  transform: translateY(-1px);
+  box-shadow:
+    0 7px 16px rgba(3, 7, 18, 0.40),
+    0 0 22px -6px var(--user-accent-border, rgba(96, 165, 250, 0.45)),
+    inset 0 1px 0 rgba(255, 255, 255, 0.20);
+}
+.nmc-btn:active,
+.btn-primary:active,
+.btn-primary-sm:active,
+.btn-cta:active,
+.nmo-play-btn:active { transform: translateY(0); filter: brightness(1.04); }
+
+.btn-secondary,
+.btn-secondary-sm,
+.slot-select,
+.filter-btn,
+.ui-action-secondary {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0) 50%),
+    rgba(17, 22, 36, 0.74);
+  border-color: rgba(154, 170, 207, 0.22);
+  color: var(--text);
+}
+.btn-secondary:hover,
+.btn-secondary-sm:hover {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.01) 50%),
+    rgba(24, 31, 49, 0.85);
+}
+
+/* ── 6. Tables and stats ───────────────────────────────────────────────────── */
+.standings-table th,
+.roster-table th,
+.stats-table th,
+.kd-history-table th,
+.kd-table th,
+.staff-table th,
+.oh-market-table th,
+.dev-table th,
+.data-table th {
+  background: linear-gradient(180deg, #1f2638, #181e2d);
+  color: #aab6d0;
+  border-bottom: 1px solid rgba(154, 170, 207, 0.20);
+}
+.standings-table td,
+.roster-table td,
+.stats-table td,
+.kd-history-table td,
+.kd-table td,
+.staff-table td,
+.oh-market-table td,
+.dev-table td,
+.data-table td {
+  background: rgba(23, 29, 44, 0.82);
+  border-bottom-color: rgba(154, 170, 207, 0.09);
+}
+.standings-table tbody tr:nth-child(even) td,
+.roster-table tbody tr:nth-child(even) td,
+.oh-market-table tbody tr:nth-child(even) td,
+.data-table tbody tr:nth-child(even) td { background: rgba(27, 34, 52, 0.82); }
+.standings-table tbody tr:hover td,
+.roster-table tbody tr:hover td,
+.stats-table tbody tr:hover td,
+.kd-history-table tbody tr:hover td,
+.kd-table tbody tr:hover td,
+.staff-table tbody tr:hover td,
+.oh-market-table tbody tr:hover td,
+.dev-table tbody tr:hover td,
+.data-table tbody tr:hover td {
+  background: color-mix(in srgb, var(--user-accent, #60a5fa) 11%, #1d2435);
+}
+.ui-table-wrap { border-color: rgba(154, 170, 207, 0.14); }
+.pts, .stat-value, .player-name { color: #fff; }
+.pm-career-table th { background: #1d2433; }
+.pm-career-table td { border-bottom-color: rgba(154, 170, 207, 0.08); }
+
+/* Dashboard mini-table rhythm */
+.fm-table-head { border-bottom-color: rgba(154, 170, 207, 0.16); }
+.fm-table-row { border-bottom-color: rgba(255, 255, 255, 0.035); }
+.fm-table-row:nth-child(even) { background: rgba(255, 255, 255, 0.022); }
+.fm-table-row:hover { background: rgba(255, 255, 255, 0.05); }
