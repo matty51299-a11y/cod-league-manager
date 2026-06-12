@@ -1060,3 +1060,24 @@ with 2–4 options. Options either make a promise or apply a direct morale nudge
 - Added meeting anti-spam safeguards: only the first three meaningful topics in a meeting can affect morale/trust, repeated topics do not stack morale, duplicate promises are blocked by existing promise logic, and conflicting response options show warnings.
 - Dynamics now surfaces conversation history count and stance/main-concern fallbacks; Player Profile morale details now include player stance, main concern, last talk, active promises, and still opens the same Conversation Hub.
 - Expanded `scripts/diagnosePlayerMorale.mjs` to cover the topic list, action-required topic routing, multi-topic meetings, response/outcome generation, no auto-close behavior, repeat-topic anti-farming, promise creation, conflict warnings, history recording, cooldowns, and old-save hydration.
+
+## Update 2026-06-12 (Premium UI atmosphere polish pass)
+Visual-only CSS pass — no changes to match sim, roster AI, contracts, budgets, free agency, transfers, awards, staff, owner/board, map pool/veto, profile history, brackets, points, ratings, save data, or screen structure. Only `src/index.css` changed (one new override layer appended at the end of the file).
+
+### What changed
+- **New final CSS layer** "PREMIUM ATMOSPHERE POLISH PASS" appended after the existing shell-correction layer. It retints the base palette variables (`--bg/--bg2/--bg3/--panel/--border/--text*/--shadow`) from flat charcoal to navy/charcoal and introduces a small surface system: `--shell-base`, `--atmo-blue`, `--atmo-purple`, `--surface-hi/--surface/--surface-lo`, `--edge-hi`, `--panel-border`, `--panel-shadow`, `--hero-shadow`.
+- **Shell atmosphere**: ambient blue + purple radial washes plus a faint team-accent wash live on `.app-body` (the non-scrolling wrapper) so they stay put while content scrolls; `.main-content` is a translucent darkening gradient with an inset-shadow vignette fixed to the scrollport edges. Thin styled scrollbar on `.main-content`.
+- **Panels**: all main surfaces (`.fm-panel`, `.fm-club-strip`, `.card`, `.ui-section-card`, `.ui-page-header`, `.oh-card`, `.th-panel`, `.nf-panel`, `.pm-section`, `.contract-panel`, `.staff-bonuses-card`, …) get a layered gradient surface with a top inner highlight and soft elevation shadow; `.fm-panel-title` gets a subtle header strip gradient.
+- **Tiered emphasis**: key panels (`.fm-next-panel`, `.fm-dynamics-widget`, `.fm-league-table`, `.fm-board-widget`, finance panel via `.fm-panel:has(.fm-finance-bars)`, `.contract-panel`, `.ui-page-header`) get a brighter surface, a 2px team-accent top line, accent-tinted border and an inset accent glow. The home hero `.fm-club-strip` gets the richest treatment (accent radial wash + stronger elevation). Stat tiles (`.fm-mini-metric`, `.ui-stat-card`) get a premium edge-highlight treatment.
+- **Buttons**: primary actions (`.btn-primary`, `.btn-cta`, `.nmc-btn`, `.nmo-play-btn`, `.mto-play-match-btn`, `.filter-btn.active`, `.ui-action-primary`) get a gloss gradient over the team shell gradient, soft accent glow, hover lift (`translateY(-1px)` + brightness) and active press state. Secondary buttons stay quiet (subtle gloss only).
+- **Tables**: navy header gradient strips, navy cell tints with zebra contrast, row hover tinted with the user accent via `color-mix`, key numbers (`.pts`, `.stat-value`, `.player-name`, tile `strong`) brightened. User-row accent highlighting from the identity layer is unchanged (`!important` rules still win).
+- **Reusable surface classes** for future components: `.panel-primary`, `.panel-secondary`, `.tile-premium`, `.hero-card` (aliases sharing the same rules).
+- The team-accent variable system (`teamTheme.js` → vars on `.app`) is untouched; every accent use in the new layer goes through `var(--user-accent*, fallback)`.
+
+### Verified
+- `npm run build` ✓. Headless-browser screenshots of Team Select, Home (Boston Breach — green accent; Toronto KOI — purple accent), Standings and Dynamics: atmosphere/depth present, hero + key panels visually tiered, text readable, no console errors.
+
+### Known limitations
+- Hover/pressed button states verified by inspection of CSS only (static screenshots).
+- Event overlays (Major tournament, Match Center) inherit the button/card polish but did not get a dedicated atmosphere pass.
+- `--accent` at `:root` (outside `.app`) still carries the older amber default; inside the app shell it is always overridden by the team accent as before.
