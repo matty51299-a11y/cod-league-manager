@@ -439,7 +439,7 @@ export default function Dashboard({ setScreen }) {
           ))}
         </section>
 
-        <section className="fm-panel">
+        <section className="fm-panel fm-panel--primary">
           <PanelTitle title="Player Stats" />
           {playerStatsRows.map(row => (
             <div key={row.label} className="fm-player-stat-row">
@@ -478,7 +478,7 @@ export default function Dashboard({ setScreen }) {
           })}
         </section>
 
-        <section className="fm-panel">
+        <section className="fm-panel fm-panel--primary">
           <PanelTitle title="Finance & Salary" />
           <div className="fm-finance-bars">
             <MiniMetric label="Cap" value={fmtMoney(teamCap)} />

@@ -1060,3 +1060,29 @@ with 2–4 options. Options either make a promise or apply a direct morale nudge
 - Added meeting anti-spam safeguards: only the first three meaningful topics in a meeting can affect morale/trust, repeated topics do not stack morale, duplicate promises are blocked by existing promise logic, and conflicting response options show warnings.
 - Dynamics now surfaces conversation history count and stance/main-concern fallbacks; Player Profile morale details now include player stance, main concern, last talk, active promises, and still opens the same Conversation Hub.
 - Expanded `scripts/diagnosePlayerMorale.mjs` to cover the topic list, action-required topic routing, multi-topic meetings, response/outcome generation, no auto-close behavior, repeat-topic anti-farming, promise creation, conflict warnings, history recording, cooldowns, and old-save hydration.
+
+## Update 2026-06-12 (Premium esports surface redesign — visual styling only)
+Visual restyling pass only. No change to layout structure, match simulation, roster AI, contracts, budgets, free agency, transfers, awards, staff, owner/board, morale, map pool/veto, profile history, brackets, points, ratings, save data, logos, or gameplay state.
+
+### What changed
+- Appended a final **"PREMIUM ESPORTS SURFACE REDESIGN"** layer at the end of `src/index.css` (following the file's established override-layer pattern). It replaces the flat-grey "FM cockpit" surfaces (`#14161a`/`#20242b`, `box-shadow: none`) with a deep-navy broadcast look.
+- **Tokens**: `:root` re-pointed to a navy palette (`--bg #070b16`, `--bg2 #0d1628`, `--bg3 #16213c`, bluish borders, restored shadows) plus new reusable surface tokens (`--surface-hero`, `--surface-primary`, `--surface-secondary`, `--tile-bg`, `--card-shadow`). Components styled with the shared vars pick the new look up automatically.
+- **Atmosphere**: `body` / `.app` / `.main-content` now layer a deep navy base + large soft blue radial (top-left) + purple radial (bottom-right) + vignette + very faint 64px grid texture. Global atmosphere is navy/blue/purple regardless of franchise; the team accent stays in the shell (sidebar/topbar), edges, header underlines, user rows and CTAs.
+- **Card surfaces**: all shared panel classes (`.fm-panel`, `.fm-club-strip`, `.card`, `.ui-section-card`, `.ui-page-header`, `.db-club-banner`, `.oh-card`, `.oh-hero`, `.th-panel`, `.nf-panel`, `.profile-stat`, `.cm-hero`, `.major-event-banner`) get gradient navy surfaces with a faint top highlight, soft inner border, 12–14px radius and layered shadows. Alias classes `.premium-card` / `--hero` / `--primary` / `--secondary`, `.stat-tile`, `.panel-header`, `.table-premium`, `.primary-action` are defined for future use.
+- **Hierarchy**: three surface levels — hero (`.fm-club-strip`, `.ui-page-header`, `.oh-hero`, banners), primary (`.fm-panel--primary`, `.fm-next-panel`, `.fm-dynamics-widget`, `.fm-league-table`, `.fm-board-widget`, `.fm-results-panel`, `.ui-section-card`, `.oh-card`) and quieter secondary (default `.fm-panel`). `Dashboard.jsx` adds `fm-panel--primary` to the Player Stats and Finance panels (className-only change).
+- **Dashboard hero**: blue/purple gradient command panel with internal lighting sweep, glowing team logo, larger team name, premium stat tiles (accent top edge), upgraded Sim Stage CTA. Hero left edge now follows the shell accent (`--user-accent`) instead of the raw data colour (fixes Boston's red-edge-on-green-theme clash; CSS `!important` over the inline style, display-only).
+- **Panel headers**: `.fm-panel-title` / `.ui-section-head` are now darker title bars with a small accent underline glow (wider/brighter on primary cards).
+- **Tables**: gradient header bars, transparent cells over the card surface, subtle zebra rows, blue hover glow, richer user-row accent gradient (density preserved).
+- **Buttons**: primary CTAs (`.btn-cta`, `.btn-primary*`, `.nmc-btn`, play buttons) get a top-sheen gradient over the shell colours, soft glow shadow and hover lift; secondaries are quiet glassy navy.
+- **De-greyed leftovers**: player/profile modals, `pm-*` history shells/tables, offseason hub cards/rows, toast — all moved from hardcoded `#20232x` greys to the navy surfaces.
+
+### Files changed
+`src/index.css` (appended layer), `src/components/Dashboard.jsx` (two className additions), `progress.md`.
+
+### Testing
+`npm run build` ✓ · manually verified via headless Chromium screenshots: Home dashboard, Roster, Board, Transfers, Dynamics all render the new surfaces with no console/page errors; pixel-sampled the main background to confirm navy/blue/purple (no green cast outside the shell).
+
+### Known limitations
+- Major/Champs tournament overlays and the Match Center keep their earlier dedicated dark-navy styling (already navy; not restyled this pass).
+- Boston Breach's raw data colour remains `#C8102E` (red) in `teams.js`; only the hero edge was visually aligned to the green shell theme — table dots/tags still use data colours by design.
+- The legacy light-theme and intermediate FM layers remain in `index.css` (the file is cumulative override layers); a future cleanup could collapse them.
