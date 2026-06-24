@@ -6,8 +6,8 @@ import { useGame } from "../store/gameStore.jsx";
 import { usePlayerProfile } from "../store/playerProfileContext.jsx";
 import {
   getSortedEvents, getActiveEvents, getActionRequiredCount, getUnreadCount,
-  EVENT_CATEGORIES, CATEGORY_LIST, CATEGORY_ICON, SEVERITY_ORDER,
-  severityColor, severityBg,
+  CATEGORY_LIST, CATEGORY_ICON,
+  severityColor,
 } from "../engine/eventCentreEngine.js";
 import { CDL_TEAMS } from "../data/teams.js";
 
@@ -84,6 +84,7 @@ export default function Inbox({ setScreen }) {
           if (p) openProfile(p);
         }
         break;
+      case "talk_to_player":
       case "talk_now":
       case "go_dynamics":
       case "open_dynamics":
@@ -91,6 +92,7 @@ export default function Inbox({ setScreen }) {
       case "view_board":
       case "review_objectives":
         setScreen?.("board"); break;
+      case "open_scouting":
       case "view_report":
       case "shortlist":
       case "scout_again":
@@ -105,6 +107,8 @@ export default function Inbox({ setScreen }) {
         setScreen?.("standings"); break;
       case "view_schedule":
         setScreen?.("schedule"); break;
+      case "continue":
+        setScreen?.("home"); break;
       case "view_details":
       case "open_match_log":
         setScreen?.("log"); break;
@@ -292,6 +296,18 @@ export default function Inbox({ setScreen }) {
                 </div>
               )}
 
+
+              {selected.reportData && (
+                <div className="inbox-report-grid">
+                  {Object.entries(selected.reportData).map(([label, value]) => (
+                    <div key={label} className={label === "Recommendation" || label === "Suggested Next Action" ? "inbox-report-row inbox-report-row--wide" : "inbox-report-row"}>
+                      <span>{label}</span>
+                      <strong>{String(value)}</strong>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {/* Related player */}
               {selected.relatedPlayerId && (() => {
                 const p = (state.players ?? []).find(pl => pl.id === selected.relatedPlayerId)
@@ -427,6 +443,9 @@ function formatActionLabel(action) {
     view_schedule: "View Schedule",
     view_details: "View Details",
     open_match_log: "View Match Log",
+    continue: "Continue",
+    talk_to_player: "Talk to Player",
+    open_scouting: "Open Scouting",
   };
   return labels[action] ?? action.replaceAll("_", " ").replace(/^./, c => c.toUpperCase());
 }

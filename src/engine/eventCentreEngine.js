@@ -3,6 +3,10 @@
 // Generates, deduplicates, and manages rich actionable events.
 
 import { CDL_TEAMS } from "../data/teams.js";
+import { getMorale, moodForLevel } from "./moraleEngine.js";
+import { getPlayerValuation, getTransferStatus } from "./transferEngine.js";
+import { getScoutingSummary } from "./scoutingEngine.js";
+import { getSecurityBand } from "./boardEngine.js";
 
 // ── Categories ───────────────────────────────────────────────────────────────
 export const EVENT_CATEGORIES = {
@@ -73,7 +77,7 @@ export function makeEvent({
   type, category, severity = "info", title, summary = "",
   season, stage, phase, read = false, actionRequired = false,
   expiresAtStage, relatedPlayerId, relatedTeamId, opponentTeamId, relatedMatchId,
-  targetScreen, targetTab, actions = [], dedupKey, matchData,
+  targetScreen, targetTab, actions = [], dedupKey, matchData, reportData,
 }) {
   const id = `evt_${_nextId++}`;
   const ev = {
@@ -92,6 +96,7 @@ export function makeEvent({
     dedupKey: dedupKey ?? null,
   };
   if (matchData) ev.matchData = matchData;
+  if (reportData) ev.reportData = reportData;
   return ev;
 }
 
@@ -99,10 +104,20 @@ export function makeEvent({
 export function migrateEventCentre(ec) {
   if (ec && Array.isArray(ec.events)) {
     _nextId = (ec.nextId || ec.events.length) + 1;
-    return { events: ec.events, nextId: _nextId };
+    return { events: ec.events.map(hydrateEvent), nextId: _nextId };
   }
   _nextId = 1;
   return { events: [], nextId: 1 };
+}
+
+function hydrateEvent(ev) {
+  if (!ev || typeof ev !== "object") return ev;
+  return {
+    ...ev,
+    actions: Array.isArray(ev.actions) ? ev.actions : [],
+    reportData: ev.reportData && typeof ev.reportData === "object" ? ev.reportData : null,
+    matchData: ev.matchData && typeof ev.matchData === "object" ? ev.matchData : ev.matchData,
+  };
 }
 
 // ── Push events (with dedup + cap) ───────────────────────────────────────────
@@ -230,12 +245,23 @@ export function convertFeedToEvents(feedItems) {
 // Transfer offer received (incoming)
 export function makeTransferOfferEvent(offer, player, state) {
   const buyer = CDL_TEAMS.find(t => t.id === offer.fromTeamId);
+  const valuation = getPlayerValuation(player, state);
+  const morale = player?.id ? getMorale(state, player.id) : null;
+  const stance = morale ? `${moodForLevel(morale.level)} (${morale.level}/100)` : "Unknown";
+  const teamNeed = offer.need || offer.reason || "Buyer have identified a roster upgrade need";
+  const ratio = valuation ? (offer.fee || 0) / valuation : 1;
+  const recommendation = ratio >= 1.15 ? "Assistant GM: This is above our valuation — consider accepting unless the player is essential."
+    : ratio < 0.85 ? "Assistant GM: Fee is light versus valuation — reject or counter unless morale risk is high."
+    : "Assistant GM: Fair offer. Balance the fee against squad depth and player morale.";
+  const risk = morale?.level < 45 || ["Wants Move", "Unsettled"].includes(getTransferStatus(player, state))
+    ? "Rejecting could aggravate an already unsettled player."
+    : "Low immediate morale risk, but interest may grow if opportunities are blocked.";
   return makeEvent({
     type: "transfer_offer",
     category: "Transfers",
     severity: "high",
     title: `${buyer?.tag ?? "A team"} bid ${fmtFee(offer.fee)} for ${player?.name ?? "your player"}`,
-    summary: `${buyer?.name ?? "A CDL team"} have submitted a buyout offer for ${player?.name ?? "your player"}.`,
+    summary: `${buyer?.name ?? "A CDL team"} have submitted a ${fmtFee(offer.fee)} buyout offer for ${player?.name ?? "your player"}. Valuation: ${fmtFee(valuation)}.`,
     season: state.season,
     stage: state.schedule?.stageIdx ?? 0,
     phase: state.schedule?.phase ?? "stage",
@@ -244,20 +270,30 @@ export function makeTransferOfferEvent(offer, player, state) {
     relatedTeamId: offer.fromTeamId,
     targetScreen: "transfers",
     targetTab: "incoming",
-    actions: ["review_offer", "open_player", "dismiss"],
+    actions: ["review_offer", "open_player", "open_transfers", "talk_to_player", "dismiss"],
     dedupKey: `transfer_offer:${offer.id}`,
+    reportData: {
+      "Bid Amount": fmtFee(offer.fee),
+      "Player Valuation": fmtFee(valuation),
+      "Player Morale": stance,
+      "Team Need": teamNeed,
+      "Risk of Rejecting": risk,
+      Recommendation: recommendation,
+    },
   });
 }
 
 // Challenger buyout offer
 export function makeChallengerBuyoutEvent(offer, state) {
   const buyer = CDL_TEAMS.find(t => t.id === offer.fromCdlTeamId);
+  const player = (state.players || []).find(p => p.id === offer.playerId) || (state.prospects || []).find(p => p.id === offer.playerId);
+  const valuation = player ? getPlayerValuation(player, state) : offer.fee;
   return makeEvent({
     type: "challenger_buyout",
     category: "Transfers",
     severity: "high",
     title: `${buyer?.tag ?? "A CDL team"} bid ${fmtFee(offer.fee)} for ${offer.playerName}`,
-    summary: `${buyer?.name ?? "A CDL team"} want to sign ${offer.playerName} from your Challenger roster.`,
+    summary: `${buyer?.name ?? "A CDL team"} want to sign ${offer.playerName}. Bid: ${fmtFee(offer.fee)}. Valuation: ${fmtFee(valuation)}.`,
     season: state.season,
     stage: state.schedule?.stageIdx ?? 0,
     phase: state.schedule?.phase ?? "stage",
@@ -265,8 +301,9 @@ export function makeChallengerBuyoutEvent(offer, state) {
     relatedPlayerId: offer.playerId,
     relatedTeamId: offer.fromCdlTeamId,
     targetScreen: "home",
-    actions: ["review_offer", "dismiss"],
+    actions: ["review_offer", "open_player", "open_transfers", "talk_to_player", "dismiss"],
     dedupKey: `ch_buyout:${offer.id}`,
+    reportData: { "Bid Amount": fmtFee(offer.fee), "Player Valuation": fmtFee(valuation), "Player Morale": player?.id ? `${moodForLevel(getMorale(state, player.id).level)} (${getMorale(state, player.id).level}/100)` : "Unknown", "Team Need": offer.reason || "CDL interest in your developing talent", "Risk of Rejecting": "Rejected interest can unsettle ambitious players if bigger clubs keep calling.", Recommendation: "Assistant GM: Compare the fee to development upside and your roster depth before deciding." },
   });
 }
 
@@ -417,19 +454,26 @@ export function makeBoardObjectiveEvent(state) {
 
 // Scout report ready
 export function makeScoutReportEvent(player, state) {
+  const report = getScoutingSummary(player, state);
+  const ovr = report?.displayOvrText ?? `${player.scoutedOverall ?? player.overall ?? "?"} est.`;
+  const pot = report?.displayPotText ?? `${player.scoutedPotential ?? player.potential ?? "?"} est.`;
+  const traits = (report?.revealedTraits || report?.traits || []).map(t => t.label || t).slice(0, 4);
+  const risk = report?.risk || "Medium";
+  const recommendation = report?.recommendation || (Number(player.potential ?? 0) >= 85 ? "Shortlist and keep scouting." : "Useful depth profile; review before committing.");
   return makeEvent({
     type: "scout_report",
     category: "Scouting",
     severity: "medium",
     title: `Scout report ready: ${player.name}`,
-    summary: `Your scouts have completed a detailed report on ${player.name}.`,
+    summary: `${player.name}: OVR ${ovr} / POT ${pot}. Risk: ${risk}. ${recommendation}`,
     season: state.season,
     stage: state.schedule?.stageIdx ?? 0,
     phase: state.schedule?.phase ?? "stage",
     relatedPlayerId: player.id,
     targetScreen: "scouting",
-    actions: ["view_report", "shortlist", "dismiss"],
+    actions: ["view_report", "shortlist", "open_scouting", "dismiss"],
     dedupKey: `scout:${player.id}:${state.season}:${state.schedule?.stageIdx ?? 0}`,
+    reportData: { Player: player.name, "OVR / POT": `${ovr} / ${pot}`, Risk: risk, Traits: traits.length ? traits.join(", ") : "No standout traits revealed", Role: player.primary || "Flex", Recommendation: recommendation },
   });
 }
 
@@ -487,19 +531,23 @@ export function makePlayerWantsOutEvent(player, state) {
 
 // Player blocked move (unhappy)
 export function makeBlockedMoveEvent(player, state) {
+  const morale = getMorale(state, player.id);
+  const valuation = getPlayerValuation(player, state);
   return makeEvent({
     type: "blocked_move",
-    category: "Morale",
+    category: "Transfers",
     severity: "high",
     title: `${player.name} unhappy after blocked move`,
-    summary: `${player.name} is unsettled after their transfer was blocked.`,
+    summary: `${player.name} is unsettled after their transfer was blocked. Morale stance: ${moodForLevel(morale.level)}.`,
     season: state.season,
     stage: state.schedule?.stageIdx ?? 0,
     phase: state.schedule?.phase ?? "stage",
+    actionRequired: morale.level < 50,
     relatedPlayerId: player.id,
     targetScreen: "dynamics",
-    actions: ["talk_now", "open_player", "dismiss"],
+    actions: ["talk_to_player", "open_player", "open_transfers", "dismiss"],
     dedupKey: `blocked:${player.id}:${state.season}:${state.schedule?.stageIdx ?? 0}`,
+    reportData: { "Bid Amount": "Blocked / rejected", "Player Valuation": fmtFee(valuation), "Player Morale": `${moodForLevel(morale.level)} (${morale.level}/100)`, "Team Need": "Retaining squad quality and continuity", "Risk of Rejecting": "High if no conversation follows; player may push harder for a move.", Recommendation: "Assistant GM: Talk to the player and clarify asking price or role expectations." },
   });
 }
 
@@ -715,55 +763,49 @@ export function makeMatchSummaryEvent(matchResult, userTeamId, state) {
   const oppScore = isTeamA ? scoreB : scoreA;
   const oppId = isTeamA ? teamB : teamA;
   const won = userScore > oppScore;
-  const diff = Math.abs(userScore - oppScore);
-  const totalMaps = userScore + oppScore;
-  const context = matchResult.stage || state.schedule?.majors?.[state.schedule?.majorIdx]?.name || `Stage ${(state.schedule?.stageIdx ?? 0) + 1}`;
-
-  let titlePrefix;
-  if (won) {
-    if (userScore === 3 && oppScore === 0) titlePrefix = "Statement Win";
-    else titlePrefix = diff === 1 && totalMaps >= 5 ? "Clutch Win" : "Match Report";
-  } else {
-    titlePrefix = diff === 1 && totalMaps >= 5 ? "Close Loss" : "Match Report";
-  }
-
-  const playerStats = matchResult.standouts?.length
-    ? matchResult.standouts
-    : Array.isArray(matchResult.playerStats)
-      ? matchResult.playerStats
-      : Object.values(matchResult.playerStats || {});
-  const statWithIdentity = playerStats.map(ps => ({
-    ...ps,
-    playerId: ps.playerId ?? ps.id,
-    name: ps.name ?? ps.playerName,
-    kd: Number.isFinite(ps.kd) ? ps.kd : ((ps.deaths ?? 0) > 0 ? (ps.kills ?? 0) / ps.deaths : (ps.kills ?? 0)),
-  }));
-  const bestOverall = statWithIdentity.length
-    ? statWithIdentity.reduce((a, b) => (Number(b.kd ?? 0) > Number(a.kd ?? 0) ? b : a), statWithIdentity[0])
-    : (matchResult.standoutName ? { playerId: matchResult.standoutId, name: matchResult.standoutName, kd: matchResult.standoutKD } : null);
-  const userPlayerIds = new Set((state.players || []).filter(p => p.teamId === userTeamId).map(p => p.id));
-  const userStats = statWithIdentity.filter(ps => userPlayerIds.has(ps.playerId));
-  const bestUser = userStats.length ? userStats.reduce((a, b) => (Number(b.kd ?? 0) > Number(a.kd ?? 0) ? b : a), userStats[0]) : null;
-  const related = bestUser || bestOverall;
-  const kdLine = related?.name ? ` Best ${bestUser ? "user" : "overall"} performer: ${related.name}${Number.isFinite(Number(related.kd)) ? ` (${Number(related.kd).toFixed(2)} K/D)` : ""}.` : "";
-
   const scoreline = `${userScore}-${oppScore}`;
-  const verb = won ? "beat" : "fall to";
-  const summary = `${context}: ${teamTag(userTeamId)} ${won ? "won" : "lost"} ${scoreline} against ${teamName(oppId)}.${kdLine}`;
-  const maps = (matchResult.mapResults || matchResult.maps || []).map((m, i) => ({
-    mapName: m.mapName ?? m.map ?? m.mode ?? `Map ${i + 1}`,
-    scoreA: isTeamA ? (m.scoreA ?? m.teamAScore) : (m.scoreB ?? m.teamBScore),
-    scoreB: isTeamA ? (m.scoreB ?? m.teamBScore) : (m.scoreA ?? m.teamAScore),
-  }));
+  const rawContext = matchResult.stage || matchResult.eventName || state.schedule?.majors?.[state.schedule?.majorIdx]?.name || `Stage ${(state.schedule?.stageIdx ?? 0) + 1}`;
+  const roundContext = [rawContext, matchResult.roundName || matchResult.round || matchResult.matchdayLabel].filter(Boolean).join(" · ");
+
+  const allStats = matchResult.standouts?.length ? matchResult.standouts : Array.isArray(matchResult.playerStats) ? matchResult.playerStats : Object.values(matchResult.playerStats || {});
+  const stats = allStats.map(ps => ({ ...ps, playerId: ps.playerId ?? ps.id, name: ps.name ?? ps.playerName, kd: Number.isFinite(ps.kd) ? ps.kd : ((ps.deaths ?? 0) > 0 ? (ps.kills ?? 0) / ps.deaths : (ps.kills ?? 0)) }));
+  const userPlayerIds = new Set((state.players || []).filter(p => p.teamId === userTeamId).map(p => p.id));
+  const userStats = stats.filter(ps => userPlayerIds.has(ps.playerId));
+  const bestUser = userStats.length ? userStats.reduce((a, b) => (Number(b.kd ?? 0) > Number(a.kd ?? 0) ? b : a), userStats[0]) : null;
+  const worstUser = userStats.length ? userStats.reduce((a, b) => (Number(b.kd ?? 9) < Number(a.kd ?? 9) ? b : a), userStats[0]) : null;
+  const bestOverall = stats.length ? stats.reduce((a, b) => (Number(b.kd ?? 0) > Number(a.kd ?? 0) ? b : a), stats[0]) : null;
+  const related = bestUser || bestOverall;
+
+  const maps = (matchResult.mapResults || matchResult.maps || []).map((m, i) => {
+    const ua = isTeamA ? (m.scoreA ?? m.teamAScore) : (m.scoreB ?? m.teamBScore);
+    const ub = isTeamA ? (m.scoreB ?? m.teamBScore) : (m.scoreA ?? m.teamAScore);
+    return { mapName: m.mapName ?? m.map ?? m.mode ?? `Map ${i + 1}`, scoreA: ua, scoreB: ub, mode: m.mode ?? m.type ?? m.mapName };
+  });
+  const swing = maps.length ? maps.reduce((pick, m, i) => {
+    const margin = Math.abs(Number(m.scoreA ?? 0) - Number(m.scoreB ?? 0));
+    const hp = String(m.mode || m.mapName || "").toLowerCase().includes("hp") || String(m.mode || m.mapName || "").toLowerCase().includes("hardpoint");
+    const weight = margin + (hp ? 12 : 0) + (i >= 3 ? 8 : 0);
+    return !pick || weight > pick.weight ? { ...m, i, weight } : pick;
+  }, null) : null;
+  const swingText = swing ? `${swing.mapName}: ${swing.scoreA}-${swing.scoreB}${Number(swing.scoreA) < Number(swing.scoreB) ? " against" : " for"}` : "No map detail captured";
+  const moraleImpact = won ? "Positive lift for the room; keep standards high before the next fixture." : (userScore === 2 ? "Narrow loss — morale should hold if reviewed quickly." : "Result may create pressure; consider a Dynamics check-in.");
+  const confidence = state.boardState?.confidence;
+  const boardReaction = confidence == null ? "No formal board update." : won ? `Board note: ${getSecurityBand(confidence)} (${confidence}/100), pleased with the response.` : `Board note: ${getSecurityBand(confidence)} (${confidence}/100), results need a response.`;
+  const suggestedNext = won ? "Review the match log, then continue momentum into preparation." : "View the match log, identify the weak map, and address morale/dynamics.";
+  const opp = teamName(oppId);
+  const oppTag = teamTag(oppId);
+  const userTag = teamTag(userTeamId);
+  const headlineDetail = !won && swing && String(swing.mode || swing.mapName || "").toLowerCase().includes("hp") ? " after late HP collapse" : won && userScore === 3 && oppScore === 0 ? " in statement sweep" : userScore + oppScore >= 5 ? " after five-map fight" : "";
+  const title = `${userTag} ${won ? "beat" : "lose"} ${scoreline} to ${oppTag}${headlineDetail}`;
+  const summary = `${roundContext}: ${userTag} ${won ? "defeated" : "lost to"} ${opp} ${scoreline}. ${bestUser?.name ? `${bestUser.name} led the side` : "No clear user standout was logged"}${worstUser?.name ? `, while ${worstUser.name} is the main concern` : ""}. Key swing: ${swingText}.`;
   const matchIndex = matchResult.matchIndex ?? matchResult.matchday ?? matchResult.logIndex ?? state.schedule?.matchLog?.findIndex?.(m => m === matchResult);
-  const stableMatchPart = matchResult.id ?? matchResult.matchId ?? `${userTeamId}:${oppId}:${Number.isFinite(matchIndex) && matchIndex >= 0 ? matchIndex : `${teamA}:${teamB}:${scoreA}:${scoreB}`}`;
-  const relatedMatchId = `${matchSeason}:${context}:${stableMatchPart}`;
+  const relatedMatchId = `${matchSeason}:${rawContext}:${matchResult.id ?? matchResult.matchId ?? `${userTeamId}:${oppId}:${Number.isFinite(matchIndex) && matchIndex >= 0 ? matchIndex : `${teamA}:${teamB}:${scoreA}:${scoreB}`}`}`;
 
   return makeEvent({
     type: "match_summary",
     category: "Match Results",
     severity: won ? "info" : "medium",
-    title: `${titlePrefix}: ${teamTag(userTeamId)} ${verb} ${teamTag(oppId)} ${scoreline}`,
+    title,
     summary,
     season: matchSeason,
     stage: state.schedule?.stageIdx ?? 0,
@@ -772,20 +814,11 @@ export function makeMatchSummaryEvent(matchResult, userTeamId, state) {
     relatedTeamId: userTeamId,
     opponentTeamId: oppId,
     relatedPlayerId: related?.playerId ?? null,
-    targetScreen: "matchLog",
-    actions: related?.playerId ? ["open_match_log", "open_player", "view_schedule"] : ["open_match_log", "view_schedule"],
+    targetScreen: "log",
+    actions: ["open_match_log", "open_roster", "open_dynamics", "continue"],
     dedupKey: `match_summary:${relatedMatchId}`,
-    matchData: {
-      won,
-      context,
-      teamATag: teamTag(userTeamId),
-      teamBTag: teamTag(oppId),
-      scoreA: userScore,
-      scoreB: oppScore,
-      maps,
-      bestUser: bestUser ? { name: bestUser.name, kd: Number(bestUser.kd).toFixed(2) } : null,
-      bestPerformer: bestOverall ? { name: bestOverall.name, kd: Number(bestOverall.kd).toFixed(2) } : null,
-    },
+    matchData: { won, context: roundContext, teamATag: userTag, teamBTag: oppTag, scoreA: userScore, scoreB: oppScore, maps, bestUser: bestUser ? { name: bestUser.name, kd: Number(bestUser.kd).toFixed(2) } : null, worstUser: worstUser ? { name: worstUser.name, kd: Number(worstUser.kd).toFixed(2) } : null, bestPerformer: bestOverall ? { name: bestOverall.name, kd: Number(bestOverall.kd).toFixed(2) } : null },
+    reportData: { Opponent: opp, "Event / Stage": roundContext, "Final Score": scoreline, "Series Score": `${userTag} ${userScore} - ${oppScore} ${oppTag}`, "Best Player": bestUser?.name ? `${bestUser.name} (${Number(bestUser.kd).toFixed(2)} K/D)` : "No user standout logged", "Concern": worstUser?.name ? `${worstUser.name} (${Number(worstUser.kd).toFixed(2)} K/D)` : "No major concern logged", "Key Map Swing": swingText, "Morale Impact": moraleImpact, "Board Reaction": boardReaction, "Suggested Next Action": suggestedNext },
   });
 }
 
