@@ -325,6 +325,20 @@ export default function Dashboard({ setScreen }) {
   const teamHex = team?.color ?? "#2563eb";
   const teamHexBody = ensureContrast(teamHex, 4.5);   // body-size text threshold
 
+  const unreadEvents = getSortedEvents(state?.eventCentre).filter(e => !e.read);
+  const importantInbox = unreadEvents[0] ?? null;
+  const biggestIssue = starters.length < 4 ? `Roster incomplete (${starters.length}/4 starters)`
+    : moraleActions.length ? `${moraleActions.length} dynamics issue${moraleActions.length !== 1 ? "s" : ""} need attention`
+    : expiringCount ? `${expiringCount} expiring contract${expiringCount !== 1 ? "s" : ""}`
+    : capSpace < 0 ? "Squad is over salary cap"
+    : worstFormPlayer ? `${worstFormPlayer.name} is in poor form`
+    : "Squad stable";
+  const boardBand = getSecurityBand(state.boardState?.confidence ?? 60);
+  const recommendedAction = importantInbox?.actionRequired ? "Open the Event Centre and resolve the priority item"
+    : nextOppTeam ? `Prepare for ${nextOppTeam.tag}`
+    : moraleActions.length ? "Open Dynamics"
+    : "Continue season flow";
+
   const playerStatsRows = [
     topPlayer && { label: "Team OVR leader", name: topPlayer.name, value: `${topPlayer.overall} OVR`, player: topPlayer },
     leagueKdLeader && { label: "League K/D leader", name: leagueKdLeader.player.name, value: `${leagueKdLeader.kd.toFixed(2)} K/D`, player: leagueKdLeader.player },
@@ -419,6 +433,21 @@ export default function Dashboard({ setScreen }) {
       </div>
 
       <div className="fm-widget-grid">
+
+        <section className="fm-panel fm-manager-briefing">
+          <PanelTitle title="Manager Briefing" action={<button className="fm-panel-link" onClick={() => setScreen?.("inbox")}>Event Centre ›</button>} />
+          <div className="mb-grid">
+            <MiniMetric label="Next Match" value={nextOppTeam ? `vs ${nextOppTeam.tag}` : "None"} sub={nextOppTeam ? stageName : undefined} />
+            <MiniMetric label="Squad Issue" value={biggestIssue} tone={biggestIssue === "Squad stable" ? "var(--green)" : "var(--yellow)"} />
+            <MiniMetric label="Board" value={boardBand} sub={`${state.boardState?.confidence ?? 60}/100`} tone={bandColor(boardBand)} />
+          </div>
+          <div className="mb-priority">
+            <span>Priority Inbox</span>
+            <strong>{importantInbox ? importantInbox.title : "No unread items"}</strong>
+            {importantInbox?.summary && <em>{importantInbox.summary}</em>}
+          </div>
+          <button className="btn-secondary-sm fm-dynamics-open" onClick={() => importantInbox ? setScreen?.("inbox") : nextOppTeam ? setScreen?.("schedule") : setScreen?.("home")}>{recommendedAction}</button>
+        </section>
         <section className="fm-panel fm-board-widget">
           <PanelTitle title="Owner" action={<button className="fm-panel-link" onClick={() => setScreen?.("board")}>Board ›</button>} />
           <BoardWidget boardState={state.boardState} onOpen={() => setScreen?.("board")} />
