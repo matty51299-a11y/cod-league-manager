@@ -12,7 +12,7 @@ import {
   isTransferWindowOpen, transferWindowLabel, getWindowKey, getTransferBudget,
   getPlayerValuation, getAskingPrice, getTransferStatus, getIncomingOffers,
   getOutgoingOffers, getLeagueTransferListed, fmtFee, teamTag,
-  teamName, getAcceptedOutgoingTermsOffers, getTransferTermsPreview, evaluatePlayerTerms, getTransferIntel,
+  teamName, getAcceptedOutgoingTermsOffers, getTransferTermsPreview, evaluatePlayerTerms, getTransferIntel, estimateTransferAcceptanceChance, getInterestedTeamsForPlayer, getProtectedPlayerInfo,
 } from "../engine/transferEngine.js";
 import { EmptyState, PageHeader, Pill, SectionCard, StatCard } from "./ui.jsx";
 import { isChallengerMode, getChallengerRosterPlayers, getUserChallengerTeam } from "../utils/userTeam.js";
@@ -330,19 +330,23 @@ export default function TransferCentre() {
             <EmptyState title="No live offers" detail="Rival clubs will table offers between stages and in the offseason. Transfer-listing a player attracts more interest." />
           ) : (
             <div className="ui-table-wrap"><table className="roster-table data-table">
-              <thead><tr><th>Buying Team</th><th>Player</th><th>Fee</th><th>Your Value</th><th>Reason</th><th>Status</th><th>Counter</th><th>Actions</th></tr></thead>
+              <thead><tr><th>Buying Team</th><th>Player</th><th>Fee</th><th>Your Value</th><th>Morale Risk</th><th>Importance</th><th>Reason</th><th>Status</th><th>Counter</th><th>Actions</th></tr></thead>
               <tbody>
                 {incoming.map(n => {
                   const p = pById(n.playerId); if (!p) return null;
                   const val = getPlayerValuation(p, state);
                   const live = n.counterFee ?? n.fee;
                   const accepted = n.status === "Accepted";
+                  const intel = getTransferIntel(p, state, n.fromTeamId);
+                  const prot = getProtectedPlayerInfo(p, state, n.fromTeamId);
                   return (
                     <tr key={n.id}>
                       <td><span style={{ color: CDL_TEAMS.find(t => t.id === n.fromTeamId)?.color }}>{teamTag(n.fromTeamId)}</span></td>
                       <td className="player-name"><button className="link-button player-link" onClick={() => openPlayerProfile(p)}>{p.name}</button> <span className="muted">{p.primary} · {p.overall}</span></td>
                       <td style={{ color: feeColor(live, val), fontWeight: 700 }}>{fmtFee(live)}{n.counterBy === "buyer" ? " ↩" : ""}</td>
                       <td>{fmtFee(val)}</td>
+                      <td>{intel?.playerWillingness < 0.45 ? "High" : intel?.playerWillingness < 0.62 ? "Medium" : "Low"}</td>
+                      <td>{prot.protected ? (prot.level >= 7 ? "Star / Protected" : "Important") : (p.isSub ? "Depth" : "Starter")}</td>
                       <td className="muted" style={{ fontSize: ".78rem" }}>{n.reason}</td>
                       <td><Pill tone={offerStatusTone(n.status)}>{n.status}{n.counterBy ? ` (${n.counterBy})` : ""}</Pill></td>
                       <td>
@@ -354,6 +358,9 @@ export default function TransferCentre() {
                         ) : (<>
                           <button className="btn-primary-sm" onClick={() => respond(n.id, "accept")} title={`Sell for ${fmtFee(live)}`}>Accept</button>
                           <button className="btn-secondary tr-btn" onClick={() => { const v = Number(counterFees[n.id]); if (v > 0) respond(n.id, "counter", v * 1000); }} disabled={!(Number(counterFees[n.id]) > 0)}>Counter</button>
+                          <button className="btn-secondary tr-btn" onClick={() => respond(n.id, "ask_more")}>Ask More</button>
+                          <button className="btn-secondary tr-btn" onClick={() => respond(n.id, "delay")}>Delay</button>
+                          <button className="btn-secondary tr-btn" onClick={() => respond(n.id, "promise_review")}>Promise Review</button>
                           <button className="btn-secondary tr-btn" onClick={() => respond(n.id, "reject")}>Reject</button>
                           <button className="btn-danger-sm" onClick={() => respond(n.id, "nfs")} title="Mark Not For Sale">NFS</button>
                         </>)}
@@ -453,18 +460,20 @@ export default function TransferCentre() {
             <EmptyState title="No listed players" detail="No rival clubs have transfer-listed players right now." />
           ) : (
             <div className="ui-table-wrap"><table className="roster-table data-table">
-              <thead><tr><th>Player</th><th>Team</th><th>Role</th><th>Age</th><th>OVR</th><th>POT</th><th>Club Stance</th><th>Player Interest</th><th>Difficulty</th><th>Asking</th><th>Offer (k)</th><th>Action</th></tr></thead>
+              <thead><tr><th>Player</th><th>Team</th><th>Role</th><th>Age</th><th>OVR</th><th>POT</th><th>Club Stance</th><th>Player Interest</th><th>Accept %</th><th>Interested Teams</th><th>Protected</th><th>Asking</th><th>Offer (k)</th><th>Action</th></tr></thead>
               <tbody>
                 {listed.map(p => {
                   const ask = getAskingPrice(p, state);
                   const intel = getTransferIntel(p, state, userTeamId);
+                  const chance = estimateTransferAcceptanceChance(p, state, userTeamId);
+                  const interested = getInterestedTeamsForPlayer(p, state).map(x => teamTag(x.id)).join(", ") || "—";
                   return (
                     <tr key={p.id}>
                       <td className="player-name"><button className="link-button player-link" onClick={() => openPlayerProfile(p)}>{p.name}</button></td>
                       <td>{teamTag(p.teamId)}</td>
                       <td><span className="role-pill ui-pill ui-pill-neutral">{p.primary}</span></td>
                       <td>{p.age}</td><td style={{ fontWeight: 700 }}>{p.overall}</td><td>{p.potential}</td>
-                      <td>{intel?.clubStance ?? "—"}</td><td>{intel?.playerInterest ?? "—"}</td><td>{intel?.dealDifficulty ?? "—"}</td><td>{fmtFee(ask)}</td>
+                      <td>{intel?.clubStance ?? "—"}</td><td>{intel?.playerInterest ?? "—"}</td><td>{chance}% · {intel?.dealDifficulty ?? "—"}</td><td>{interested}</td><td>{intel?.protectedInfo?.protected ? "Yes" : "No"}</td><td>{fmtFee(ask)}</td>
                       <td><input className="slot-select tr-fee-input" type="number" placeholder="k" value={counterFees["mk_" + p.id] ?? ""} onChange={e => setCounterFees({ ...counterFees, ["mk_" + p.id]: e.target.value })} /></td>
                       <td><button className="btn-primary-sm" disabled={!windowOpen || !(Number(counterFees["mk_" + p.id]) > 0)} onClick={() => makeOffer(p.id)}>Make Offer</button></td>
                     </tr>

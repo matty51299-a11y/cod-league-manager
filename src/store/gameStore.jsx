@@ -39,7 +39,7 @@ import {
 import {
   migrateEventCentre, pushEvents, addInboxEvent, markEventRead, markAllRead, dismissEvent,
   convertFeedToEvents,
-  makeTransferOfferEvent, makeChallengerBuyoutEvent, makeTransferDoneEvent,
+  makeTransferOfferEvent, makeChallengerBuyoutEvent, makeTransferDoneEvent, makeTransferDevelopmentEvent,
   makeMoraleMeetingEvent, makePromiseAtRiskEvent, makePromiseBrokenEvent,
   makeBoardWarningEvent, makeBoardConfidenceUpEvent, makeBoardObjectiveEvent,
   makeScoutReportEvent, makeContractReviewEvent, makeFreeAgencyOpenEvent,
@@ -1301,11 +1301,31 @@ export function __diagnoseReducer(state, action) {
         const tm2 = migrateTransferMarket(cancelled.transferMarket);
         return addNotif({ ...cancelled, transferMarket: { ...tm2, pendingAcceptedOfferId: null, activeTermsOfferId: null } }, `Deal for ${player.name} cancelled. The player remains with ${trTeamName0(neg.toTeamId)}.`);
       }
+      // ---- DELAY / PROMISE REVIEW / ASK MORE (incoming) ----
+      if (act === "delay") {
+        const delayed = setNeg({ status: "Pending", delayed: true, __h: { by: state.userTeamId, action: "delay" } });
+        const ev = makeTransferDevelopmentEvent({ type: "transfer_delay", title: `Decision delayed on ${player.name}`, summary: `You asked for more time to review ${trTeamName0(neg.fromTeamId)}'s offer for ${player.name}.`, player, teamId: neg.fromTeamId, state: delayed, severity: "low", reportData: { "Current Bid": fmtFee(neg.counterFee ?? neg.fee), "Next Step": "Return to the Transfer Centre before the window closes." } });
+        return addNotif(pushInboxEvents(delayed, [ev]), `Decision delayed for ${player.name}.`);
+      }
+      if (act === "promise_review") {
+        const promised = setNeg({ status: "Rejected", __h: { by: state.userTeamId, action: "promise-review" } });
+        const tm2 = migrateTransferMarket(promised.transferMarket);
+        const memory = { ...(tm2.playerTransferMemory || {}), [player.id]: { ...(tm2.playerTransferMemory?.[player.id] || {}), promisedReviewUntil: (state.season ?? 1) * 10 + (state.schedule?.stageIdx ?? 0) + 1 } };
+        let out = { ...promised, transferMarket: { ...tm2, playerTransferMemory: memory } };
+        if (userIsSeller) out = evaluateAllPromises(applyBlockedMoveEvent(out, player));
+        const ev = makeTransferDevelopmentEvent({ type: "player_meeting_requested", title: `${player.name} wants future offers reviewed`, summary: `${player.name} accepted that this bid was blocked after being promised future serious offers will be reviewed.`, player, teamId: neg.fromTeamId, state: out, severity: "high", reportData: { Promise: "Review future offers", "Morale Risk": "Reduced now, higher if future serious bids are blocked." } });
+        return addNotif(pushInboxEvents(out, [ev]), `${player.name} promised future offers will be reviewed.`);
+      }
+      if (act === "ask_more") {
+        const ask = Math.round((neg.counterFee ?? neg.fee) * 1.18 / 5000) * 5000;
+        action.fee = ask;
+      }
+
       // ---- MARK NOT FOR SALE (incoming) ----
       if (act === "nfs") {
         const withStatus = setNeg({ status: "Rejected", __h: { by: state.userTeamId, action: "reject-nfs" } });
         const tm2 = migrateTransferMarket(withStatus.transferMarket);
-        let out = { ...withStatus, transferMarket: { ...tm2, status: { ...tm2.status, [player.id]: { ...(tm2.status[player.id] || {}), transferStatus: "Not For Sale" } } } };
+        let out = { ...withStatus, transferMarket: { ...tm2, status: { ...tm2.status, [player.id]: { ...(tm2.status[player.id] || {}), transferStatus: "Not For Sale" } }, playerTransferMemory: { ...(tm2.playerTransferMemory || {}), [player.id]: { ...(tm2.playerTransferMemory?.[player.id] || {}), blockedMoves: ((tm2.playerTransferMemory?.[player.id]?.blockedMoves) || 0) + 1 } } } };
         // Squad dynamics: blocking an offer for your own player can unsettle him.
         if (userIsSeller) {
           out = evaluateAllPromises(applyBlockedMoveEvent(out, player));
@@ -1318,7 +1338,7 @@ export function __diagnoseReducer(state, action) {
         const cdKey = `${neg.fromTeamId}:${neg.playerId}`;
         const rejected = setNeg({ status: "Rejected", __h: { by: state.userTeamId, action: "reject" } });
         const tm2 = migrateTransferMarket(rejected.transferMarket);
-        let out = { ...rejected, transferMarket: { ...tm2, cooldowns: { ...tm2.cooldowns, [cdKey]: getWindowKey(state) } } };
+        let out = { ...rejected, transferMarket: { ...tm2, cooldowns: { ...tm2.cooldowns, [cdKey]: getWindowKey(state) }, playerTransferMemory: { ...(tm2.playerTransferMemory || {}), [player.id]: { ...(tm2.playerTransferMemory?.[player.id] || {}), blockedMoves: ((tm2.playerTransferMemory?.[player.id]?.blockedMoves) || 0) + 1 } } } };
         if (userIsSeller) {
           out = evaluateAllPromises(applyBlockedMoveEvent(out, player));
           out = pushInboxEvents(out, [makeBlockedMoveEvent(player, out)]);
@@ -1326,23 +1346,25 @@ export function __diagnoseReducer(state, action) {
         return addNotif(out, `Offer for ${player.name} rejected.`);
       }
       // ---- COUNTER ----
-      if (act === "counter") {
-        if (!(fee > 0)) return addNotif(state, "Enter a valid counter fee.");
+      if (act === "counter" || act === "ask_more") {
+        if (act === "counter" && !(fee > 0)) return addNotif(state, "Enter a valid counter fee.");
         if (userIsSeller) {
           // User (seller) counters the AI buyer; AI decides.
-          const resp = evaluateBuyerCounterResponse(state, player, neg.fromTeamId, fee);
+          const resp = evaluateBuyerCounterResponse(state, player, neg.fromTeamId, act === "ask_more" ? action.fee : fee);
+          const counterFee = act === "ask_more" ? action.fee : fee;
           if (resp.decision === "accept") {
-            return addNotif(setNeg({ status: "Accepted", counterFee: fee, counterBy: "seller", agreedFee: fee, round: (neg.round || 0) + 1, __h: { by: neg.fromTeamId, action: "accept", fee } }),
-              `${trTeamName0(neg.fromTeamId)} accepted your ${fmtFee(fee)} valuation for ${player.name}. Accept to complete the sale.`);
+            return addNotif(setNeg({ status: "Accepted", counterFee, counterBy: "seller", agreedFee: counterFee, round: (neg.round || 0) + 1, __h: { by: neg.fromTeamId, action: "accept", fee: counterFee } }),
+              `${trTeamName0(neg.fromTeamId)} accepted your ${fmtFee(counterFee)} valuation for ${player.name}. Accept to complete the sale.`);
           }
           if (resp.decision === "counter") {
-            return pushFeed(addNotif(setNeg({ status: "Countered", counterFee: resp.counterFee, counterBy: "buyer", round: (neg.round || 0) + 1, __h: { by: neg.fromTeamId, action: "counter", fee: resp.counterFee } }),
-              `${trTeamName0(neg.fromTeamId)} came back with ${fmtFee(resp.counterFee)} for ${player.name}.`), []);
+            const upd = setNeg({ status: "Countered", counterFee: resp.counterFee, counterBy: "buyer", round: (neg.round || 0) + 1, counterReason: resp.reason, __h: { by: neg.fromTeamId, action: "counter", fee: resp.counterFee, reason: resp.reason } });
+            return addNotif(pushInboxEvents(upd, [makeTransferDevelopmentEvent({ type: "counter_improved", title: `${trTeamName0(neg.fromTeamId)} improve bid for ${player.name}`, summary: `${trTeamName0(neg.fromTeamId)} came back with ${fmtFee(resp.counterFee)}. ${resp.reason}.`, player, teamId: neg.fromTeamId, state: upd, reportData: { "Improved Bid": fmtFee(resp.counterFee), Response: resp.reason } })]), `${trTeamName0(neg.fromTeamId)} came back with ${fmtFee(resp.counterFee)} for ${player.name}.`);
           }
           const cdKey = `${neg.fromTeamId}:${neg.playerId}`;
           const rj = setNeg({ status: "Rejected", __h: { by: neg.fromTeamId, action: "reject", reason: resp.reason } });
           const tm2 = migrateTransferMarket(rj.transferMarket);
-          return addNotif({ ...rj, transferMarket: { ...tm2, cooldowns: { ...tm2.cooldowns, [cdKey]: getWindowKey(state) } } }, `${trTeamName0(neg.fromTeamId)} walked away (${resp.reason}).`);
+          const done = { ...rj, transferMarket: { ...tm2, cooldowns: { ...tm2.cooldowns, [cdKey]: getWindowKey(state) } } };
+          return addNotif(pushInboxEvents(done, [makeTransferDevelopmentEvent({ type: resp.decision === "walk_away" ? "deal_collapsed" : "counter_rejected", title: `${trTeamName0(neg.fromTeamId)} ${resp.decision === "walk_away" ? "walk away" : "reject counter"} for ${player.name}`, summary: `${trTeamName0(neg.fromTeamId)}: ${resp.reason}.`, player, teamId: neg.fromTeamId, state: done, reportData: { Response: resp.reason, Outcome: resp.decision === "walk_away" ? "Deal collapsed" : "Counter rejected" } })]), `${trTeamName0(neg.fromTeamId)} walked away (${resp.reason}).`);
         } else {
           // User (buyer) counters the AI seller; AI decides.
           const resp = evaluateSellResponse(state, player, state.userTeamId, fee);

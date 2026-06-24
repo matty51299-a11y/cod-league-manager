@@ -326,6 +326,19 @@ export function makeTransferDoneEvent(player, buyerTeamId, fee, state) {
   });
 }
 
+
+export function makeTransferDevelopmentEvent({ type = "transfer_update", title, summary, player, teamId, state, severity = "medium", reportData = {} }) {
+  return makeEvent({
+    type, category: "Transfers", severity, title, summary, season: state.season,
+    stage: state.schedule?.stageIdx ?? 0, phase: state.schedule?.phase ?? "stage",
+    relatedPlayerId: player?.id, relatedTeamId: teamId, targetScreen: "transfers",
+    targetTab: type === "player_unhappy" ? "squad" : undefined,
+    actions: ["open_player", "open_transfers", "talk_to_player", "dismiss"],
+    dedupKey: `${type}:${player?.id ?? "na"}:${teamId ?? "na"}:${state.season}:${state.schedule?.stageIdx ?? 0}:${state.eventCentre?.nextId ?? 0}`,
+    reportData,
+  });
+}
+
 // Rival signing
 export function makeRivalSigningEvent(teamId, playerName, season, phase) {
   return makeEvent({
@@ -664,7 +677,7 @@ export function makeStageSimSummaryEvent(matchesPlayed, headlines, state) {
     phase: "stage",
     targetScreen: "schedule",
     actions: ["view_schedule", "dismiss"],
-    dedupKey: `stage_summary:${state.season}:${stageIdx}:${Date.now()}`,
+    dedupKey: `stage_summary:${state.season}:${stageIdx}:${state.eventCentre?.nextId ?? 0}`,
   });
 }
 
@@ -682,7 +695,7 @@ export function makeUserMatchResultEvent(won, opponent, score, state) {
     phase: state.schedule?.phase ?? "stage",
     targetScreen: "log",
     actions: ["view_details", "dismiss"],
-    dedupKey: `match:${state.season}:${stageIdx}:${opponent}:${Date.now()}`,
+    dedupKey: `match:${state.season}:${stageIdx}:${opponent}:${state.eventCentre?.nextId ?? 0}`,
   });
 }
 
@@ -714,7 +727,7 @@ export function makeStandoutPerformanceEvent(playerName, kd, state) {
     season: state.season,
     phase: state.schedule?.phase ?? "stage",
     actions: ["dismiss"],
-    dedupKey: `standout:${playerName}:${state.season}:${Date.now()}`,
+    dedupKey: `standout:${playerName}:${state.season}:${state.eventCentre?.nextId ?? 0}`,
   });
 }
 
