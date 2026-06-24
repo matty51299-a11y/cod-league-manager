@@ -1203,3 +1203,11 @@ Only `src/index.css` touched (replaced the v2 FM-SKIN GLASS block).
 - Relies on `backdrop-filter`; on browsers without it panels fall back to their
   semi-opaque rgba (still readable, less blur).
 - Major/Champs overlays keep their own scoped palette by design.
+
+## Update 2026-06-24 (Deeper transfer negotiation reactions)
+
+- Incoming user-player bids now support additional decision paths in the Transfer Centre: Ask More, Delay and Promise Review alongside accept/reject/counter/not-for-sale. Counter responses can accept, reject, walk away, improve the bid, say the price is too high, or deprioritise the player.
+- Transfer market hydration now includes `playerTransferMemory` for old-save-safe tracking of blocked moves and future-offer review promises. Blocked moves increase future willingness to leave, while review promises soften short-term reaction but create future risk.
+- Added richer transfer development Inbox/Event Centre entries for delayed decisions, improved counters, rejected counters, collapsed deals and player review-promise reactions, reusing the Event Centre report-data style.
+- Transfer Centre scouting/intel tables now expose morale risk, squad importance/protected status, estimated acceptance chance and interested teams while preserving the existing glass/dark button styling.
+- Seller resistance and player willingness continue to use OVR/POT, starter/star protection, contract years, club attractiveness/performance, replacement risk, competitor pressure, salary/role terms and morale; protected elite players remain hard to buy and player terms can still collapse an accepted club deal.

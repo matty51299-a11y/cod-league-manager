@@ -52,6 +52,7 @@ export function migrateTransferMarket(existing) {
     budgets: e.budgets && typeof e.budgets === "object" ? e.budgets : {},    // { [teamId]: {balance, spend, income} }
     recentlyTransferred: e.recentlyTransferred && typeof e.recentlyTransferred === "object" ? e.recentlyTransferred : {},
     cooldowns: e.cooldowns && typeof e.cooldowns === "object" ? e.cooldowns : {},
+    playerTransferMemory: e.playerTransferMemory && typeof e.playerTransferMemory === "object" ? e.playerTransferMemory : {},
     pendingAcceptedOfferId: e.pendingAcceptedOfferId ?? null,
     activeTermsOfferId: e.activeTermsOfferId ?? null,
     lastWaveKey: e.lastWaveKey ?? null,
@@ -409,6 +410,9 @@ export function evaluatePlayerTerms(player, buyerTeamId, sellerTeamId, state, op
   if (age <= 23 && pot >= 88 && terms.promisedRole !== "Starter") w -= 0.12;
   if (loyalty >= 78 && currentStarter && deltaAttr < 12) w -= 0.13;
   if (status === "Wants Move" || status === "Unsettled") w += 0.22;
+  const memory = migrateTransferMarket(state?.transferMarket).playerTransferMemory?.[player.id] || {};
+  if (memory.blockedMoves) w += clamp(memory.blockedMoves * 0.08, 0, 0.24);
+  if (memory.promisedReviewUntil && memory.promisedReviewUntil >= (state?.season ?? 1) * 10 + (state?.schedule?.stageIdx ?? 0)) w += 0.08;
   if (status === "Transfer Listed") w += 0.1;
   if (status === "Recently Signed") w -= 0.35;
   if ((player.contractYears ?? 1) <= 1) w += 0.06;
@@ -512,11 +516,14 @@ export function evaluateBuyerCounterResponse(state, player, buyerTeamId, counter
   );
   const salary = player.salary ?? getSigningCost(player);
   const capOk = capRoomForStarter(state, buyerTeamId, salary, /*they will free a slot*/ null) > -salary; // lenient: AI frees weakest
-  if (!capOk) return { decision: "reject", reason: "Cannot fit wages" };
+  const roll = unit(`${getWindowKey(state)}:${buyerTeamId}:${player.id}:${counterFee}:buyerCounter`);
+  if (!capOk) return { decision: "walk_away", reason: "Cannot fit wages" };
   if (counterFee <= maxPay) return { decision: "accept", reason: "Met the counter" };
-  if (counterFee <= maxPay * 1.15) {
-    return { decision: "counter", counterFee: round5k((counterFee + maxPay) / 2), reason: "Final improved offer" };
+  if (counterFee <= maxPay * 1.15 && roll < 0.7) {
+    return { decision: "counter", counterFee: round5k((counterFee + maxPay) / 2), reason: "Come back with improved bid" };
   }
+  if (counterFee <= maxPay * 1.35 && roll < 0.45) return { decision: "reject", reason: "Price is too high" };
+  if (roll > 0.72) return { decision: "walk_away", reason: "Player is not a priority anymore" };
   return { decision: "reject", reason: "Counter too rich" };
 }
 
@@ -756,4 +763,21 @@ export function getLeagueTransferListed(state) {
     .filter(([, v]) => v.transferStatus === "Transfer Listed")
     .map(([pid]) => (state.players || []).find(p => p.id === pid))
     .filter(p => p && !isInactivePlayer(p) && p.teamId && isCdlTeamId(p.teamId));
+}
+
+
+export function estimateTransferAcceptanceChance(player, state, buyerTeamId = state?.userTeamId, fee = null) {
+  if (!player || !state) return 0;
+  const ask = getAskingPrice(player, state);
+  const amount = fee ?? ask;
+  const resp = evaluateSellResponse(state, player, buyerTeamId, amount);
+  if (resp.decision === "accept") return 78;
+  if (resp.decision === "counter") return 46;
+  const prot = getProtectedPlayerInfo(player, state, buyerTeamId);
+  return prot.level >= 7 ? 6 : prot.protected ? 16 : 28;
+}
+
+export function getInterestedTeamsForPlayer(player, state) {
+  if (!player || !state) return [];
+  return CDL_TEAMS.map(t => t.id).filter(id => id !== player.teamId).map(id => ({ id, interest: aiInterestInPlayer(state, id, player) })).filter(x => x.interest).sort((a,b)=>b.interest.score-a.interest.score).slice(0,3);
 }
