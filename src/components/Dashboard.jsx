@@ -7,7 +7,7 @@ import { CDL_TEAMS } from "../data/teams.js";
 import { calcChemistry, chemLabel } from "../engine/chemistry.js";
 import { calcTeamOvr } from "../engine/teamOvr.js";
 import { getSigningCost, getResignDemand, getTeamCap, getChallengerStockLabel } from "../engine/rosterAI.js";
-import { buildContractDemand, evaluateContractOffer } from "../engine/contractNegotiation.js";
+import { estimateCompetingInterest, getContractMemory } from "../engine/contractNegotiation.js";
 import { getContractReviewBudget } from "../utils/contractBudget.js";
 import SeriesDetail from "./SeriesDetail.jsx";
 import { useTeamHub } from "../store/teamHubContext.jsx";
@@ -743,9 +743,9 @@ function OffseasonHub({ state, dispatch, setScreen, userTeamId, team, season, pl
 
   const freeAgencyOpen = !!state.offseason?.freeAgencyOpen;
   const primaryAction = isContracts
-    ? { label: "Open Free Agency →", hint: "Process expiring contracts; AI waits while you shop the market", type: "ADVANCE_OFFSEASON" }
+    ? { label: "Advance Day", hint: "Time will pass; contract replies arrive through the Event Centre", type: "ADVANCE_OFFSEASON_DAY" }
     : freeAgencyOpen
-      ? { label: `Run AI Free Agency → Season ${nextSeason}`, hint: "Sign anyone you want first; AI bids after this click", type: "ADVANCE_OFFSEASON" }
+      ? { label: `Advance to Season ${nextSeason}`, hint: "AI clubs work behind the scenes as dates advance", type: "ADVANCE_OFFSEASON_DAY" }
       : { label: "Review Contracts →", hint: "Lock in extensions before the market opens", type: "ENTER_CONTRACT_PHASE" };
 
   return (
@@ -774,6 +774,15 @@ function OffseasonHub({ state, dispatch, setScreen, userTeamId, team, season, pl
           <button className="btn-cta" onClick={() => dispatch({ type: primaryAction.type })}>{primaryAction.label}</button>
         </div>
       </section>
+        <div className="oh-calendar-actions">
+          <span>{state.calendar?.label || `Offseason ${completedSeason} Day 1`}</span>
+          <button className="btn-secondary-sm" onClick={() => dispatch({ type: "ADVANCE_OFFSEASON_DAY" })}>Advance Day</button>
+          <button className="btn-secondary-sm" onClick={() => dispatch({ type: "ADVANCE_OFFSEASON_DAY" })}>Continue</button>
+          <button className="btn-secondary-sm" onClick={() => dispatch({ type: "ADVANCE_OFFSEASON_DAY" })}>Advance to Next Important Date</button>
+        </div>
+        <div className="oh-task-list">
+          {["Review expiring contracts", "Submit contract offers", "Wait for player responses", "Scout free agents", freeAgencyOpen ? "Free agency is open" : "Free agency opens soon", "Fill roster needs", "Register roster before deadline", "Advance to season start"].map((task, idx) => <span key={task} className={idx < 2 || (freeAgencyOpen && idx === 4) ? "done" : ""}>{task}</span>)}
+        </div>
 
       <div className="oh-layout">
         <main className="oh-main">
@@ -1032,11 +1041,6 @@ function ContractReviewPanel({ players, dispatch, state, season, userTeamId, pla
 
   function fmt(n) { return `$${Math.round(n / 1000)}k`; }
 
-  const DEALS = [
-    { label: "1 yr",  dealLength: 1, contractYears: 2 },
-    { label: "2 yrs", dealLength: 2, contractYears: 3 },
-    { label: "3 yrs", dealLength: 3, contractYears: 4 },
-  ];
 
   return (
     <div className="contract-panel">
@@ -1081,69 +1085,23 @@ function ContractReviewPanel({ players, dispatch, state, season, userTeamId, pla
           <div className="cp-section-label">Expiring Contracts</div>
           {expiring.map(p => {
             const curSalary = p.salary ?? getSigningCost(p);
-            const demandProfile = buildContractDemand(p, state, { type: "resign", teamId: userTeamId, asSub: false });
-            const preview = evaluateContractOffer(p, state, { years: demandProfile.years, salary: demandProfile.salary, rolePromise: demandProfile.wantedRole, starterStatus: "starter" }, { type: "resign", teamId: userTeamId });
-            const demands = DEALS.map(d => ({
-              ...d,
-              demand: getResignDemand(p, d.dealLength, playerSeasonStats, season),
-            }));
+            const morale = state.playerMorale?.[p.id]?.level ?? 65;
+            const interest = estimateCompetingInterest(p, state, userTeamId).level;
+            const memory = getContractMemory(state, p.id);
+            const status = memory.talksStatus || "Not approached";
             return (
-              <div key={p.id} className="cp-row cp-row--expiring">
-                <div className="cp-expiring-header">
-                  <span className="cp-name">{p.name}</span>
-                  <span className="cp-role">{p.primary}</span>
-                  <span className="cp-ovr"
-                    style={{ color: p.overall >= 90 ? "#b45309" : p.overall >= 80 ? "#15803d" : "#d97706" }}>
-                    {p.overall} OVR
-                  </span>
-                  <span className="cp-expiring-meta">
-                    Current <strong>{fmt(curSalary)}</strong>
-                    <span className="cp-meta-sep">·</span>
-                    Available <strong style={{ color: space > 0 ? "var(--green)" : "var(--red)" }}>
-                      {fmt(Math.max(0, space))}
-                    </strong>
-                  </span>
-                </div>
-                <div className="cp-demand-options">
-                  <button className="cp-deal-btn" onClick={() => setNegPlayer(p)}>
-                    <span className="cp-deal-length">Negotiate</span>
-                    <span className="cp-deal-price">Expected {fmt(demandProfile.salary)}</span>
-                    <span className="cp-deal-after">{demandProfile.wantedRole} · {preview.chance}% likely</span>
-                    <span className="cp-deal-after">Interest: {demandProfile.interest.level} · Risk: {preview.chance < 45 ? "walking" : "manageable"}</span>
-                  </button>
-                  {demands.map(d => {
-                    const canAfford  = d.demand <= space;
-                    const delta      = d.demand - curSalary;
-                    const afterSpace = space - d.demand;
-                    const deltaColor = delta > 0 ? "var(--red)" : delta < 0 ? "var(--green)" : "var(--text-dim)";
-                    const deltaLabel = delta === 0
-                      ? "no change"
-                      : `${delta > 0 ? "▲" : "▼"} ${fmt(Math.abs(delta))}`;
-                    return (
-                      <button
-                        key={d.label}
-                        className={`cp-deal-btn${canAfford ? "" : " cp-deal-btn--over"}`}
-                        disabled={!canAfford}
-                        onClick={() => dispatch({
-                          type: "RESIGN_PLAYER",
-                          playerId: p.id,
-                          years: d.contractYears,
-                          salary: d.demand,
-                        })}
-                      >
-                        <span className="cp-deal-length">{d.label}</span>
-                        <span className="cp-deal-price">{fmt(d.demand)}</span>
-                        <span className="cp-deal-delta" style={{ color: deltaColor }}>{deltaLabel}</span>
-                        {canAfford
-                          ? <span className="cp-deal-after" style={{ color: afterSpace < 50000 ? "var(--yellow)" : "var(--text-dim)" }}>
-                              after: {fmt(afterSpace)}
-                            </span>
-                          : <span className="cp-deal-over">over by {fmt(d.demand - space)}</span>
-                        }
-                      </button>
-                    );
-                  })}
-                </div>
+              <div key={p.id} className="cp-row cp-row--expiring cp-table-row">
+                <span className="cp-name">{p.name}</span>
+                <span className="cp-role">{p.primary || "Flex"}</span>
+                <span className="cp-ovr" style={{ color: p.overall >= 90 ? "#b45309" : p.overall >= 80 ? "#15803d" : "#d97706" }}>{p.overall ?? "?"}/{p.potential ?? "?"}</span>
+                <span>{fmt(curSalary)}</span>
+                <span>{p.isSub ? "Sub" : "Starter"}</span>
+                <span>{morale >= 75 ? "Happy" : morale < 45 ? "Unhappy" : "Settled"}</span>
+                <span>{p.age ?? "—"}</span>
+                <span>End of Season {season}</span>
+                <span className={`cp-status cp-status--${String(interest).toLowerCase()}`}>{interest}</span>
+                <span className="cp-status">{status}</span>
+                <button className="cp-deal-btn" disabled={!!memory.pendingOffer || status === "Accepted"} onClick={() => setNegPlayer(p)}><span className="cp-deal-length">Negotiate</span></button>
               </div>
             );
           })}
@@ -1184,7 +1142,6 @@ function ContractReviewPanel({ players, dispatch, state, season, userTeamId, pla
           {subs.map(p => {
             const years       = p.contractYears ?? 2;
             const expiresSoon = years === 1;
-            const subDeals    = DEALS.slice(0, 2); // subs: 1 yr and 2 yrs only
             return (
               <div key={p.id} className={`cp-row ${expiresSoon ? "cp-row--expiring" : ""}`}>
                 <div className="cp-player-info">
@@ -1198,27 +1155,7 @@ function ContractReviewPanel({ players, dispatch, state, season, userTeamId, pla
                   )}
                 </div>
                 {expiresSoon ? (
-                  <div className="cp-demand-options">
-                    {subDeals.map(d => {
-                      const demand = getResignDemand(p, d.dealLength, playerSeasonStats, season);
-                      return (
-                        <button
-                          key={d.label}
-                          className="cp-deal-btn"
-                          title={`Re-sign sub for ${d.label} at ${fmt(demand)}`}
-                          onClick={() => dispatch({
-                            type: "RESIGN_PLAYER",
-                            playerId: p.id,
-                            years: d.contractYears,
-                            salary: demand,
-                          })}
-                        >
-                          <span className="cp-deal-length">{d.label}</span>
-                          <span className="cp-deal-price">{fmt(demand)}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <button className="cp-deal-btn" onClick={() => setNegPlayer(p)}><span className="cp-deal-length">Negotiate</span></button>
                 ) : (
                   <span className="cp-years-remaining">
                     {years - 1} yr{(years - 1) !== 1 ? "s" : ""} remaining

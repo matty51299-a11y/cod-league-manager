@@ -13,7 +13,32 @@ const hash = s => String(s || "").split("").reduce((a, c) => ((a * 31) + c.charC
 export const fmtSalary = n => `$${Math.round((n || 0) / 1000)}k`;
 
 export function migrateContractState(state = {}) {
-  return { ...state, contractNegotiations: state.contractNegotiations || {} };
+  const raw = state.contractNegotiations || {};
+  const migrated = {};
+  for (const [playerId, mem] of Object.entries(raw)) {
+    migrated[playerId] = {
+      attempts: mem?.attempts || 0,
+      lowballs: mem?.lowballs || 0,
+      rejectedOffers: mem?.rejectedOffers || 0,
+      stalledTalks: mem?.stalledTalks || 0,
+      flags: Array.isArray(mem?.flags) ? mem.flags : [],
+      lastOffer: mem?.lastOffer || null,
+      lastOutcome: mem?.lastOutcome || null,
+      pendingOffer: mem?.pendingOffer || null,
+      responseDueDay: mem?.responseDueDay ?? null,
+      talksStatus: mem?.talksStatus || (mem?.pendingOffer ? "Offer pending" : "Not approached"),
+      acceptedPromises: Array.isArray(mem?.acceptedPromises) ? mem.acceptedPromises : [],
+      wantsToTestMarket: !!mem?.wantsToTestMarket,
+      waitingForRivalInterest: !!mem?.waitingForRivalInterest,
+    };
+  }
+  return { ...state, contractNegotiations: migrated, calendar: state.calendar || buildOffseasonCalendar(state) };
+}
+
+export function buildOffseasonCalendar(state = {}) {
+  const base = Number(state?.season || state?.schedule?.season || 1);
+  const day = Number(state?.calendar?.day ?? 0);
+  return { day, label: `Offseason ${base} Day ${day + 1}`, freeAgencyOpenDay: 5, rosterDeadlineDay: 12, seasonStartDay: 15 };
 }
 
 function currentKd(player, state) {
@@ -24,7 +49,7 @@ function currentKd(player, state) {
 }
 
 export function getContractMemory(state, playerId) {
-  return state?.contractNegotiations?.[playerId] || { attempts: 0, lowballs: 0, flags: [], lastOffer: null };
+  return state?.contractNegotiations?.[playerId] || { attempts: 0, lowballs: 0, rejectedOffers: 0, stalledTalks: 0, flags: [], lastOffer: null, pendingOffer: null, responseDueDay: null, talksStatus: "Not approached", acceptedPromises: [], wantsToTestMarket: false, waitingForRivalInterest: false };
 }
 
 export function estimateCompetingInterest(player, state, teamId = state?.userTeamId) {
@@ -61,7 +86,7 @@ export function buildContractDemand(player, state, opts = {}) {
   const wantedRole = (player?.overall ?? 70) >= 88 ? "Star Player" : (player?.overall ?? 70) >= 80 ? "Starter" : (player?.potential ?? 70) >= 86 && (player?.age ?? 23) <= 22 ? "Prospect" : opts.asSub ? "Sub" : "Rotation";
   const difficulty = interest.level === "Heavy" || (morale?.level ?? 65) < 45 ? "Hard" : interest.level === "Medium" || (player?.overall ?? 70) >= 85 ? "Medium" : "Easy";
   const stance = (morale?.level ?? 65) >= 75 ? "Happy/loyal" : (morale?.level ?? 65) < 45 ? "Unhappy" : "Open";
-  return { salary: demand, years: desiredYears, wantedRole, signingBonus: Math.round(demand * (interest.level === "Heavy" ? 0.18 : 0.1) / 5000) * 5000, moraleStance: stance, interest, difficulty, message: `${player?.name}'s camp wants ${fmtSalary(demand)}, ${desiredYears} year${desiredYears === 1 ? "" : "s"}, and a ${wantedRole} path.`, kd };
+  return { salary: demand, years: desiredYears, wantedRole, signingBonus: Math.round(demand * (interest.level === "Heavy" ? 0.18 : 0.1) / 5000) * 5000, moraleStance: stance, interest, difficulty, message: qualitativeDemandMessage(player, { moraleStance: stance, interest, wantedRole, difficulty }), kd };
 }
 
 export function evaluateContractOffer(player, state, offer = {}, opts = {}) {
@@ -90,10 +115,39 @@ export function evaluateContractOffer(player, state, offer = {}, opts = {}) {
     else if (["Star Player", "Starter"].includes(demand.wantedRole) && offer.starterStatus !== "starter") reason = "starter_promise";
     else reason = chance < 35 ? "wait_market" : "more_salary";
   }
-  return { outcome, reason, chance, demand, message: responseMessage(player, outcome, reason, demand) };
+  return { outcome, reason, chance, demand, message: responseMessage(player, outcome, reason, demand), qualitative: qualitativeOfferFeedback(player, { offer, demand, chance, reason, morale }) };
 }
 
 function responseMessage(player, outcome, reason, demand) {
   if (outcome === "accept") return `${player.name} accepts and is encouraged by the role clarity.`;
   return ({ lowball: `${player.name}'s agent calls the offer well below expectations.`, low_morale: `${player.name} is not ready to commit while morale is low.`, stronger_interest: `${player.name} wants to wait because stronger teams are interested.`, longer_term: `${player.name}'s camp asks for a longer commitment.`, shorter_term: `${player.name}'s camp prefers a shorter deal.`, starter_promise: `${player.name} wants a clear starter promise.`, wait_market: `${player.name} wants to test free agency.`, more_salary: `${player.name}'s agent asks for more salary.`, }[reason] || demand.message);
+}
+
+
+export function qualitativeDemandMessage(player, demand) {
+  if (demand.interest?.level === "Heavy") return "The player is tempted by stronger teams and may wait for the market.";
+  if (demand.moraleStance === "Happy/loyal") return "The player is happy at the club but expects a fair raise.";
+  if (demand.moraleStance === "Unhappy") return "The agent is cautious because morale around the player is low.";
+  if (["Star Player", "Starter"].includes(demand.wantedRole)) return "The player wants assurances over starter status.";
+  if (demand.wantedRole === "Prospect") return "The player wants a clear development pathway.";
+  return `${player?.name || "The player"}'s agent is willing to listen, but expects a serious offer.`;
+}
+
+export function qualitativeOfferFeedback(player, ctx = {}) {
+  const salary = Number(ctx.offer?.salary || 0);
+  const demandSalary = Number(ctx.demand?.salary || 1);
+  if (ctx.reason === "lowball" || salary < demandSalary * 0.85) return "The agent thinks this offer is below market value.";
+  if (ctx.reason === "starter_promise") return "The player wants assurances over starter status and map time.";
+  if (ctx.reason === "stronger_interest") return "The player is tempted by stronger teams.";
+  if (ctx.reason === "low_morale") return "The player is reluctant to commit while morale is low.";
+  if (salary >= demandSalary * 1.05) return "The agent views the financial package as serious.";
+  if ((ctx.morale ?? 65) >= 78) return "The player is happy at the club but expects a raise.";
+  return `${player?.name || "The player"}'s camp is considering the structure of the offer.`;
+}
+
+export function makePendingContractOffer(state, player, offer = {}, opts = {}) {
+  const evalResult = evaluateContractOffer(player, state, offer, opts);
+  const day = Number(state?.calendar?.day ?? 0);
+  const delay = 1 + (Math.abs(hash(`${state?.season}:${player?.id}:${JSON.stringify(offer)}`)) % 3);
+  return { ...evalResult, submittedDay: day, responseDueDay: day + delay };
 }
