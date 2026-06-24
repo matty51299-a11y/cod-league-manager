@@ -10,6 +10,7 @@ import { buildCdlRosterNameSet, findDuplicateActivePlayers, isCdlTeamId, isInact
 import { buildSeason, simNextMatch, simMatchday, simUserMatchday, simStage, simMajor, simNextMajorMatch, simMajorRound, advanceOffseason, beginChamps, beginEswc, enterContractPhase, commitUserMatchResult, ensureChallengerTeams, buildChallengerRostersForNewGame, simChallengerQualifier, simNextChallengerQualifierMatch, simChallengerQualifierRound, simUserChallengerQualifierMatch, continueFromChallengerQualifier } from "../engine/seasonEngine.js";
 import { generateMajorFeed, generateChallengerQualFeed, generateRosterMoveFeed, generateOffseasonFeed } from "../engine/feedGenerator.js";
 import { ensureCdlRosterIntegrity, getSigningCost, getTeamCap } from "../engine/rosterAI.js";
+import { buildContractDemand, evaluateContractOffer, getContractMemory, CONTRACT_MEMORY } from "../engine/contractNegotiation.js";
 import { isChallengerMode, getChallengerRosterPlayers, getUserChallengerTeam } from "../utils/userTeam.js";
 import { generateChallengerBuyoutOffers, applyChallengerBuyout, buildBuyoutTransaction, isChallengerMarketOpen, getChallengerWindowKey } from "../engine/challengerMarket.js";
 import { canAffordStarterResign } from "../utils/contractBudget.js";
@@ -46,7 +47,7 @@ import {
   makePlayerWantsOutEvent, makeBlockedMoveEvent, makeMajorDrawEvent,
   makeTournamentChampionEvent, makeUserEliminatedEvent, makeMajorSummaryEvent, makeAwardEvent,
   makeUserAwardEvent, makeStageSimSummaryEvent, makeUserMatchResultEvent,
-  makeOffseasonStartEvent, makeStandoutPerformanceEvent,
+  makeOffseasonStartEvent, makeStandoutPerformanceEvent, makeContractNegotiationEvent,
   makeAssistantGmRecommendation, makeRivalSigningEvent,
   generateMatchInboxEvents,
 } from "../engine/eventCentreEngine.js";
@@ -70,6 +71,30 @@ function pushFeed(state, items) {
   const combined = [...(state.feed ?? []), ...stamped];
   const feed = combined.length > FEED_CAP ? combined.slice(combined.length - FEED_CAP) : combined;
   return { ...state, feed };
+}
+
+function applyContractTalkResult(state, player, evalResult, offer) {
+  const old = getContractMemory(state, player.id);
+  const flags = new Set(old.flags || []);
+  let lowballs = old.lowballs || 0;
+  if (evalResult.outcome === "accept") flags.add(CONTRACT_MEMORY.HAPPY);
+  else {
+    if (evalResult.reason === "lowball") { flags.add(CONTRACT_MEMORY.LOWBALL); lowballs += 1; }
+    if (lowballs >= 2) flags.add(CONTRACT_MEMORY.OFFENDED);
+    if (evalResult.reason === "wait_market") flags.add(CONTRACT_MEMORY.MARKET);
+    if (evalResult.reason === "starter_promise") flags.add(CONTRACT_MEMORY.ROLE);
+    if (evalResult.reason === "stronger_interest") flags.add(CONTRACT_MEMORY.CONTENDER);
+    flags.add(CONTRACT_MEMORY.STALLED);
+  }
+  const morale = { ...(state.playerMorale || {}) };
+  const entry = morale[player.id];
+  if (entry) {
+    const delta = evalResult.outcome === "accept" ? 4 : evalResult.reason === "lowball" ? -8 : -3;
+    morale[player.id] = { ...entry, level: Math.max(0, Math.min(100, (entry.level ?? 65) + delta)), trust: Math.max(0, Math.min(100, (entry.trust ?? 65) + delta)) };
+  }
+  let next = { ...state, playerMorale: morale, contractNegotiations: { ...(state.contractNegotiations || {}), [player.id]: { attempts: (old.attempts || 0) + 1, lowballs, flags: [...flags], lastOffer: offer, lastOutcome: evalResult.reason } } };
+  next = pushInboxEvents(next, [makeContractNegotiationEvent(player, evalResult, next)]);
+  return next;
 }
 
 // ── Team rank helper ──────────────────────────────────────────────────────────
@@ -294,6 +319,7 @@ function createInitialGameState(userTeamId, userTeamType = "cdl", seedOverride =
     challengerOffers: [],   // CDL buyout offers for the user's Challenger players
     challengerFunds: 0,     // transfer income earned selling Challenger players
     eventCentre: migrateEventCentre(null),
+    contractNegotiations: {},
     ...createHistoricalStateFields(careerMode),
   };
   // Build randomized starting Challenger rosters for this new save.
@@ -488,6 +514,7 @@ export function __diagnoseReducer(state, action) {
       cleaned.playerMorale = migratePlayerMorale(cleaned);
       // Event Centre: hydrate safely on old saves. Missing → empty structure;
       // old feed items are converted to events on first load.
+      cleaned.contractNegotiations = cleaned.contractNegotiations || {};
       cleaned.eventCentre = migrateEventCentre(cleaned.eventCentre);
       if (!cleaned.eventCentre.events.length && (cleaned.feed ?? []).length) {
         cleaned.eventCentre = pushEvents(cleaned.eventCentre, convertFeedToEvents(cleaned.feed));
@@ -757,26 +784,18 @@ export function __diagnoseReducer(state, action) {
       const { playerId, years, salary } = action;
       const player = state.players.find(p => p.id === playerId);
       if (!player || player.teamId !== state.userTeamId) return state;
-
-      // Hard budget check for starters (subs exempt, matching SIGN_PLAYER logic).
-      // Contract review excludes unaccepted expiring salaries, so a new deal replaces
-      // this player's old expiring salary instead of stacking on top of it.
+      const offer = { years, salary, rolePromise: action.rolePromise, starterStatus: action.starterStatus, transferReviewPromise: action.transferReviewPromise, developmentPromise: action.developmentPromise };
+      const evalResult = evaluateContractOffer(player, state, offer, { type: "resign", teamId: state.userTeamId });
+      if (evalResult.outcome !== "accept") return addNotif(applyContractTalkResult(state, player, evalResult, offer), evalResult.message);
       if (salary != null && !player.isSub) {
         const budget = canAffordStarterResign(state.players, state.userTeamId, playerId, salary);
-        if (!budget.affordable) {
-          return addNotif(state, `Over budget — re-signing ${player.name} would exceed your cap.`);
-        }
+        if (!budget.affordable) return addNotif(state, `Over budget — re-signing ${player.name} would exceed your cap.`);
       }
-
-      const resigned = {
-        ...state,
-        players: state.players.map(p =>
-          p.id === playerId
-            ? { ...p, contractYears: years, ...(salary != null ? { salary } : {}) }
-            : p
-        ),
-      };
-      // Squad dynamics: a fresh deal lifts morale and fulfils contract promises.
+      let resigned = { ...state, players: state.players.map(p => p.id === playerId ? { ...p, contractYears: years, ...(salary != null ? { salary } : {}) } : p) };
+      if (offer.starterStatus === "starter") resigned = makePromise(resigned, playerId, "starter_role");
+      if (offer.developmentPromise) resigned = makePromise(resigned, playerId, "development_focus");
+      if (offer.transferReviewPromise) resigned = makePromise(resigned, playerId, "consider_offers");
+      resigned = applyContractTalkResult(resigned, player, evalResult, offer);
       return evaluateAllPromises(applyNewContractEvent(resigned, player));
     }
 
@@ -801,7 +820,7 @@ export function __diagnoseReducer(state, action) {
         const committed = rosterNow
           .filter(p => !p.isSub)
           .reduce((s, p) => s + (p.salary ?? getSigningCost(p)), 0);
-        const cost = getSigningCost(targetForDuplicateCheck);
+        const cost = action.salary ?? buildContractDemand(targetForDuplicateCheck, state, { type: "signing", teamId: userTeam, asSub: actualSlot === "sub" }).salary;
         const over = committed + cost - cap;
         if (over > 0) {
           return addNotif(state,
@@ -830,12 +849,15 @@ export function __diagnoseReducer(state, action) {
         const historyUpdated  = existingHistory.some(e => e.season === state.season)
           ? existingHistory
           : [...existingHistory, { season: state.season, teamId: userTeam }];
-        const demand = getSigningCost(prospect);
+        const offer = { years: action.years ?? 2, salary: action.salary ?? buildContractDemand(prospect, state, { type: "signing", teamId: userTeam, asSub: actualSlot === "sub" }).salary, rolePromise: action.rolePromise, starterStatus: action.starterStatus ?? actualSlot, transferReviewPromise: action.transferReviewPromise, developmentPromise: action.developmentPromise };
+        const evalResult = evaluateContractOffer(prospect, state, offer, { type: "signing", teamId: userTeam, asSub: actualSlot === "sub" });
+        if (evalResult.outcome !== "accept") return addNotif(applyContractTalkResult(state, prospect, evalResult, offer), evalResult.message);
+        const demand = offer.salary;
         const signed = {
           ...prospect, teamId: userTeam, challengerTeamId: null, status: "cdl", circuit: "cdl", isSub: actualSlot === "sub",
-          scouted: true, contractYears: 2, salary: demand, teamHistory: historyUpdated,
+          scouted: true, contractYears: offer.years, salary: demand, teamHistory: historyUpdated,
         };
-        const signedState = applySignedEvent({
+        let baseSignedState = applySignedEvent({
           ...state,
           players:  [...state.players, signed],
           prospects: state.prospects.filter(p => p.id !== playerId),
@@ -845,6 +867,10 @@ export function __diagnoseReducer(state, action) {
             note: `${tag} signed ${signed.name} from Challengers`,
           }),
         }, signed);
+        if (offer.starterStatus === "starter") baseSignedState = makePromise(baseSignedState, signed.id, "starter_role");
+        if (offer.developmentPromise) baseSignedState = makePromise(baseSignedState, signed.id, "development_focus");
+        if (offer.transferReviewPromise) baseSignedState = makePromise(baseSignedState, signed.id, "consider_offers");
+        const signedState = applyContractTalkResult(baseSignedState, signed, evalResult, offer);
         return pushFeed(
           addNotif(signedState, `${signed.name} signed! ${actualSlot === "starter" ? "Player added to starting roster." : "Roster full: player added as substitute."}`),
           [mkFeed("signing", `${tag} sign ${signed.name} (${actualSlot === "starter" ? "starter" : "bench"})`, state.season, phase)]
@@ -855,9 +881,12 @@ export function __diagnoseReducer(state, action) {
       const target = state.players.find(p => p.id === playerId);
       if (!target) return addNotif(state, "Player not found.");
 
-      const demand = getSigningCost(target);
+      const offer = { years: action.years ?? 2, salary: action.salary ?? buildContractDemand(target, state, { type: "signing", teamId: userTeam, asSub: actualSlot === "sub" }).salary, rolePromise: action.rolePromise, starterStatus: action.starterStatus ?? actualSlot, transferReviewPromise: action.transferReviewPromise, developmentPromise: action.developmentPromise };
+      const evalResult = evaluateContractOffer(target, state, offer, { type: "signing", teamId: userTeam, asSub: actualSlot === "sub" });
+      if (evalResult.outcome !== "accept") return addNotif(applyContractTalkResult(state, target, evalResult, offer), evalResult.message);
+      const demand = offer.salary;
 
-      const signedFaState = applySignedEvent({
+      let baseSignedFaState = applySignedEvent({
         ...state,
         players: state.players.map(p => {
           if (p.id !== playerId) return p;
@@ -867,7 +896,7 @@ export function __diagnoseReducer(state, action) {
             : [...existingHistory, { season: state.season, teamId: userTeam }];
           return {
             ...p, teamId: userTeam, challengerTeamId: null, status: "cdl", circuit: "cdl", isSub: actualSlot === "sub",
-            scouted: true, contractYears: 2, salary: demand, teamHistory: historyUpdated,
+            scouted: true, contractYears: offer.years, salary: demand, teamHistory: historyUpdated,
           };
         }),
         challengerTeams: (state.challengerTeams || []).map(t => t.id === target.challengerTeamId ? { ...t, playerIds: (t.playerIds || []).filter(id => id !== target.id) } : t),
@@ -876,6 +905,10 @@ export function __diagnoseReducer(state, action) {
           note: target.status === "freeAgent" ? `${tag} signed ${target.name} in free agency` : `${tag} signed ${target.name}`,
         }),
       }, target);
+      if (offer.starterStatus === "starter") baseSignedFaState = makePromise(baseSignedFaState, target.id, "starter_role");
+      if (offer.developmentPromise) baseSignedFaState = makePromise(baseSignedFaState, target.id, "development_focus");
+      if (offer.transferReviewPromise) baseSignedFaState = makePromise(baseSignedFaState, target.id, "consider_offers");
+      const signedFaState = applyContractTalkResult(baseSignedFaState, target, evalResult, offer);
       return pushFeed(
         addNotif(signedFaState, `${target.name} signed! ${actualSlot === "starter" ? "Player added to starting roster." : "Roster full: player added as substitute."}`),
         [mkFeed("signing", `${tag} sign ${target.name} (${actualSlot === "starter" ? "starter" : "bench"})`, state.season, phase)]
