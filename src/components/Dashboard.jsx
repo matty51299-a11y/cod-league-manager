@@ -7,11 +7,13 @@ import { CDL_TEAMS } from "../data/teams.js";
 import { calcChemistry, chemLabel } from "../engine/chemistry.js";
 import { calcTeamOvr } from "../engine/teamOvr.js";
 import { getSigningCost, getResignDemand, getTeamCap, getChallengerStockLabel } from "../engine/rosterAI.js";
+import { buildContractDemand, evaluateContractOffer } from "../engine/contractNegotiation.js";
 import { getContractReviewBudget } from "../utils/contractBudget.js";
 import SeriesDetail from "./SeriesDetail.jsx";
 import { useTeamHub } from "../store/teamHubContext.jsx";
 import { usePlayerProfile } from "../store/playerProfileContext.jsx";
 import TeamLogo from "./TeamLogo.jsx";
+import ContractNegotiationModal from "./ContractNegotiationModal.jsx";
 import { resolveTeamDisplay } from "../utils/teamDisplay.js";
 import { getMajorPlacementMap } from "../utils/historyProfiles.js";
 import { isInactivePlayer } from "../utils/playerIdentity.js";
@@ -563,7 +565,7 @@ export default function Dashboard({ setScreen }) {
         </div>
       )}
 
-      {isContracts && <ContractReviewPanel players={myPlayers} dispatch={dispatch} season={season} userTeamId={userTeamId} playerSeasonStats={state.playerSeasonStats} />}
+      {isContracts && <ContractReviewPanel players={myPlayers} dispatch={dispatch} state={state} season={season} userTeamId={userTeamId} playerSeasonStats={state.playerSeasonStats} />}
 
       {schedule.majors?.map((major, i) => {
         if (!major.completed || !major.bracket?.champion) return null;
@@ -786,6 +788,7 @@ function OffseasonHub({ state, dispatch, setScreen, userTeamId, team, season, pl
             <ContractReviewPanel
               players={myPlayers}
               dispatch={dispatch}
+              state={state}
               season={season}
               userTeamId={userTeamId}
               playerSeasonStats={state.playerSeasonStats}
@@ -1018,7 +1021,8 @@ function RecapRow({ label, value, teamId, playerId, openTeamHub, openPlayerProfi
 }
 
 // ── Contract Review Panel ─────────────────────────────────────────────────────
-function ContractReviewPanel({ players, dispatch, season, userTeamId, playerSeasonStats }) {
+function ContractReviewPanel({ players, dispatch, state, season, userTeamId, playerSeasonStats }) {
+  const [negPlayer, setNegPlayer] = useState(null);
   const starters = players.filter(p => !p.isSub);
   const subs     = players.filter(p => p.isSub);
   const expiring = starters.filter(p => (p.contractYears ?? 2) === 1);
@@ -1077,6 +1081,8 @@ function ContractReviewPanel({ players, dispatch, season, userTeamId, playerSeas
           <div className="cp-section-label">Expiring Contracts</div>
           {expiring.map(p => {
             const curSalary = p.salary ?? getSigningCost(p);
+            const demandProfile = buildContractDemand(p, state, { type: "resign", teamId: userTeamId, asSub: false });
+            const preview = evaluateContractOffer(p, state, { years: demandProfile.years, salary: demandProfile.salary, rolePromise: demandProfile.wantedRole, starterStatus: "starter" }, { type: "resign", teamId: userTeamId });
             const demands = DEALS.map(d => ({
               ...d,
               demand: getResignDemand(p, d.dealLength, playerSeasonStats, season),
@@ -1099,6 +1105,12 @@ function ContractReviewPanel({ players, dispatch, season, userTeamId, playerSeas
                   </span>
                 </div>
                 <div className="cp-demand-options">
+                  <button className="cp-deal-btn" onClick={() => setNegPlayer(p)}>
+                    <span className="cp-deal-length">Negotiate</span>
+                    <span className="cp-deal-price">Expected {fmt(demandProfile.salary)}</span>
+                    <span className="cp-deal-after">{demandProfile.wantedRole} · {preview.chance}% likely</span>
+                    <span className="cp-deal-after">Interest: {demandProfile.interest.level} · Risk: {preview.chance < 45 ? "walking" : "manageable"}</span>
+                  </button>
                   {demands.map(d => {
                     const canAfford  = d.demand <= space;
                     const delta      = d.demand - curSalary;
@@ -1137,6 +1149,8 @@ function ContractReviewPanel({ players, dispatch, season, userTeamId, playerSeas
           })}
         </div>
       )}
+
+      {negPlayer && <ContractNegotiationModal player={negPlayer} state={state} mode="resign" slot={negPlayer.isSub ? "sub" : "starter"} onClose={() => setNegPlayer(null)} onSubmit={(offer) => { dispatch({ type: "RESIGN_PLAYER", playerId: negPlayer.id, ...offer }); setNegPlayer(null); }} />}
 
       {locked.length > 0 && (
         <div className="cp-section">

@@ -5,6 +5,7 @@
 import { useState } from "react";
 import { useGame } from "../store/gameStore.jsx";
 import { getTeamCap, getSigningCost, getChallengerStockLabel } from "../engine/rosterAI.js";
+import { buildContractDemand, evaluateContractOffer } from "../engine/contractNegotiation.js";
 import { isInactivePlayer } from "../utils/playerIdentity.js";
 import { usePlayerProfile } from "../store/playerProfileContext.jsx";
 import { resolveTeamDisplay } from "../utils/teamDisplay.js";
@@ -12,6 +13,7 @@ import { EmptyState, PageHeader, Pill, SectionCard, StatCard } from "./ui.jsx";
 import { getScoutingSummary, isScoutTarget } from "../engine/scoutingEngine.js";
 import { isChallengerMode } from "../utils/userTeam.js";
 import { getChallengerRosterStatus } from "../utils/rosterValidation.js";
+import ContractNegotiationModal from "./ContractNegotiationModal.jsx";
 
 
 function fmtMoney(n) { return `$${Math.round((n || 0) / 1000)}k`; }
@@ -43,6 +45,7 @@ export default function FreeAgency() {
   const [roleFilter, setRoleFilter] = useState("All");
   const [marketFilter, setMarketFilter] = useState("All");
   const [signAs, setSignAs] = useState({}); // playerId -> "starter" | "sub"
+  const [negPlayer, setNegPlayer] = useState(null);
 
   if (!state) return null;
 
@@ -197,6 +200,7 @@ export default function FreeAgency() {
               <th>Recent K/D</th>
               <th>Stock</th>
               <th>Salary Demand</th>
+              <th>Fit / Interest</th>
               <th>Sign As</th>
               <th>Action</th>
             </tr>
@@ -204,7 +208,9 @@ export default function FreeAgency() {
           <tbody>
             {filtered.map(p => {
               const slot        = signAs[p.id] || (starterCount < 4 ? "starter" : "sub");
-              const cost        = getSigningCost(p);
+              const profile = buildContractDemand(p, state, { type: "signing", teamId: userTeamId, asSub: slot === "sub" });
+              const preview = evaluateContractOffer(p, state, { years: profile.years, salary: profile.salary, rolePromise: profile.wantedRole, starterStatus: slot }, { type: "signing", teamId: userTeamId, asSub: slot === "sub" });
+              const cost        = profile.salary;
               // Subs don't count against the cap — only starters need the check.
               const overBy      = slot === "starter" && starterCount < 4 ? Math.max(0, cost - remaining) : 0;
               const disabledReason = challengerMode
@@ -237,6 +243,7 @@ export default function FreeAgency() {
                   <td>{formatRecentKd(p, state.playerSeasonStats, state.offseason?.outgoingSeason ?? state.season)}</td>
                   <td><Pill tone="accent">{getChallengerStockLabel(p, state)}</Pill></td>
                   <td className="salary">{fmtMoney(cost)}</td>
+                  <td><Pill tone={preview.chance >= 65 ? "success" : preview.chance >= 45 ? "warning" : "danger"}>{preview.chance}%</Pill><small className="muted"> {profile.wantedRole} · {profile.interest.level} interest · {preview.chance >= 65 ? "Assistant GM: good fit" : "Assistant GM: risk/reward"}</small></td>
                   <td>
                     <select
                       value={slot}
@@ -253,7 +260,7 @@ export default function FreeAgency() {
                         {disabledReason}
                       </span>
                     ) : (
-                      <button className="btn-primary-sm" onClick={() => handleSign(p.id)}>Sign</button>
+                      <button className="btn-primary-sm" onClick={() => challengerMode ? handleSign(p.id) : setNegPlayer(p)}>{challengerMode ? "Sign" : "Negotiate"}</button>
                     )}
                   </td>
                 </tr>
@@ -263,6 +270,7 @@ export default function FreeAgency() {
         </table></div>
       )}
       </SectionCard>
+      {negPlayer && <ContractNegotiationModal player={negPlayer} state={state} mode="sign" slot={signAs[negPlayer.id] || (starterCount < 4 ? "starter" : "sub")} onClose={() => setNegPlayer(null)} onSubmit={(offer) => { dispatch({ type: "SIGN_PLAYER", playerId: negPlayer.id, slotType: offer.starterStatus, ...offer }); setNegPlayer(null); }} />}
     </div>
   );
 }

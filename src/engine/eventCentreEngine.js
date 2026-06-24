@@ -1102,3 +1102,34 @@ export function generateMatchInboxEvents(prevState, newState, options = {}) {
 
   return events;
 }
+
+// ── Contract negotiation result ──────────────────────────────────────────────
+export function makeContractNegotiationEvent(player, result, state) {
+  const accepted = result?.outcome === "accept";
+  const titles = {
+    accept: `${player.name} accepts contract offer`,
+    lowball: `Lowball offer upsets ${player.name}`,
+    low_morale: `${player.name} refuses talks over morale`,
+    stronger_interest: `${player.name} tempted by rival interest`,
+    wait_market: `${player.name} wants to test free agency`,
+    starter_promise: `${player.name} wants role clarity`,
+    longer_term: `${player.name} asks for longer term`,
+    shorter_term: `${player.name} asks for shorter term`,
+    more_salary: `${player.name}'s agent asks for more`,
+  };
+  const reason = accepted ? "accept" : result?.reason;
+  return makeEvent({
+    type: accepted ? "contract_accept" : "contract_reject",
+    category: "Contracts",
+    severity: accepted ? "info" : (reason === "lowball" || reason === "stronger_interest" ? "high" : "medium"),
+    title: titles[reason] || `Contract talks stall with ${player.name}`,
+    summary: result?.message || `${player.name}'s camp responded to your latest contract offer.`,
+    season: state.season,
+    stage: state.schedule?.stageIdx ?? 0,
+    phase: state.schedule?.phase ?? "contracts",
+    relatedPlayerId: player.id,
+    targetScreen: "home",
+    actions: ["review_contracts", "open_player", "dismiss"],
+    dedupKey: `contract_neg:${player.id}:${state.season}:${Date.now()}`,
+  });
+}
