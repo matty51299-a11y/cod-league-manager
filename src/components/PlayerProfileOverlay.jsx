@@ -21,8 +21,47 @@ function ratingColor(v) {
   return "#dc2626";
 }
 
-function statText(value, fallback = "Not tracked yet") {
-  return value == null || Number.isNaN(value) ? fallback : value;
+// Brighter palette for attribute bars on the dark FM panels.
+function barColor(v) {
+  if (v >= 90) return "#f0a72f";
+  if (v >= 80) return "#3ddc84";
+  if (v >= 70) return "#5b9dff";
+  if (v >= 60) return "#fb923c";
+  return "#f87171";
+}
+
+const ATTR_SLAYING = [
+  { key: "gunny",     label: "Slaying" },
+  { key: "awareness", label: "Awareness" },
+  { key: "objective", label: "Objective" },
+  { key: "searchIQ",  label: "Search IQ" },
+];
+const ATTR_MENTAL = [
+  { key: "clutch",       label: "Clutch" },
+  { key: "teamwork",     label: "Teamwork" },
+  { key: "composure",    label: "Composure" },
+  { key: "adaptability", label: "Adaptability" },
+];
+
+function AttrBar({ label, value }) {
+  const v = Number(value);
+  const has = Number.isFinite(v) && v > 0;
+  return (
+    <div className="pm-attr-line">
+      <span className="pm-attr-name">{label}</span>
+      <span className="pm-attr-track"><span className="pm-attr-bar" style={{ width: has ? `${Math.min(100, v)}%` : 0, background: has ? barColor(v) : "transparent" }} /></span>
+      <span className="pm-attr-num" style={{ color: has ? barColor(v) : "var(--text-dim)" }}>{has ? v : "—"}</span>
+    </div>
+  );
+}
+
+function FmPanel({ title, action, className = "", children }) {
+  return (
+    <section className={`pm-fm-panel ${className}`}>
+      <div className="pm-fm-panel-head"><h4>{title}</h4>{action}</div>
+      <div className="pm-fm-panel-body">{children}</div>
+    </section>
+  );
 }
 
 function stockLabel(player) {
@@ -109,14 +148,58 @@ export default function PlayerProfileOverlay() {
           <button className="pm-close" onClick={closePlayerProfile} aria-label="Close">✕</button>
         </div>
 
-        <div className="pm-body">
-          <div className="pm-history-shell">
-            <div className="pm-history-title">
-              <span>Career Stats</span>
-              <div className="profile-tabs pm-history-tabs">
-                {seasons.map(s => <button key={s.season} className={s.season === season.season ? "active" : ""} onClick={() => setTab(s.season)}>S{s.season}</button>)}
-              </div>
+        <div className="pm-body pm-fm-grid">
+         <div className="pm-fm-col pm-fm-col-side">
+          {(() => {
+            const hasAttrs = ATTR_SLAYING.concat(ATTR_MENTAL).some(a => Number.isFinite(Number(player?.[a.key])) && Number(player?.[a.key]) > 0);
+            if (!hasAttrs) return null;
+            return (
+              <FmPanel title="Attributes" className="pm-attrs-panel">
+                <div className="pm-attr-columns">
+                  <div className="pm-attr-col">
+                    <div className="pm-attr-col-head">Slaying</div>
+                    {ATTR_SLAYING.map(a => <AttrBar key={a.key} label={a.label} value={player?.[a.key]} />)}
+                  </div>
+                  <div className="pm-attr-col">
+                    <div className="pm-attr-col-head">Mental</div>
+                    {ATTR_MENTAL.map(a => <AttrBar key={a.key} label={a.label} value={player?.[a.key]} />)}
+                  </div>
+                </div>
+              </FmPanel>
+            );
+          })()}
+
+          <FmPanel title="Profile" className="pm-profile-panel">
+            <div className="pm-kv-list">
+              <div className="pm-kv"><span>Age</span><b>{player?.age ?? "—"}</b></div>
+              <div className="pm-kv"><span>Overall</span><b style={{ color: ratingColor(ovr) }}>{ovr ?? "—"}</b></div>
+              <div className="pm-kv"><span>Potential</span><b style={{ color: ratingColor(pot) }}>{pot ?? "—"}</b></div>
+              <div className="pm-kv"><span>Role</span><b>{player?.primary ?? "—"}</b></div>
+              <div className="pm-kv"><span>Region</span><b>{player?.region ?? "—"}</b></div>
+              <div className="pm-kv"><span>Salary</span><b>{player?.salary ? `$${(player.salary / 1000).toFixed(0)}k` : "—"}</b></div>
+              <div className="pm-kv"><span>Contract</span><b>{player?.contractYears != null ? `${player.contractYears} yr${player.contractYears === 1 ? "" : "s"}` : "—"}</b></div>
+              {stockLabel(player) && <div className="pm-kv"><span>Stock</span><b>{stockLabel(player)}</b></div>}
             </div>
+          </FmPanel>
+
+          <FmPanel title="Career Summary" className="pm-summary-panel">
+            <div className="pm-kv-list">
+              <div className="pm-kv"><span>Seasons</span><b>{summary.seasonsPlayed ?? 0}</b></div>
+              <div className="pm-kv"><span>Teams</span><b>{summary.teamsPlayed ?? 0}</b></div>
+              <div className="pm-kv"><span>Career K/D</span><b>{summary.kd == null ? "—" : summary.kd.toFixed(2)}</b></div>
+              <div className="pm-kv"><span>Best Major</span><b>{summary.bestMajor || "Not tracked"}</b></div>
+              <div className="pm-kv"><span>Best Champs</span><b>{summary.bestChamps || "Not tracked"}</b></div>
+              <div className="pm-kv"><span>Best CQ</span><b>{summary.bestCQ || "Not tracked"}</b></div>
+            </div>
+          </FmPanel>
+         </div>
+
+         <div className="pm-fm-col pm-fm-col-main">
+          <FmPanel
+            title="Career Stats"
+            className="pm-career-panel"
+            action={<div className="profile-tabs pm-history-tabs">{seasons.map(s => <button key={s.season} className={s.season === season.season ? "active" : ""} onClick={() => setTab(s.season)}>S{s.season}</button>)}</div>}
+          >
             <div className="pm-history-table-wrap">
               <table className="pm-career-table">
                 <thead><tr><th>Year</th><th>Team</th><th>Info</th><th>Role</th><th>Matches</th><th>Maps</th><th>K</th><th>D</th><th>K/D</th><th>Events</th><th>Awards</th></tr></thead>
@@ -134,19 +217,7 @@ export default function PlayerProfileOverlay() {
                 </tbody>
               </table>
             </div>
-          </div>
-
-          <div className="pm-section pm-summary-compact">
-            <div className="pm-section-title">Career Summary</div>
-            <div className="profile-summary-grid">
-              <ProfileStat label="Seasons" value={summary.seasonsPlayed ?? 0} />
-              <ProfileStat label="Teams" value={summary.teamsPlayed ?? 0} />
-              <ProfileStat label="Career K/D" value={summary.kd == null ? "—" : summary.kd.toFixed(2)} />
-              <ProfileStat label="Best Major" value={summary.bestMajor || "Not tracked"} />
-              <ProfileStat label="Best Champs" value={summary.bestChamps || "Not tracked"} />
-              <ProfileStat label="Best CQ" value={summary.bestCQ || "Not tracked"} />
-            </div>
-          </div>
+          </FmPanel>
 
           {player && player.teamId && isCdlTeamId(player.teamId) && (() => {
             const isMine = player.teamId === state.userTeamId;
@@ -155,8 +226,7 @@ export default function PlayerProfileOverlay() {
             const windowOpen = isTransferWindowOpen(state);
             const intel = !isMine ? getTransferIntel(player, state, state.userTeamId) : null;
             return (
-              <div className="pm-section pm-transfer-section">
-                <div className="pm-section-title">Transfer</div>
+              <FmPanel title="Transfer" className="pm-transfer-section">
                 <div className="pm-info-strip">
                   <span><span className="pm-strip-lbl">Club</span> {resolveTeamDisplay(player.teamId, state.schedule)?.name ?? player.teamId}</span>
                   <span><span className="pm-strip-lbl">{isMine ? "Asking" : "Est. Value"}</span> {fmtFee(isMine ? getAskingPrice(player, state) : val)}</span>
@@ -181,7 +251,7 @@ export default function PlayerProfileOverlay() {
                     {!windowOpen && <span className="muted" style={{ fontSize: ".75rem" }}>Window closed during live events</span>}
                   </div>
                 )}
-              </div>
+              </FmPanel>
             );
           })()}
 
@@ -197,8 +267,7 @@ export default function PlayerProfileOverlay() {
             const talkCtx = buildConversationContext(state, player);
             const lastMeeting = (m.conversationHistory || []).at(-1);
             return (
-              <div className="pm-section pm-morale-section">
-                <div className="pm-section-title">Morale & Dynamics</div>
+              <FmPanel title="Morale &amp; Dynamics" className="pm-morale-section">
                 <div className="pm-info-strip">
                   <span><span className="pm-strip-lbl">Mood</span> <b style={{ color: moraleColor(m.level) }}>{m.level} {moodForLevel(m.level)}</b></span>
                   <span><span className="pm-strip-lbl">Trust</span> {m.trust}</span>
@@ -232,12 +301,11 @@ export default function PlayerProfileOverlay() {
                 <div className="pm-transfer-actions">
                   <button className="btn-primary-sm" onClick={() => setShowTalk(true)}>Talk to {player.name}</button>
                 </div>
-              </div>
+              </FmPanel>
             );
           })()}
 
-          <div className="pm-section">
-            <div className="pm-section-title">Season {season.season}</div>
+          <FmPanel title={`Season ${season.season}`}>
             <div className="pm-info-strip profile-season-meta">
               <span><span className="pm-strip-lbl">Team(s)</span> {[...(season.teams || [])].map(tid => resolveTeamDisplay(tid, state.schedule).tag).join(", ") || status.label}</span>
               <span><span className="pm-strip-lbl">Role(s)</span> {[...(season.roles || [])].join(", ") || player?.primary || "—"}</span>
@@ -248,12 +316,10 @@ export default function PlayerProfileOverlay() {
               <span><span className="pm-strip-lbl">S&D K/D</span> Not tracked yet</span>
               <span><span className="pm-strip-lbl">Overload K/D</span> Not tracked yet</span>
             </div>
-          </div>
-
+          </FmPanel>
 
           {season.awards?.length > 0 && (
-            <div className="pm-section">
-              <div className="pm-section-title">Awards</div>
+            <FmPanel title="Awards">
               <div className="profile-awards-list">
                 {season.awards.map(award => (
                   <div key={award.id || award.awardName} className="profile-award-pill">
@@ -263,28 +329,12 @@ export default function PlayerProfileOverlay() {
                   </div>
                 ))}
               </div>
-            </div>
+            </FmPanel>
           )}
-
-          <div className="pm-section">
-            <div className="pm-section-title">Event Breakdown</div>
-            {!season.events?.length ? <p className="muted">No tracked event history for this season yet.</p> : (
-              <table className="kd-history-table profile-event-table">
-                <thead><tr><th>Event</th><th>Team</th><th>Maps</th><th>K</th><th>D</th><th>K/D</th><th>Result</th></tr></thead>
-                <tbody>{season.events.map((e, i) => {
-                  const team = e.teamId ? resolveTeamDisplay(e.teamId, state.schedule) : null;
-                  return <tr key={`${e.eventName}_${i}`}><td>{e.eventName}</td><td>{team?.tag ?? e.teamName ?? "—"}</td><td>{statText(e.maps, "—")}</td><td>{statText(e.kills, "—")}</td><td>{statText(e.deaths, "—")}</td><td>{e.kd != null ? e.kd.toFixed(2) : e.kills != null ? kdText(e.kills, e.deaths) : "—"}</td><td>{e.result ?? e.placement ?? "Not tracked yet"}</td></tr>;
-                })}</tbody>
-              </table>
-            )}
-          </div>
+         </div>
         </div>
       </div>
       {showTalk && player && <ConversationModal player={player} onClose={() => setShowTalk(false)} />}
     </div>
   );
-}
-
-function ProfileStat({ label, value }) {
-  return <div className="profile-stat"><span>{label}</span><strong>{value}</strong></div>;
 }
