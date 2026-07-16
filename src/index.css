@@ -8229,6 +8229,76 @@ body { background: #111317; }
   .pm-body.pm-fm-grid { grid-template-columns: 1fr; }
 }
 
+/* ── FM-style tabbed player screen ──────────────────────────────────────────── */
+.player-modal.pm-tabbed {
+  display: flex;
+  flex-direction: column;
+  max-height: 92vh;
+  overflow: hidden;
+}
+.pm-tabbed .pm-header { position: static; }
+
+/* The menu row directly under the header — mirrors FM's Overview/Attributes/… bar */
+.pm-tabbar {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  flex: 0 0 auto;
+  background: #191b1f;
+  border-bottom: 1px solid var(--border);
+  padding: 0 6px;
+  overflow-x: auto;
+}
+.pm-tabbar button {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--text-dim);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .02em;
+  padding: 9px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color .12s, border-color .12s, background .12s;
+}
+.pm-tabbar button:hover { color: #fff; background: rgba(255,255,255,.04); }
+.pm-tabbar button.active {
+  color: #fff;
+  border-bottom-color: var(--accent);
+  background: rgba(240,167,47,.10);
+}
+
+.pm-tab-body {
+  flex: 1 1 auto;
+  overflow: auto;
+  padding: 12px 14px 16px;
+  background: linear-gradient(180deg,#22242a,#1c1e22);
+}
+
+/* Overview keeps the two-column at-a-glance grid */
+.pm-overview-grid {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+}
+.pm-overview-grid .pm-fm-col { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+
+/* Dedicated tabs give the content room to breathe (single-column, wider panels) */
+.pm-tab-single { display: flex; flex-direction: column; gap: 12px; max-width: 1000px; margin: 0 auto; }
+.pm-tab-split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pm-tab-single .pm-attr-columns { grid-template-columns: 1fr 1fr; gap: 18px; }
+.pm-tab-single .pm-attr-line { grid-template-columns: 96px 1fr 26px; }
+.pm-tab-single .pm-attr-track { height: 8px; }
+
+@media (max-width: 900px) {
+  .pm-overview-grid { grid-template-columns: 1fr; }
+  .pm-tab-split { grid-template-columns: 1fr; }
+  .pm-tab-single .pm-attr-columns { grid-template-columns: 1fr; }
+}
+
 .th-panel, .nf-panel { background: #202328; border-color: var(--border); box-shadow: none; }
 .th-section, .nf-item { border-color: rgba(255,255,255,.07); }
 .oh-hero { border-radius: 4px; padding: 14px; }
