@@ -83,6 +83,11 @@ export default function PlayerProfileOverlay() {
     <div className="player-modal-backdrop" onClick={closePlayerProfile}>
       <div className="player-modal pm-wide profile-modal" onClick={e => e.stopPropagation()}>
         <div className="pm-header" style={{ borderTopColor: status.team?.color ?? "var(--accent)" }}>
+          <div className="pm-crest" style={{ borderColor: status.team?.color ?? "var(--border)" }}>
+            {status.team
+              ? <TeamLogo team={status.team} size={52} variant="hero" />
+              : <span className="pm-crest-fa">FA</span>}
+          </div>
           <div className="pm-identity">
             <div className="pm-name">{player?.name ?? "Unknown Player"}</div>
             <div className="pm-meta">
@@ -119,7 +124,7 @@ export default function PlayerProfileOverlay() {
                   {careerRows.map(row => (
                     <tr key={row.season} className={row.season === season.season ? "is-active" : ""} onClick={() => setTab(row.season)}>
                       <td><span className="pm-season-dot" />S{row.season}</td>
-                      <td>{row.teams.length ? row.teams.map((t, idx) => <span key={`${row.season}_${t.id}_${idx}`} className="pm-career-team"><TeamLogo team={t} size={16} />{t.tag}</span>) : status.label}</td>
+                      <td>{row.teams.length ? row.teams.map((t, idx) => <span key={`${row.season}_${t.id}_${idx}`} className="pm-career-team"><TeamLogo team={t} size={22} />{t.tag}</span>) : status.label}</td>
                       <td>{row.teams.map(t => t.name).join(" / ") || "Unsigned"}</td>
                       <td>{row.roles}</td>
                       <td>{row.matches}</td><td>{row.maps || "—"}</td><td>{row.kills}</td><td>{row.deaths}</td><td>{row.kd}</td><td>{row.events}</td><td>{row.awards || "—"}</td>

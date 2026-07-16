@@ -319,6 +319,7 @@ function Scoreboard({ teamA, teamB, seriesScore, mapIdx, userTeamId, schedule, m
   return (
     <div className="mco-scoreboard">
       <div className={`mco-sb-team ${teamA.id === userTeamId ? "mco-sb-you" : ""}`}>
+        <TeamLogo team={resolveTeamDisplay(teamA.id, schedule)} size={40} className="mco-sb-logo" />
         <span className="mco-sb-tag" style={{ color: teamColor(teamA.id, schedule) }}>{teamTag(teamA.id, schedule)}</span>
         {teamA.id === userTeamId && <span className="mco-sb-you-badge">YOU</span>}
       </div>
@@ -336,6 +337,7 @@ function Scoreboard({ teamA, teamB, seriesScore, mapIdx, userTeamId, schedule, m
       <div className={`mco-sb-team mco-sb-team-b ${teamB.id === userTeamId ? "mco-sb-you" : ""}`}>
         {teamB.id === userTeamId && <span className="mco-sb-you-badge">YOU</span>}
         <span className="mco-sb-tag" style={{ color: teamColor(teamB.id, schedule) }}>{teamTag(teamB.id, schedule)}</span>
+        <TeamLogo team={resolveTeamDisplay(teamB.id, schedule)} size={40} className="mco-sb-logo" />
       </div>
     </div>
   );
@@ -707,15 +709,17 @@ export default function MatchCenterOverlay() {
 
           <div className="mco-pg-matchup">
             <div className="mco-pg-team">
+              <div className="mco-pg-crest" style={{ borderColor: teamColor(teamA.id, state.schedule) }}><TeamLogo team={resolveTeamDisplay(teamA.id, state.schedule)} size={64} variant="hero" /></div>
               <div className="mco-pg-tag" style={{ color: teamColor(teamA.id, state.schedule) }}>{teamTag(teamA.id, state.schedule)}</div>
-              <div className="mco-pg-name"><TeamLogo team={resolveTeamDisplay(teamA.id, state.schedule)} size={20} /> {teamName(teamA.id, state.schedule)}</div>
+              <div className="mco-pg-name">{teamName(teamA.id, state.schedule)}</div>
               <div className="mco-pg-ovr">{teamA.id === userTeamId ? userOvr : oppOvr} OVR</div>
               {teamA.id === userTeamId && <span className="mco-pg-you">YOU</span>}
             </div>
             <div className="mco-pg-vs">vs</div>
             <div className="mco-pg-team">
+              <div className="mco-pg-crest" style={{ borderColor: teamColor(teamB.id, state.schedule) }}><TeamLogo team={resolveTeamDisplay(teamB.id, state.schedule)} size={64} variant="hero" /></div>
               <div className="mco-pg-tag" style={{ color: teamColor(teamB.id, state.schedule) }}>{teamTag(teamB.id, state.schedule)}</div>
-              <div className="mco-pg-name"><TeamLogo team={resolveTeamDisplay(teamB.id, state.schedule)} size={20} /> {teamName(teamB.id, state.schedule)}</div>
+              <div className="mco-pg-name">{teamName(teamB.id, state.schedule)}</div>
               <div className="mco-pg-ovr">{teamB.id === userTeamId ? userOvr : oppOvr} OVR</div>
               {teamB.id === userTeamId && <span className="mco-pg-you">YOU</span>}
             </div>
@@ -752,9 +756,9 @@ export default function MatchCenterOverlay() {
             <div className="mco-final-outcome">{userWon ? "VICTORY" : "DEFEAT"}</div>
             <div className="mco-final-score">{finalResult.score}</div>
             <div className="mco-final-teams">
-              <span style={{ color: teamColor(finalResult.winnerId, state.schedule) }}><TeamLogo team={resolveTeamDisplay(finalResult.winnerId, state.schedule)} size={16} /> {teamTag(finalResult.winnerId, state.schedule)}</span>
-              <span className="mco-final-dash"> — </span>
-              <span style={{ color: teamColor(finalResult.loserId, state.schedule), opacity: 0.6 }}><TeamLogo team={resolveTeamDisplay(finalResult.loserId, state.schedule)} size={16} /> {teamTag(finalResult.loserId, state.schedule)}</span>
+              <span className="mco-final-team-win" style={{ color: teamColor(finalResult.winnerId, state.schedule) }}><TeamLogo team={resolveTeamDisplay(finalResult.winnerId, state.schedule)} size={30} variant="hero" /> {teamTag(finalResult.winnerId, state.schedule)}</span>
+              <span className="mco-final-dash">—</span>
+              <span className="mco-final-team-lose" style={{ color: teamColor(finalResult.loserId, state.schedule) }}><TeamLogo team={resolveTeamDisplay(finalResult.loserId, state.schedule)} size={30} variant="hero" /> {teamTag(finalResult.loserId, state.schedule)}</span>
             </div>
           </div>
 
