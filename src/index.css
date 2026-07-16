@@ -8317,6 +8317,83 @@ body { background: #111317; }
   .fm-strip-stats, .fm-strip-action { grid-column: 1 / -1; }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   FM 3-COLUMN HOME — table left · match/briefing/results center · rail right
+   ═══════════════════════════════════════════════════════════════════════════ */
+.fm-home-3col { display: flex; flex-direction: column; gap: 8px; }
+
+/* Slim club header bar (inline stats, no tile clutter) */
+.fm-club-bar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 12px;
+  background: linear-gradient(180deg, rgba(42,45,51,.98), rgba(31,34,39,.98));
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 4px;
+}
+.fm-club-bar-main { min-width: 0; }
+.fm-club-bar-main h2 { font-size: 18px; line-height: 1.05; margin: 1px 0 0; color: #fff; }
+.fm-club-bar-stats { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin-left: 8px; font-size: 12px; color: var(--text); }
+.fm-club-bar-stats > span { display: inline-flex; align-items: baseline; gap: 5px; white-space: nowrap; }
+.fm-club-bar-stats i { color: var(--text-dim); font-style: normal; font-size: 9px; text-transform: uppercase; font-weight: 800; letter-spacing: .04em; }
+.fm-club-bar-stats b { font-weight: 800; }
+.fm-club-bar-action { margin-left: auto; }
+
+/* Three columns: league table gets the most weight (front and centre) */
+.fm-home-columns {
+  display: grid;
+  grid-template-columns: minmax(360px, 1.15fr) minmax(320px, 1.1fr) minmax(300px, .95fr);
+  gap: 8px;
+  align-items: start;
+}
+.fm-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+
+/* League table hero — bigger rows, logos, prominent */
+.fm-league-hero .fm-table-head,
+.fm-league-hero .fm-table-row { grid-template-columns: 34px minmax(90px, 1fr) 62px 46px; }
+.fm-league-hero .fm-table-row { min-height: 34px; font-size: 12px; }
+.fm-league-hero .fm-table-head { height: 30px; }
+.fm-league-hero .fm-table-row .team-link { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.fm-league-hero .fm-table-row .team-logo,
+.fm-league-hero .fm-table-row .team-logo-fallback { width: 18px !important; height: 18px !important; object-fit: contain; flex: 0 0 auto; }
+.fm-table-tag { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fm-league-hero .fm-table-row strong { font-size: 13px; }
+
+/* Larger next-match block with crests */
+.fm-next-matchline-lg { padding: 12px 8px 5px; font-size: 18px; gap: 14px; }
+.fm-next-side { display: inline-flex; align-items: center; gap: 8px; }
+.fm-next-vs { color: var(--text-dim); font-size: 11px; text-transform: uppercase; }
+.fm-next-matchline-lg .team-logo,
+.fm-next-matchline-lg .team-logo-fallback { width: 30px !important; height: 30px !important; object-fit: contain; }
+
+/* Briefing / finance key-value rows (replace the tile grids) */
+.fm-brief-rows, .fm-fin-rows { display: flex; flex-direction: column; }
+.fm-brief-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 10px; border-bottom: 1px solid rgba(255,255,255,.05); font-size: 12px; }
+.fm-brief-row span { color: var(--text-dim); font-size: 10px; text-transform: uppercase; font-weight: 800; letter-spacing: .03em; }
+.fm-brief-row strong { color: #fff; font-weight: 700; text-align: right; }
+
+/* Inline form pips in the Recent Results header */
+.fm-form-inline { display: inline-flex; gap: 3px; }
+.fm-form-inline em { width: 18px; height: 16px; display: inline-flex; align-items: center; justify-content: center; border-radius: 2px; font-size: 9px; font-weight: 900; font-style: normal; }
+.fm-form-inline .w { background: rgba(61,220,132,.18); color: #9df5c2; }
+.fm-form-inline .l { background: rgba(255,105,97,.16); color: #ffb3ae; }
+
+.fm-col-right .fm-list-row .team-link { display: inline-flex; align-items: center; gap: 6px; }
+.fm-col-right .fm-list-row .team-logo,
+.fm-col-right .fm-list-row .team-logo-fallback { width: 16px !important; height: 16px !important; object-fit: contain; }
+
+@media (max-width: 1180px) {
+  .fm-home-columns { grid-template-columns: minmax(320px, 1.1fr) minmax(300px, 1fr); }
+  .fm-col-right { grid-column: 1 / -1; }
+  .fm-col-right { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: start; }
+}
+@media (max-width: 820px) {
+  .fm-home-columns { grid-template-columns: 1fr; }
+  .fm-col-right { grid-template-columns: 1fr; }
+  .fm-club-bar { flex-wrap: wrap; }
+  .fm-club-bar-action { margin-left: 0; }
+}
+
 /* ── Staff & Coaching Panel ──────────────────────────────────────────────────── */
 .staff-panel {
   max-width: 1200px;

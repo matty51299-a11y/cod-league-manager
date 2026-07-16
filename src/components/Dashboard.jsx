@@ -18,7 +18,7 @@ import { resolveTeamDisplay } from "../utils/teamDisplay.js";
 import { getMajorPlacementMap } from "../utils/historyProfiles.js";
 import { isInactivePlayer } from "../utils/playerIdentity.js";
 import { getSecurityBand, bandColor, objStatusColor, objStatusLabel, evalAllObjectives } from "../engine/boardEngine.js";
-import { getActionRequiredMoraleEvents, getPromiseRiskLabel, getSquadMorale } from "../engine/moraleEngine.js";
+import { getActionRequiredMoraleEvents, getSquadMorale } from "../engine/moraleEngine.js";
 import { getActionRequiredCount, getUnreadCount, getSortedEvents, severityColor, CATEGORY_ICON } from "../engine/eventCentreEngine.js";
 import { getEra, getNextEra } from "../data/codEras.js";
 
@@ -249,8 +249,6 @@ export default function Dashboard({ setScreen }) {
   // Stage progress
   const currentStage = isStage ? schedule.stages?.[stageIdx] : null;
   const remaining    = currentStage ? currentStage.matches.filter(m => !m.played).length : 0;
-  const totalMatches = currentStage ? currentStage.matches.length : 0;
-  const played       = totalMatches - remaining;
 
   // Standings snapshot
   const standingsSource = (isStage || isMajor) ? stageStandings : cumStandings;
@@ -302,8 +300,6 @@ export default function Dashboard({ setScreen }) {
   const feedTeaser = [...(state.feed ?? [])].reverse().slice(0, 3);
   const squadMorale = getSquadMorale(state);
   const moraleActions = getActionRequiredMoraleEvents(state);
-  const promisesAtRisk = squadMorale.activePromises.filter(pr => ["High risk", "Already at risk"].includes(getPromiseRiskLabel(pr, state, pr.player))).length;
-  const latestMoves = [...(state.challengerTransactions ?? [])].reverse().slice(0, 3);
   const prospectsToWatch = [...(state.prospects ?? [])]
     .filter(p => !p.teamId && !isInactivePlayer(p))
     .sort((a, b) => (b.scoutedPotential ?? b.potential ?? 0) - (a.scoutedPotential ?? a.potential ?? 0))
@@ -375,183 +371,148 @@ export default function Dashboard({ setScreen }) {
   return (
     <>
     <EraTransitionModal state={state} dispatch={dispatch} />
-    <div className="dashboard fm-dashboard">
-      <div className="fm-home-top">
-        <section className="fm-club-strip" style={{ borderLeftColor: teamHex }}>
-          <TeamLogo team={resolveTeamDisplay(userTeamId, schedule)} size={38} className="fm-club-logo" />
-          <div className="fm-club-main">
-            <div className="fm-kicker">Home · Season {season}</div>
-            <h2>{team?.name ?? userTeamId}</h2>
-            <div className="fm-club-meta">
-              <span className={phaseChipClass}>{phaseLabel}</span>
-              <span>{isStage ? `${stageName}: ${played}/${totalMatches}` : `${mySeason.wins}W-${mySeason.losses}L`}</span>
-              <span>{mySeason.points} season pts</span>
-            </div>
-          </div>
-          <div className="fm-strip-stats">
-            <MiniMetric label="Stage" value={`${myStage.wins}W-${myStage.losses}L`} />
-            <MiniMetric label="Team OVR" value={teamOvr} tone={ratingColor(teamOvr)} />
-            <MiniMetric label="Chem" value={chem} sub={chemLabel(chem)} tone={chemColor(chem)} />
-            <MiniMetric label="Cap" value={fmtMoney(capSpace)} tone={capSpace >= 0 ? "var(--green)" : "var(--red)"} />
-          </div>
-          <div className="fm-strip-action">
-            {isStage && remaining > 0 && (
-              <button className="btn-cta fm-compact-cta" onClick={() => { dispatch({ type: "SIM_STAGE" }); setExpandedIdx(null); }}>
-                Sim Stage <span>{remaining}</span>
-              </button>
-            )}
-            {isChallengerQualifier && (
-              <button className="btn-cta fm-compact-cta" onClick={() => dispatch({ type: schedule.currentChallengerQualifier?.completed ? "CONTINUE_FROM_CHALLENGER_QUALIFIER" : "SIM_CHALLENGER_QUALIFIER" })}>
-                {schedule.currentChallengerQualifier?.completed ? "Continue" : "Run Qualifier"}
-              </button>
-            )}
-            {isPreChamps && <button className="btn-cta fm-compact-cta" onClick={() => dispatch({ type: "BEGIN_CHAMPS" })}>Begin Champs</button>}
-            {isMajor && <span className="fm-action-note">Tournament overlay active</span>}
-          </div>
-        </section>
+    <div className="dashboard fm-dashboard fm-home-3col">
+      {/* Compact club header bar — inline stats, no tile clutter */}
+      <section className="fm-club-bar" style={{ borderLeftColor: teamHex }}>
+        <TeamLogo team={resolveTeamDisplay(userTeamId, schedule)} size={40} className="fm-club-logo" />
+        <div className="fm-club-bar-main">
+          <div className="fm-kicker">Home · Season {season}</div>
+          <h2>{team?.name ?? userTeamId}</h2>
+        </div>
+        <div className="fm-club-bar-stats">
+          <span className={phaseChipClass}>{phaseLabel}</span>
+          <span><i>Record</i> {isStage ? `${myStage.wins}W-${myStage.losses}L` : `${mySeason.wins}W-${mySeason.losses}L`}</span>
+          <span><i>Season Pts</i> {mySeason.points}</span>
+          <span><i>Team OVR</i> <b style={{ color: ratingColor(teamOvr) }}>{teamOvr}</b></span>
+          <span><i>Chem</i> <b style={{ color: chemColor(chem) }}>{chem}</b> {chemLabel(chem)}</span>
+          <span><i>Cap</i> <b style={{ color: capSpace >= 0 ? "var(--green)" : "var(--red)" }}>{fmtMoney(capSpace)}</b></span>
+        </div>
+        <div className="fm-club-bar-action">
+          {isStage && remaining > 0 && (
+            <button className="btn-cta fm-compact-cta" onClick={() => { dispatch({ type: "SIM_STAGE" }); setExpandedIdx(null); }}>
+              Sim Stage <span>{remaining}</span>
+            </button>
+          )}
+          {isChallengerQualifier && (
+            <button className="btn-cta fm-compact-cta" onClick={() => dispatch({ type: schedule.currentChallengerQualifier?.completed ? "CONTINUE_FROM_CHALLENGER_QUALIFIER" : "SIM_CHALLENGER_QUALIFIER" })}>
+              {schedule.currentChallengerQualifier?.completed ? "Continue" : "Run Qualifier"}
+            </button>
+          )}
+          {isPreChamps && <button className="btn-cta fm-compact-cta" onClick={() => dispatch({ type: "BEGIN_CHAMPS" })}>Begin Champs</button>}
+          {isMajor && <span className="fm-action-note">Tournament overlay active</span>}
+        </div>
+      </section>
 
-        <section className="fm-panel fm-next-panel">
-          <PanelTitle title="Next Match" action={nextOppTeam ? stageName : "No fixture"} />
-          {isStage && nextOppTeam ? (
-            <>
-              <div className="fm-next-matchline">
-                <strong style={{ color: teamHexBody }}>{team?.tag ?? userTeamId}</strong>
-                <span>vs</span>
-                <button className="link-button team-link" style={{ color: ensureContrast(nextOppTeam.color, 4.5) }} onClick={() => openTeamHub(nextOppId)}>{nextOppTeam.tag}</button>
+      <div className="fm-home-columns">
+        {/* ── LEFT: league table hero ─────────────────────────────────────── */}
+        <div className="fm-col fm-col-left">
+          <section className="fm-panel fm-league-table fm-league-hero">
+            <PanelTitle title={isStage ? `${stageName} Table` : isMajor ? "Stage Table" : "Season Table"} action={<button className="fm-panel-link" onClick={() => setScreen?.("standings")}>Full ›</button>} />
+            <div className="fm-table-head"><span>Pos</span><span>Team</span><span>W-L</span><span>Pts</span></div>
+            {allTeamsRanked.map((t, i) => (
+              <div key={t.id} className={`fm-table-row ${t.id === userTeamId ? "is-you" : ""} ${i < 4 ? "is-top" : i >= allTeamsRanked.length - 2 ? "is-bottom" : ""}`}>
+                <span>{i + 1}</span>
+                <button className="link-button team-link" onClick={() => openTeamHub(t.id)}><TeamLogo team={t} size={18} /><span className="fm-table-tag">{t.tag}</span></button>
+                <span>{t.rec.wins}-{t.rec.losses}</span>
+                <strong>{t.rec.points}</strong>
               </div>
-              <div className="fm-mini-muted">{myStage.wins}W-{myStage.losses}L · Opp {nextOppRec.wins}W-{nextOppRec.losses}L</div>
-            </>
-          ) : <CompactEmpty text="No scheduled match awaiting your team." />}
-        </section>
+            ))}
+          </section>
+        </div>
 
-        <section className="fm-panel fm-fixtures-panel">
-          <PanelTitle title="Upcoming Fixtures" action={`${remainingFixtures.length} listed`} />
-          {remainingFixtures.length ? remainingFixtures.slice(0, 5).map((m, i) => {
-            const oppId = m.a === userTeamId ? m.b : m.a;
-            const oppTeam = CDL_TEAMS.find(t => t.id === oppId);
-            return <div key={i} className="fm-list-row"><span>{team?.tag}</span><em>vs</em><button className="link-button team-link" onClick={() => openTeamHub(oppId)}>{oppTeam?.tag ?? oppId}</button></div>;
-          }) : <CompactEmpty text="No upcoming stage fixtures." />}
-        </section>
-      </div>
+        {/* ── CENTER: next match, briefing, results ────────────────────────── */}
+        <div className="fm-col fm-col-center">
+          <section className="fm-panel fm-next-panel">
+            <PanelTitle title="Next Match" action={nextOppTeam ? stageName : "No fixture"} />
+            {isStage && nextOppTeam ? (
+              <>
+                <div className="fm-next-matchline fm-next-matchline-lg">
+                  <span className="fm-next-side"><TeamLogo team={resolveTeamDisplay(userTeamId, schedule)} size={30} /><strong style={{ color: teamHexBody }}>{team?.tag ?? userTeamId}</strong></span>
+                  <span className="fm-next-vs">vs</span>
+                  <button className="link-button team-link fm-next-side" style={{ color: ensureContrast(nextOppTeam.color, 4.5) }} onClick={() => openTeamHub(nextOppId)}><TeamLogo team={nextOppTeam} size={30} />{nextOppTeam.tag}</button>
+                </div>
+                <div className="fm-mini-muted">{myStage.wins}W-{myStage.losses}L · Opp {nextOppRec.wins}W-{nextOppRec.losses}L</div>
+              </>
+            ) : <CompactEmpty text="No scheduled match awaiting your team." />}
+          </section>
 
-      <div className="fm-widget-grid">
-
-        <section className="fm-panel fm-manager-briefing">
-          <PanelTitle title="Manager Briefing" action={<button className="fm-panel-link" onClick={() => setScreen?.("inbox")}>Event Centre ›</button>} />
-          <div className="mb-grid">
-            <MiniMetric label="Next Match" value={nextOppTeam ? `vs ${nextOppTeam.tag}` : "None"} sub={nextOppTeam ? stageName : undefined} />
-            <MiniMetric label="Squad Issue" value={biggestIssue} tone={biggestIssue === "Squad stable" ? "var(--green)" : "var(--yellow)"} />
-            <MiniMetric label="Board" value={boardBand} sub={`${state.boardState?.confidence ?? 60}/100`} tone={bandColor(boardBand)} />
-          </div>
-          <div className="mb-priority">
-            <span>Priority Inbox</span>
-            <strong>{importantInbox ? importantInbox.title : "No unread items"}</strong>
-            {importantInbox?.summary && <em>{importantInbox.summary}</em>}
-          </div>
-          <button className="btn-secondary-sm fm-dynamics-open" onClick={() => importantInbox ? setScreen?.("inbox") : nextOppTeam ? setScreen?.("schedule") : setScreen?.("home")}>{recommendedAction}</button>
-        </section>
-        <section className="fm-panel fm-board-widget">
-          <PanelTitle title="Owner" action={<button className="fm-panel-link" onClick={() => setScreen?.("board")}>Board ›</button>} />
-          <BoardWidget boardState={state.boardState} onOpen={() => setScreen?.("board")} />
-        </section>
-
-        <section className="fm-panel fm-dynamics-widget">
-          <PanelTitle title="Squad Dynamics" action={<button className="fm-panel-link" onClick={() => setScreen?.("dynamics")}>Open ›</button>} />
-          <div className="fm-dynamics-grid">
-            <MiniMetric label="Mood" value={squadMorale.mood} />
-            <MiniMetric label="Action" value={moraleActions.length} tone={moraleActions.length ? "var(--yellow)" : "var(--text-head)"} />
-            <MiniMetric label="Unhappy" value={squadMorale.unhappy.length} tone={squadMorale.unhappy.length ? "var(--yellow)" : "var(--text-head)"} />
-            <MiniMetric label="At Risk" value={promisesAtRisk} tone={promisesAtRisk ? "var(--red)" : "var(--text-head)"} />
-          </div>
-          <button className="btn-secondary-sm fm-dynamics-open" onClick={() => setScreen?.("dynamics")}>Open Dynamics</button>
-        </section>
-
-        <section className="fm-panel fm-league-table">
-          <PanelTitle title={isStage ? `${stageName} Table` : isMajor ? "Stage Table" : "Season Table"} action={<button className="fm-panel-link" onClick={() => setScreen?.("standings")}>Full ›</button>} />
-          <div className="fm-table-head"><span>Pos</span><span>Team</span><span>W-L</span><span>Pts</span></div>
-          {allTeamsRanked.map((t, i) => (
-            <div key={t.id} className={`fm-table-row ${t.id === userTeamId ? "is-you" : ""} ${i < 4 ? "is-top" : i >= allTeamsRanked.length - 2 ? "is-bottom" : ""}`}>
-              <span>{i + 1}</span>
-              <button className="link-button team-link" onClick={() => openTeamHub(t.id)}><span className="fm-dot" style={{ background: t.color }} />{t.tag}</button>
-              <span>{t.rec.wins}-{t.rec.losses}</span>
-              <strong>{t.rec.points}</strong>
+          <section className="fm-panel fm-manager-briefing">
+            <PanelTitle title="Manager Briefing" action={<button className="fm-panel-link" onClick={() => setScreen?.("inbox")}>Event Centre ›</button>} />
+            <div className="fm-brief-rows">
+              <div className="fm-brief-row"><span>Squad Issue</span><strong style={{ color: biggestIssue === "Squad stable" ? "var(--green)" : "var(--yellow)" }}>{biggestIssue}</strong></div>
+              <div className="fm-brief-row"><span>Board</span><strong style={{ color: bandColor(boardBand) }}>{boardBand} · {state.boardState?.confidence ?? 60}/100</strong></div>
+              <div className="fm-brief-row"><span>Dynamics</span><strong style={{ color: moraleActions.length ? "var(--yellow)" : "var(--text-head)" }}>{squadMorale.mood}{moraleActions.length ? ` · ${moraleActions.length} action${moraleActions.length !== 1 ? "s" : ""}` : ""}</strong></div>
             </div>
-          ))}
-        </section>
-
-        <section className="fm-panel fm-stats-panel">
-          <PanelTitle title="Player Stats" />
-          {playerStatsRows.map(row => (
-            <div key={row.label} className="fm-player-stat-row">
-              <div><span>{row.label}</span><button className="link-button player-link" onClick={() => openPlayerProfile(row.player)}>{row.name}</button></div>
-              <strong>{row.value}</strong>
+            <div className="mb-priority">
+              <span>Priority Inbox</span>
+              <strong>{importantInbox ? importantInbox.title : "No unread items"}</strong>
+              {importantInbox?.summary && <em>{importantInbox.summary}</em>}
             </div>
-          ))}
-        </section>
+            <button className="btn-secondary-sm fm-dynamics-open" onClick={() => importantInbox ? setScreen?.("inbox") : nextOppTeam ? setScreen?.("schedule") : setScreen?.("home")}>{recommendedAction}</button>
+          </section>
 
-        <section className="fm-panel fm-teamstats-panel">
-          <PanelTitle title="Team Stats" />
-          <div className="fm-team-stat-grid">
-            <MiniMetric label="OVR" value={teamOvr} tone={ratingColor(teamOvr)} />
-            <MiniMetric label="Chemistry" value={chem} sub={chemLabel(chem)} tone={chemColor(chem)} />
-            <MiniMetric label="Stage Pts" value={myStage.points} />
-            <MiniMetric label="Season Pts" value={mySeason.points} />
-          </div>
-          {formResults.length ? <div className="fm-form-strip">{formResults.slice(0, 5).map((r, i) => <span key={i} className={r.winnerId === userTeamId ? "w" : "l"}>{r.winnerId === userTeamId ? "W" : "L"}</span>)}</div> : <CompactEmpty text="No form yet." />}
-        </section>
+          <section className="fm-panel fm-results-panel">
+            <PanelTitle title="Recent Results" action={formResults.length ? <span className="fm-form-inline">{formResults.slice(0, 5).map((r, i) => <em key={i} className={r.winnerId === userTeamId ? "w" : "l"}>{r.winnerId === userTeamId ? "W" : "L"}</em>)}</span> : "click rows"} />
+            {myLog.length === 0 ? <CompactEmpty text="No matches played yet." /> : myLog.slice(0, 6).map((r, i) => {
+              const won = r.winnerId === userTeamId;
+              const opp = won ? r.loserName : r.winnerName;
+              const isOpen = expandedIdx === i;
+              return (
+                <div key={i} className={`fm-result-row ${won ? "win" : "loss"}`} onClick={() => toggleRow(i)}>
+                  <span>{won ? "W" : "L"}</span>
+                  <strong>{r.score}</strong>
+                  <em>{opp}</em>
+                  {r.standoutName && <small>★ {r.standoutName}{r.standoutKD ? ` ${r.standoutKD.toFixed(2)}` : ""}</small>}
+                  {isOpen && <div className="fm-result-detail" onClick={e => e.stopPropagation()}><SeriesDetail result={r} /></div>}
+                </div>
+              );
+            })}
+          </section>
+        </div>
 
-        <section className="fm-panel fm-results-panel">
-          <PanelTitle title="Recent Results" action="click rows" />
-          {myLog.length === 0 ? <CompactEmpty text="No matches played yet." /> : myLog.slice(0, 6).map((r, i) => {
-            const won = r.winnerId === userTeamId;
-            const opp = won ? r.loserName : r.winnerName;
-            const isOpen = expandedIdx === i;
-            return (
-              <div key={i} className={`fm-result-row ${won ? "win" : "loss"}`} onClick={() => toggleRow(i)}>
-                <span>{won ? "W" : "L"}</span>
-                <strong>{r.score}</strong>
-                <em>{opp}</em>
-                {r.standoutName && <small>★ {r.standoutName}{r.standoutKD ? ` ${r.standoutKD.toFixed(2)}` : ""}</small>}
-                {isOpen && <div className="fm-result-detail" onClick={e => e.stopPropagation()}><SeriesDetail result={r} /></div>}
+        {/* ── RIGHT: fixtures, finance/squad, development ──────────────────── */}
+        <div className="fm-col fm-col-right">
+          <section className="fm-panel fm-fixtures-panel">
+            <PanelTitle title="Upcoming Fixtures" action={`${remainingFixtures.length} listed`} />
+            {remainingFixtures.length ? remainingFixtures.slice(0, 6).map((m, i) => {
+              const oppId = m.a === userTeamId ? m.b : m.a;
+              const oppTeam = CDL_TEAMS.find(t => t.id === oppId);
+              return <div key={i} className="fm-list-row"><span>{team?.tag}</span><em>vs</em><button className="link-button team-link" onClick={() => openTeamHub(oppId)}><TeamLogo team={oppTeam ?? resolveTeamDisplay(oppId, schedule)} size={16} />{oppTeam?.tag ?? oppId}</button></div>;
+            }) : <CompactEmpty text="No upcoming stage fixtures." />}
+          </section>
+
+          <section className="fm-panel fm-finance-panel">
+            <PanelTitle title="Finance & Salary" action={<button className="fm-panel-link" onClick={() => setScreen?.("transfers")}>Transfers ›</button>} />
+            <div className="fm-fin-rows">
+              <div className="fm-brief-row"><span>Salary Cap</span><strong>{fmtMoney(teamCap)}</strong></div>
+              <div className="fm-brief-row"><span>Committed</span><strong>{fmtMoney(committed)}</strong></div>
+              <div className="fm-brief-row"><span>Available</span><strong style={{ color: capSpace >= 0 ? "var(--green)" : "var(--red)" }}>{fmtMoney(capSpace)}</strong></div>
+              <div className="fm-brief-row"><span>Expiring</span><strong style={{ color: expiringCount ? "var(--yellow)" : "var(--text-head)" }}>{expiringCount}</strong></div>
+            </div>
+            <div className="fm-cap-bar"><span style={{ width: `${Math.min(100, Math.max(0, Math.round((committed / teamCap) * 100)))}%` }} /></div>
+          </section>
+
+          <section className="fm-panel fm-stats-panel">
+            <PanelTitle title="Key Players" action={<button className="fm-panel-link" onClick={() => setScreen?.("roster")}>Roster ›</button>} />
+            {playerStatsRows.map(row => (
+              <div key={row.label} className="fm-player-stat-row">
+                <div><span>{row.label}</span><button className="link-button player-link" onClick={() => openPlayerProfile(row.player)}>{row.name}</button></div>
+                <strong>{row.value}</strong>
               </div>
-            );
-          })}
-        </section>
+            ))}
+          </section>
 
-        <section className="fm-panel fm-finance-panel">
-          <PanelTitle title="Finance & Salary" />
-          <div className="fm-finance-bars">
-            <MiniMetric label="Cap" value={fmtMoney(teamCap)} />
-            <MiniMetric label="Committed" value={fmtMoney(committed)} />
-            <MiniMetric label="Available" value={fmtMoney(capSpace)} tone={capSpace >= 0 ? "var(--green)" : "var(--red)"} />
-            <MiniMetric label="Expiring" value={expiringCount} tone={expiringCount ? "var(--yellow)" : "var(--text-head)"} />
-          </div>
-          <div className="fm-cap-bar"><span style={{ width: `${Math.min(100, Math.max(0, Math.round((committed / teamCap) * 100)))}%` }} /></div>
-        </section>
-
-        <section className="fm-panel fm-news-panel">
-          <PanelTitle title="Team News" action={<button className="fm-panel-link" onClick={() => setScreen?.("log")}>Log ›</button>} />
-          {feedTeaser.length ? feedTeaser.map(item => (
-            <div key={item.id} className="fm-news-row"><strong>{item.title || item.message}</strong><span>{item.body || `S${item.season} · ${item.phase}`}</span></div>
-          )) : latestMoves.length ? latestMoves.map((tx, i) => (
-            <div key={`${tx.playerId}_${i}`} className="fm-news-row"><strong>{readableMoveType(tx.type)}</strong><span>{tx.note || tx.playerName}</span></div>
-          )) : <CompactEmpty text="No team news yet." />}
-        </section>
-
-        <section className="fm-panel fm-dev-panel">
-          <PanelTitle title="Development" />
-          {biggestBreakout && <div className="fm-dev-row up"><span>Breakout</span><strong>{biggestBreakout.name}</strong><em>+{biggestBreakout.delta} OVR</em></div>}
-          {biggestCollapse && <div className="fm-dev-row down"><span>Collapse</span><strong>{biggestCollapse.name}</strong><em>{biggestCollapse.delta} OVR</em></div>}
-          {prospectsToWatch.map(p => <div key={p.id} className="fm-dev-row"><span>Prospect</span><button className="link-button player-link" onClick={() => openPlayerProfile(p)}>{p.name}</button><em>{p.scoutedPotential ?? p.potential} POT</em></div>)}
-          {!biggestBreakout && !biggestCollapse && prospectsToWatch.length === 0 && <CompactEmpty text="No development headlines yet." />}
-        </section>
-
-        <section className="fm-panel fm-needs-panel">
-          <PanelTitle title="Roster Needs" action={<button className="fm-panel-link" onClick={() => setScreen?.("roster")}>Roster ›</button>} />
-          <div className="fm-squad-list">
-            {starters.map(p => <div key={p.id}><button className="link-button player-link" onClick={() => openPlayerProfile(p)}>{p.name}</button><span>{p.primary}</span><strong>{p.overall}</strong></div>)}
-          </div>
-        </section>
+          <section className="fm-panel fm-dev-panel">
+            <PanelTitle title="Development & News" action={<button className="fm-panel-link" onClick={() => setScreen?.("log")}>Log ›</button>} />
+            {biggestBreakout && <div className="fm-dev-row up"><span>Breakout</span><strong>{biggestBreakout.name}</strong><em>+{biggestBreakout.delta} OVR</em></div>}
+            {biggestCollapse && <div className="fm-dev-row down"><span>Collapse</span><strong>{biggestCollapse.name}</strong><em>{biggestCollapse.delta} OVR</em></div>}
+            {prospectsToWatch.slice(0, 2).map(p => <div key={p.id} className="fm-dev-row"><span>Prospect</span><button className="link-button player-link" onClick={() => openPlayerProfile(p)}>{p.name}</button><em>{p.scoutedPotential ?? p.potential} POT</em></div>)}
+            {feedTeaser.slice(0, 2).map(item => (
+              <div key={item.id} className="fm-news-row"><strong>{item.title || item.message}</strong><span>{item.body || `S${item.season} · ${item.phase}`}</span></div>
+            ))}
+            {!biggestBreakout && !biggestCollapse && prospectsToWatch.length === 0 && feedTeaser.length === 0 && <CompactEmpty text="No development headlines yet." />}
+          </section>
+        </div>
       </div>
 
       {isPreChamps && (
