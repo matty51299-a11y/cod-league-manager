@@ -2,6 +2,13 @@ import { CDL_TEAMS } from "../data/teams.js";
 import { buildCdlRosterNameSet, isCdlTeamId, isInactivePlayer, normalizePlayerName, shouldExcludeFromChallengers } from "../utils/playerIdentity.js";
 import { calcChemistry } from "./chemistry.js";
 import { getMajorPlacementMap } from "../utils/historyProfiles.js";
+import { getEra } from "../data/codEras.js";
+
+// Era-aware required active-starter count (roster-size transitions: 4 ↔ 5).
+function requiredStartersFor(state) {
+  const size = getEra(state?.currentEraId)?.rosterSize;
+  return Number.isFinite(size) ? size : 4;
+}
 
 const PHILOSOPHIES = ["win_now", "youth_upside", "chemistry_stability", "balanced_value", "high_risk_gamble"];
 
@@ -1116,6 +1123,7 @@ export function ensureCdlRosterIntegrity(gameState, options = {}) {
   const season = state.season ?? state.schedule?.season ?? 1;
   const windowType = options.windowType ?? "integrity";
   const fillAiRosters = options.fillAiRosters ?? windowType !== "open_free_agency";
+  const required = requiredStartersFor(state);
 
   const seenIds = new Set();
   const seenNames = new Set();
@@ -1139,20 +1147,46 @@ export function ensureCdlRosterIntegrity(gameState, options = {}) {
   for (const team of CDL_TEAMS) {
     if (team.id === state.userTeamId) {
       const roster = getActiveCdlRoster(players, team.id);
-      if (roster.length < 4) {
-        repairs.push({ type: "user_thin_cdl_roster_allowed", teamId: team.id, count: roster.length });
+      if (roster.length < required) {
+        repairs.push({ type: "user_thin_cdl_roster_allowed", teamId: team.id, count: roster.length, required });
       }
+      // The user must resolve their own over-size roster (roster-compliance block).
       continue;
     }
 
     let roster = getActiveCdlRoster(players, team.id);
+
+    // Roster-size reduction (e.g. 5 → 4): release the weakest excess starters
+    // into free agency. Sensible cuts favour ability, salary and depth — the
+    // lowest-value starter is let go so displaced players re-enter the market.
+    if (roster.length > required) {
+      const rankedExcess = [...roster].sort((a, b) =>
+        (a.overall ?? 60) - (b.overall ?? 60) ||
+        (b.salary ?? 0) - (a.salary ?? 0)
+      );
+      const cutCount = roster.length - required;
+      for (let i = 0; i < cutCount; i++) {
+        const cut = rankedExcess[i];
+        if (!cut) break;
+        players = players.map(p => p.id === cut.id
+          ? { ...p, teamId: null, challengerTeamId: null, isSub: false, contractYears: 0, status: "freeAgent", previousTeamId: team.id }
+          : p);
+        challengerTransactions = pushTx(challengerTransactions, state, {
+          type: "ROSTER_SIZE_RELEASE", playerId: cut.id, playerName: cut.name, fromTeamId: team.id, toTeamId: null,
+          note: `${team.name} released ${cut.name} to comply with the ${required}-player roster limit.`,
+        });
+        repairs.push({ type: "roster_size_reduction_release", teamId: team.id, playerId: cut.id, playerName: cut.name, required });
+      }
+      roster = getActiveCdlRoster(players, team.id);
+    }
+
     if (!fillAiRosters) {
-      if (roster.length < 4) repairs.push({ type: "ai_thin_cdl_roster_deferred", teamId: team.id, count: roster.length });
+      if (roster.length < required) repairs.push({ type: "ai_thin_cdl_roster_deferred", teamId: team.id, count: roster.length, required });
       continue;
     }
 
     let fillSlot = 0;
-    while (roster.length < 4 && fillSlot++ < 8) {
+    while (roster.length < required && fillSlot++ < 8) {
       const committed = roster.reduce((sum, p) => sum + (p.salary ?? getSigningCost(p)), 0);
       const budgetLeft = getTeamCap(team.id) - committed;
       const usedIds = new Set(players.filter(p => p.teamId && isCdlTeamId(p.teamId) && !p.isSub && !isInactivePlayer(p)).map(p => p.id));
@@ -1187,8 +1221,8 @@ export function ensureCdlRosterIntegrity(gameState, options = {}) {
       roster = getActiveCdlRoster(players, team.id);
     }
 
-    if (roster.length < 4) {
-      repairs.push({ type: "unrepairable_thin_cdl_roster", teamId: team.id, count: roster.length });
+    if (roster.length < required) {
+      repairs.push({ type: "unrepairable_thin_cdl_roster", teamId: team.id, count: roster.length, required });
     }
   }
 

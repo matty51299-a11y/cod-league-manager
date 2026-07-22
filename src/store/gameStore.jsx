@@ -14,8 +14,8 @@ import { buildContractDemand, evaluateContractOffer, getContractMemory, CONTRACT
 import { isChallengerMode, getChallengerRosterPlayers, getUserChallengerTeam } from "../utils/userTeam.js";
 import { generateChallengerBuyoutOffers, applyChallengerBuyout, buildBuyoutTransaction, isChallengerMarketOpen, getChallengerWindowKey } from "../engine/challengerMarket.js";
 import { canAffordStarterResign } from "../utils/contractBudget.js";
-import { getRosterIncompleteMessage, getTeamRosterStatus } from "../utils/rosterValidation.js";
-import { STARTER_LIMIT, autoPickStarterIds, getStarters, resolveSigningSlot } from "../utils/rosterSlots.js";
+import { getRosterIncompleteMessage, getTeamRosterStatus, getRequiredStarters } from "../utils/rosterValidation.js";
+import { autoPickStarterIds, getStarters, resolveSigningSlot } from "../utils/rosterSlots.js";
 import { CDL_TEAMS } from "../data/teams.js";
 import { isValidGameState, isValidTeamId, findPhaseInvariantViolations } from "./gameValidation.js";
 import { migrateStaff, hireStaff, fireStaff, ensureTeamStaff, roleLabel } from "../engine/staffEngine.js";
@@ -48,7 +48,7 @@ import {
   makeTournamentChampionEvent, makeUserEliminatedEvent, makeMajorSummaryEvent, makeAwardEvent,
   makeUserAwardEvent, makeStageSimSummaryEvent, makeUserMatchResultEvent,
   makeOffseasonStartEvent, makeStandoutPerformanceEvent, makeContractNegotiationEvent,
-  makeAssistantGmRecommendation, makeRivalSigningEvent,
+  makeAssistantGmRecommendation, makeRivalSigningEvent, makeEraTransitionEvents,
   generateMatchInboxEvents,
 } from "../engine/eventCentreEngine.js";
 import { createHistoricalStateFields, migrateHistoricalDynastyState, introduceHistoricalRookieClass } from "../engine/historicalDynasty.js";
@@ -299,7 +299,7 @@ function cleanupDuplicateActiveAssignments(state) {
 // userTeamType: "cdl" (manage a CDL franchise) | "challenger" (manage a
 // Challenger team — a "Road to CDL" career). For challenger mode userTeamId is
 // a Challenger team id and is validated against the freshly-built rosters.
-function createInitialGameState(userTeamId, userTeamType = "cdl", seedOverride = null, careerMode = "modern") {
+function createInitialGameState(userTeamId, userTeamType = "cdl", seedOverride = null, careerMode = "modern", dynastyOptions = {}) {
   const challengerMode = userTeamType === "challenger";
   if (!challengerMode && !isValidTeamId(userTeamId)) return null;
   const players  = buildInitialRoster().map(applyChallengerRatingOverride);
@@ -354,7 +354,7 @@ function createInitialGameState(userTeamId, userTeamType = "cdl", seedOverride =
     challengerFunds: 0,     // transfer income earned selling Challenger players
     eventCentre: migrateEventCentre(null),
     contractNegotiations: {},
-    ...createHistoricalStateFields(careerMode),
+    ...createHistoricalStateFields(careerMode, dynastyOptions),
   };
   // Build randomized starting Challenger rosters for this new save.
   buildChallengerRostersForNewGame(state, challengerDraftSeed);
@@ -489,7 +489,10 @@ export function __diagnoseReducer(state, action) {
       return null;
 
     case "NEW_GAME":
-      return createInitialGameState(action.teamId, action.teamType, action.seed, action.careerMode);
+      return createInitialGameState(action.teamId, action.teamType, action.seed, action.careerMode, {
+        historicalStrictness: action.historicalStrictness,
+        dynastySeed: action.dynastySeed,
+      });
 
     case "LOAD_GAME": {
       if (!action.state || !isValidGameState(action.state)) return null;
@@ -807,6 +810,8 @@ export function __diagnoseReducer(state, action) {
       const offseasonEvents = [];
       if (!challengerMode) offseasonEvents.push(makeBoardObjectiveEvent(finalOffseasonState));
       offseasonEvents.push(makeOffseasonStartEvent(season, finalOffseasonState));
+      // Historical Dynasty: announce the new title / ruleset / roster-size change.
+      offseasonEvents.push(...makeEraTransitionEvents(finalOffseasonState));
       finalOffseasonState = pushInboxEvents(finalOffseasonState, offseasonEvents);
       return finalOffseasonState;
       };
@@ -847,7 +852,7 @@ export function __diagnoseReducer(state, action) {
       const userTeam  = state.userTeamId;
       const rosterNow = state.players.filter(p => p.teamId === userTeam);
       const requestedSlot = slotType || "starter";
-      const actualSlot = resolveSigningSlot(state.players, userTeam, requestedSlot);
+      const actualSlot = resolveSigningSlot(state.players, userTeam, requestedSlot, getRequiredStarters(state));
 
       const tag = CDL_TEAMS.find(t => t.id === userTeam)?.tag ?? userTeam;
       const phase = state.schedule?.phase ?? "stage";
@@ -963,8 +968,9 @@ export function __diagnoseReducer(state, action) {
       const player = state.players.find(p => p.id === playerId);
       if (!player || player.teamId !== state.userTeamId || !player.isSub) return addNotif(state, "Choose a bench player to promote.");
       const starters = getStarters(state.players, state.userTeamId);
-      if (starters.length >= STARTER_LIMIT && !swapWithPlayerId) {
-        return addNotif(state, "Starting roster is full (4/4). Choose a starter to swap with this substitute.");
+      const starterLimit = getRequiredStarters(state);
+      if (starters.length >= starterLimit && !swapWithPlayerId) {
+        return addNotif(state, `Starting roster is full (${starterLimit}/${starterLimit}). Choose a starter to swap with this substitute.`);
       }
       if (swapWithPlayerId) {
         const starter = starters.find(p => p.id === swapWithPlayerId);
@@ -1024,13 +1030,14 @@ export function __diagnoseReducer(state, action) {
     case "AUTO_PICK_BEST_STARTERS": {
       const teamId = action.teamId ?? state.userTeamId;
       if (teamId !== state.userTeamId) return state;
+      const limit = getRequiredStarters(state);
       const roster = state.players.filter(p => p.teamId === teamId && !isInactivePlayer(p));
-      if (roster.length < STARTER_LIMIT) return addNotif(state, `Need ${STARTER_LIMIT} active players before auto-picking starters.`);
-      const starterIds = autoPickStarterIds(state.players, teamId, STARTER_LIMIT);
+      if (roster.length < limit) return addNotif(state, `Need ${limit} active players before auto-picking starters.`);
+      const starterIds = autoPickStarterIds(state.players, teamId, limit);
       return addNotif({
         ...state,
         players: state.players.map(p => p.teamId === teamId && !isInactivePlayer(p) ? { ...p, isSub: !starterIds.has(p.id) } : p),
-      }, "Auto Pick Best 4 complete. Highest-OVR players are now starters.");
+      }, `Auto Pick Best ${limit} complete. Highest-OVR players are now starters.`);
     }
 
     // ── RELEASE PLAYER ────────────────────────────────────────────────────────
@@ -1040,9 +1047,10 @@ export function __diagnoseReducer(state, action) {
       const wasOnCdlRoster = !!player.teamId && isCdlTeamId(player.teamId) && !isInactivePlayer(player);
       if (!wasOnCdlRoster) return addNotif(state, `${player.name || "Player"} is not on an active CDL roster.`);
 
-      const activeStarters = getTeamRosterStatus(state.players, player.teamId).count;
-      if (player.teamId !== state.userTeamId && !player.isSub && activeStarters <= 4) {
-        return addNotif(state, `Cannot release ${player.name}; CDL rosters must keep at least 4 active players.`);
+      const requiredStarters = getRequiredStarters(state);
+      const activeStarters = getTeamRosterStatus(state.players, player.teamId, requiredStarters).count;
+      if (player.teamId !== state.userTeamId && !player.isSub && activeStarters <= requiredStarters) {
+        return addNotif(state, `Cannot release ${player.name}; CDL rosters must keep at least ${requiredStarters} active players.`);
       }
 
       const tag   = CDL_TEAMS.find(t => t.id === player.teamId)?.tag ?? player.teamId ?? "FA";

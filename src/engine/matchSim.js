@@ -98,9 +98,28 @@ function ri(min, max, rng) {
   return Math.floor(rng() * (max - min + 1)) + min;
 }
 
+// Map a player's primary role string to an era role-weight key. Matching is
+// keyword-based so data variants ("Slayer SMG", "Entry SMG", "Main AR") all
+// resolve. Returns 1 (neutral) when no era weights are supplied.
+function roleWeightFor(primary, roleWeights) {
+  if (!roleWeights) return 1;
+  const r = String(primary || "").toLowerCase();
+  if (r.includes("search")) return roleWeights["Search Specialist"] ?? 1;
+  if (r.includes("smg")) return roleWeights.SMG ?? roleWeights.Slayer ?? 1;
+  if (r.includes("slay")) return roleWeights.Slayer ?? 1;
+  if (r.includes("object")) return roleWeights.Objective ?? 1;
+  if (r.includes("ar")) return roleWeights["Main AR"] ?? 1;
+  if (r.includes("flex")) return roleWeights.Flex ?? 1;
+  return 1;
+}
+
 // ── TEAM STRENGTH ─────────────────────────────────────────────────────────────
 // Weights updated per spec: 3 primary attributes per mode, not 6.
-function teamStrength(players, chemistry, mode) {
+// roleWeights (optional): the active season/era's per-role multipliers. When
+// supplied, a player's contribution is scaled by how much the current Call of
+// Duty title values their role — so an SMG-stacked roster is stronger in a fast,
+// slayer-friendly title and weaker in an AR-anchored one. Null → unchanged.
+function teamStrength(players, chemistry, mode, roleWeights = null) {
   if (!players || players.length === 0) return 40;
   const starters = players.slice(0, 4);
 
@@ -116,7 +135,9 @@ function teamStrength(players, chemistry, mode) {
     for (const [attr, weight] of Object.entries(w)) {
       score += (p[attr] ?? 60) * weight;
     }
-    return s + score;
+    // Era role fit: a gentle multiplier (weights ≈ 0.9–1.12) around the player's
+    // score, keeping the calibrated rating scale intact.
+    return s + score * roleWeightFor(p.primary, roleWeights);
   }, 0) / starters.length;
 
   const formAvg    = starters.reduce((s, p) => s + (p.form || 70), 0) / starters.length;
@@ -477,8 +498,8 @@ export function simMap(teamAObj, teamBObj, mapIdx, matchCtx, rng) {
     { mapIdx, mode: mapDef.mode, tiltedIds: tiltedIdsB, lastMapKDByPlayer, extraBoosts: extraBoostsB }
   );
 
-  const strA = teamStrength(modA, chemA, mapDef.mode);
-  const strB = teamStrength(modB, chemB, mapDef.mode);
+  const strA = teamStrength(modA, chemA, mapDef.mode, teamAObj.eraRoleWeights ?? null);
+  const strB = teamStrength(modB, chemB, mapDef.mode, teamBObj.eraRoleWeights ?? null);
   // Map-pool influence (opt-in via matchCtx): a modest, capped strength delta
   // derived from the two teams' rating on the selected map. Zero by default, so
   // callers that don't supply a map set get unchanged behaviour.
