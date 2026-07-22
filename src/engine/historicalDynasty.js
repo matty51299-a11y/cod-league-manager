@@ -3,6 +3,7 @@ import {
   generateFutureEra, registerGeneratedEras, isFictionalEra,
 } from "../data/codEras.js";
 import { HISTORICAL_ROOKIE_CLASSES } from "../data/historicalRookieClasses.js";
+import { applyEraTeamBranding } from "../data/historicalTeams.js";
 
 function clamp(v, min = 40, max = 99) { return Math.max(min, Math.min(max, Math.round(v))); }
 function hashString(str) { let h = 2166136261; for (const ch of String(str || "")) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
@@ -16,6 +17,10 @@ export function migrateHistoricalDynastyState(state) {
   registerGeneratedEras(state?.generatedEras || []);
   const currentEraId = careerMode === "historical" ? (state?.currentEraId || HISTORICAL_START_ERA_ID) : (state?.currentEraId || MODERN_ERA_ID);
   const era = getEra(currentEraId);
+  // Re-skin the 12 stable team slots to the active era's real organisations
+  // (or reset to the modern franchises for modern careers / the CDL era). Safe
+  // to run on every hydrate: display-only, deterministic from the era id.
+  applyEraTeamBranding(era.id, careerMode);
   return {
     ...state,
     careerMode,

@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "test:rookie-awards": "node scripts/rookieEligibility.test.mjs",
     "test:dynasty": "node --import ./scripts/register-assets.mjs scripts/diagnoseHistoricalDynasty.mjs",
+    "test:dynasty-teams": "node --import ./scripts/register-assets.mjs scripts/diagnoseHistoricalTeams.mjs",
     "test:dynasty-sim": "node --import ./scripts/register-assets.mjs scripts/diagnoseDynastySimulation.mjs",
     "test:full-season": "node --import ./scripts/register-assets.mjs scripts/diagnoseFullSeasonFlow.mjs"
   },
