@@ -13,17 +13,44 @@ export default function TeamSelect() {
   const { dispatch } = useGame();
   const [mode, setMode] = useState("cdl"); // "cdl" | "challenger"
   const [careerMode, setCareerMode] = useState("modern");
+  const [strictness, setStrictness] = useState("balanced"); // loose | balanced | strict
+  const [seedInput, setSeedInput] = useState("");
   // One stable seed for this picker session → preview matches the started save.
   // Lazy state initializer runs once; keeps render pure on subsequent renders.
   const [seed] = useState(() => ((Date.now() % 999983) * 31 + 7) | 0 || 1);
   const challengerTeams = useMemo(() => (mode === "challenger" ? buildChallengerPreview(seed) : []), [mode, seed]);
 
+  // Optional deterministic dynasty seed (blank → random). Non-numeric input is
+  // hashed to a stable integer so any text works as a seed.
+  function resolveDynastySeed() {
+    const raw = seedInput.trim();
+    if (!raw) return undefined;
+    if (/^-?\d+$/.test(raw)) return (Number(raw) >>> 0) || 1;
+    let h = 2166136261;
+    for (const ch of raw) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); }
+    return (h >>> 0) || 1;
+  }
+
   function selectCdl(teamId) {
-    dispatch({ type: "NEW_GAME", teamId, teamType: "cdl", careerMode });
+    dispatch({
+      type: "NEW_GAME", teamId, teamType: "cdl", careerMode,
+      historicalStrictness: careerMode === "historical" ? strictness : undefined,
+      dynastySeed: careerMode === "historical" ? resolveDynastySeed() : undefined,
+    });
   }
   function selectChallenger(teamId) {
-    dispatch({ type: "NEW_GAME", teamId, teamType: "challenger", seed });
+    dispatch({
+      type: "NEW_GAME", teamId, teamType: "challenger", seed, careerMode,
+      historicalStrictness: careerMode === "historical" ? strictness : undefined,
+      dynastySeed: careerMode === "historical" ? resolveDynastySeed() : undefined,
+    });
   }
+
+  const STRICTNESS = [
+    { id: "loose", label: "Loose History", sub: "Only titles, eras & major league changes are historical" },
+    { id: "balanced", label: "Balanced History", sub: "Historical orgs, players & world changes; results are dynamic" },
+    { id: "strict", label: "Strict History", sub: "AI leans harder into historical rosters (you keep full control)" },
+  ];
 
   return (
     <div className="team-select">
@@ -46,6 +73,38 @@ export default function TeamSelect() {
           <span className="ts-mode-sub">Start in Call of Duty: Ghosts and advance by title</span>
         </button>
       </div>
+
+      {careerMode === "historical" && (
+        <div className="ts-dynasty-config">
+          <div className="ts-dynasty-row">
+            <span className="ts-dynasty-label">Historical strictness</span>
+            <div className="ts-strictness-tabs">
+              {STRICTNESS.map(s => (
+                <button
+                  key={s.id}
+                  className={`ts-strictness-tab ${strictness === s.id ? "active" : ""}`}
+                  onClick={() => setStrictness(s.id)}
+                  title={s.sub}
+                >
+                  <strong>{s.label}</strong>
+                  <span>{s.sub}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="ts-dynasty-row">
+            <span className="ts-dynasty-label">Random seed <em>(optional)</em></span>
+            <input
+              className="ts-seed-input"
+              type="text"
+              placeholder="Blank = random"
+              value={seedInput}
+              onChange={e => setSeedInput(e.target.value)}
+            />
+            <span className="ts-dynasty-hint">Start date: 1 Sep 2013 · Pre-season before Call of Duty: Ghosts</span>
+          </div>
+        </div>
+      )}
 
       <div className="ts-mode-tabs">
         <button

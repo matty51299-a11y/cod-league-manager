@@ -27,6 +27,34 @@ Core pillars:
 - Offseason phase
 - Contracts phase after offseason
 
+## Historical Dynasty Mode
+Selectable at team-select (`careerMode: "modern" | "historical"`). A historical
+dynasty starts in the **Call of Duty: Ghosts** (2013/14) season and advances one
+Call of Duty title per season.
+
+Key modules:
+- `src/data/codEras.js` — data-driven season definitions (Ghosts → Black Ops 6),
+  ecosystem tags (MLG / CWL / CDL), roster sizes, modes, map pools, role weights,
+  championships, `dataStatus` (`historical` vs `fictional`). Also
+  `generateFutureEra()` — deterministic procedural future seasons after BO6, and a
+  runtime registry so `getEra(id)` resolves generated eras after reload.
+- `src/engine/historicalDynasty.js` — era advancement (`advanceHistoricalEraIfNeeded`,
+  idempotent via a season-indexed guard so a transition never runs twice),
+  rookie-class introduction (historical + procedural), dynasty config
+  (`historicalStrictness`, `dynastySeed`), save migration.
+- Roster-size transitions (4 ↔ 5) are era-aware everywhere required starters are
+  computed: `getRequiredStarters(state)` in `rosterValidation.js`, the promote /
+  auto-pick / signing-slot guards in the store, and `rosterAI.ensureCdlRosterIntegrity`
+  (fills up to the era size; releases excess starters to free agency on reduction).
+- Era-transition news is emitted via `makeEraTransitionEvents` (eventCentre) and a
+  season-transition modal + dashboard `EraInfoCard` (Dashboard.jsx).
+- Match sim reads the era's `roleWeights` (opt-in, via `buildTeamObj`) so different
+  titles value different roster roles.
+
+Tests: `npm run test:dynasty` (unit), `npm run test:dynasty-sim` (13-season
+long-run), `npm run test:full-season` (modern regression). All run through
+`scripts/register-assets.mjs` (node asset loader for image imports).
+
 ## Contracts System
 - Players have `contractYears`
 - Decrements once per offseason

@@ -434,6 +434,8 @@ export default function Dashboard({ setScreen }) {
         </section>
       </div>
 
+      {state?.careerMode === "historical" && <EraInfoCard era={getEra(state.currentEraId)} nextEra={getNextEra(state.currentEraId)} state={state} />}
+
       <div className="fm-widget-grid">
 
         <section className="fm-panel fm-manager-briefing">
@@ -630,23 +632,28 @@ function InboxWidget({ state, setScreen }) {
 }
 
 
+const ECOSYSTEM_LABEL = { mlg: "Open / MLG Era", cwl: "CWL Era", cdl: "CDL Franchise Era", future: "Future Era" };
+
 function EraInfoCard({ era, nextEra, state }) {
   if (!era) return null;
   const modes = (era.modes || []).join(" · ");
+  const fictional = era.dataStatus === "fictional";
   return (
-    <section className="oh-card" style={{ borderTopColor: state?.careerMode === "historical" ? "#fbbf24" : "#60a5fa", marginBottom: 14 }}>
+    <section className="oh-card" style={{ borderTopColor: fictional ? "#a78bfa" : state?.careerMode === "historical" ? "#fbbf24" : "#60a5fa", marginBottom: 14 }}>
       <div className="oh-card-header">
         <div>
-          <h3>Current Title: {era.gameTitle}</h3>
-          <p>{era.seasonLabel} · {String(era.movementStyle || "modern").replace("_", " ")} era · {state?.careerMode === "historical" ? "Historical Dynasty" : "Modern CDL 2026"}</p>
+          <h3>Current Title: {era.gameTitle}{fictional && <span className="ts-chip" style={{ marginLeft: 8, background: "#4c1d95", color: "#ede9fe" }}>Fictional</span>}</h3>
+          <p>Season {era.seasonLabel} · {String(era.movementStyle || "modern").replace("_", " ")} · {ECOSYSTEM_LABEL[era.ecosystem] || "Historical Dynasty"}</p>
         </div>
-        <span className="oh-ok">{nextEra ? `Next Title: ${nextEra.shortTitle}` : "Current Era"}</span>
+        <span className="oh-ok">{nextEra ? `Next: ${nextEra.shortTitle}` : "Newest season"}</span>
       </div>
       <div className="cm-chip-row">
+        <span className="ts-chip">Roster: {era.rosterSize || 4}v{era.rosterSize || 4}</span>
         <span className="ts-chip">Modes: {modes}</span>
-        <span className="ts-chip">Maps loaded: {Object.values(era.mapPool || {}).reduce((n, arr) => n + (arr?.length || 0), 0)}</span>
-        <span className="ts-chip">{era.rulesNote}</span>
+        <span className="ts-chip">Maps: {Object.values(era.mapPool || {}).reduce((n, arr) => n + (arr?.length || 0), 0)}</span>
+        {era.championship && <span className="ts-chip">🏆 {era.championship}</span>}
       </div>
+      <div className="cm-chip-row"><span className="ts-chip" style={{ opacity: 0.85 }}>{era.rulesNote}</span></div>
     </section>
   );
 }
@@ -656,23 +663,27 @@ function EraTransitionModal({ state, dispatch }) {
   if (!transition) return null;
   const previous = getEra(transition.previousEraId);
   const next = getEra(transition.newEraId);
+  const fictional = transition.dataStatus === "fictional";
+  const sizeChange = transition.rosterSizeChange || 0;
   return (
     <div className="modal-backdrop" style={{ zIndex: 1300 }}>
-      <div className="modal" style={{ maxWidth: 620 }}>
-        <h2>New Game Released</h2>
-        <h3>{next.gameTitle}</h3>
-        <p className="muted">The dynasty moves from {previous.gameTitle} to {next.gameTitle}.</p>
+      <div className="modal" style={{ maxWidth: 640 }}>
+        <div className="meeting-eyebrow">{fictional ? "New Season Generated" : "New Game Released"}</div>
+        <h2>{next.gameTitle}{transition.seasonLabel ? ` · ${transition.seasonLabel}` : ""}</h2>
+        <p className="muted">The dynasty moves from {previous.gameTitle} to {next.gameTitle}.{fictional ? " (Procedurally generated future season.)" : ""}</p>
         <div className="ui-stat-grid compact">
           <StatCard label="Movement" value={next.movementStyle} />
-          <StatCard label="Modes" value={(next.modes || []).join(" / ")} />
-          <StatCard label="Rookie Class" value={next.rookieClassId ? "Added" : "None"} tone={next.rookieClassId ? "success" : "neutral"} />
+          <StatCard label="Roster" value={`${next.rosterSize || 4}v${next.rosterSize || 4}`} tone={sizeChange !== 0 ? "warn" : "neutral"} />
+          <StatCard label="Ecosystem" value={ECOSYSTEM_LABEL[next.ecosystem] || "—"} tone={transition.ecosystemChanged ? "warn" : "neutral"} />
+          <StatCard label="Championship" value={next.championship || "TBD"} />
         </div>
         <p>{next.rulesNote}</p>
         <ul>
-          <li>New maps and modes are now available for era display.</li>
-          <li>New movement style: {next.movementStyle}.</li>
-          <li>Rookie/prospect class added once for this era.</li>
-          <li>Offseason market flow remains intact.</li>
+          <li>Modes: {(next.modes || []).join(" · ")}.</li>
+          {sizeChange > 0 && <li><strong>Roster expansion:</strong> teams must now field {next.rosterSize} starters — sign or promote a {next.rosterSize}th player.</li>}
+          {sizeChange < 0 && <li><strong>Roster reduction:</strong> teams return to {next.rosterSize} starters — release, bench or transfer excess players.</li>}
+          {transition.ecosystemChanged && transition.ecosystemTo === "cdl" && <li><strong>Franchising:</strong> top-level competition is now franchise-slot based.</li>}
+          <li>A new rookie/prospect class has entered the scene.</li>
         </ul>
         <button className="btn-primary" onClick={() => dispatch({ type: "ACK_ERA_TRANSITION" })}>Continue to Offseason</button>
       </div>

@@ -37,4 +37,29 @@ export const HISTORICAL_ROOKIE_CLASSES = {
     { id: "hist_rookie_kismet", name: "KiSMET", role: "Entry SMG", region: "NA", initialOvr: 71, potential: 88, traits: ["Pace Merchant"], entersPool: "challengers" },
     { id: "hist_rookie_drazah", name: "Drazah", role: "Flex", region: "NA", initialOvr: 70, potential: 90, traits: ["Flex Friendly"], entersPool: "challengers" },
   ],
+  black_ops_cold_war: [
+    { id: "hist_rookie_ghosty", name: "Ghosty", role: "Slayer SMG", region: "NA", initialOvr: 70, potential: 90, traits: ["Pace Merchant"], entersPool: "challengers" },
+    { id: "hist_rookie_purj", name: "Purj", role: "Main AR", region: "NA", initialOvr: 71, potential: 88, traits: ["Fundamental AR"], entersPool: "challengers" },
+    { id: "hist_rookie_gwinn", name: "Gwinn", role: "Flex", region: "NA", initialOvr: 69, potential: 87, traits: ["Flex Friendly"], entersPool: "challengers" },
+  ],
+  vanguard: [
+    { id: "hist_rookie_estreal", name: "Estreal", role: "Slayer SMG", region: "EU", initialOvr: 68, potential: 89, traits: ["Pace Merchant", "High Ceiling"], entersPool: "challengers" },
+    { id: "hist_rookie_afro", name: "Afro", role: "Main AR", region: "NA", initialOvr: 70, potential: 86, traits: ["Fundamental AR"], entersPool: "challengers" },
+    { id: "hist_rookie_lyynnz", name: "Lyynnz", role: "Flex", region: "NA", initialOvr: 68, potential: 88, traits: ["Flex Friendly"], entersPool: "challengers" },
+  ],
+  modern_warfare_2: [
+    { id: "hist_rookie_beans", name: "Beans", role: "Slayer SMG", region: "NA", initialOvr: 74, potential: 93, traits: ["Pace Merchant", "High Ceiling"], entersPool: "challengers" },
+    { id: "hist_rookie_nero", name: "Nero", role: "Flex", region: "NA", initialOvr: 70, potential: 89, traits: ["Flex Friendly"], entersPool: "challengers" },
+    { id: "hist_rookie_snoopy", name: "Snoopy", role: "Main AR", region: "NA", initialOvr: 71, potential: 88, traits: ["Fundamental AR"], entersPool: "challengers" },
+  ],
+  modern_warfare_3: [
+    { id: "hist_rookie_lynz", name: "Lynz", role: "Slayer SMG", region: "EU", initialOvr: 69, potential: 90, traits: ["Pace Merchant"], entersPool: "challengers" },
+    { id: "hist_rookie_flames", name: "Flames", role: "Main AR", region: "NA", initialOvr: 72, potential: 88, traits: ["Fundamental AR"], entersPool: "challengers" },
+    { id: "hist_rookie_kremp", name: "Kremp", role: "Flex", region: "NA", initialOvr: 70, potential: 89, traits: ["Flex Friendly"], entersPool: "challengers" },
+  ],
+  black_ops_6: [
+    { id: "hist_rookie_zyoudonk", name: "Zoudonk", role: "Slayer SMG", region: "NA", initialOvr: 70, potential: 92, traits: ["Pace Merchant", "High Ceiling"], entersPool: "challengers" },
+    { id: "hist_rookie_pandur", name: "Pandur", role: "Flex", region: "EU", initialOvr: 71, potential: 90, traits: ["Flex Friendly"], entersPool: "challengers" },
+    { id: "hist_rookie_reeal", name: "Reeal", role: "Main AR", region: "NA", initialOvr: 70, potential: 88, traits: ["Fundamental AR"], entersPool: "challengers" },
+  ],
 };

@@ -14,10 +14,10 @@ export function getBenchPlayers(players = [], teamId) {
   return getTeamPlayers(players, teamId).filter(p => p.isSub);
 }
 
-export function resolveSigningSlot(players = [], teamId, requestedSlot = "starter") {
+export function resolveSigningSlot(players = [], teamId, requestedSlot = "starter", limit = STARTER_LIMIT) {
   const starterCount = getStarters(players, teamId).length;
   if (requestedSlot === "sub" || requestedSlot === "bench") return "sub";
-  return starterCount < STARTER_LIMIT ? "starter" : "sub";
+  return starterCount < limit ? "starter" : "sub";
 }
 
 export function sortByOverallDesc(players = []) {

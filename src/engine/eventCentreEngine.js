@@ -700,6 +700,82 @@ export function makeUserMatchResultEvent(won, opponent, score, state) {
 }
 
 // Offseason start
+// ── Historical Dynasty: season / era transition inbox events ──────────────────
+// Built from state.pendingEraTransition (set when the historical era advances)
+// and the user's live roster-compliance status. Every message references real
+// simulation state — the title, ruleset, roster size and championship all come
+// from the active season definition, never invented.
+export function makeEraTransitionEvents(state) {
+  const t = state?.pendingEraTransition;
+  if (!t) return [];
+  const season = state.season ?? 1;
+  const events = [];
+  const fictional = t.dataStatus === "fictional";
+
+  // New game / new season announcement.
+  events.push(makeEvent({
+    type: "dynasty_new_title",
+    category: "Tournament",
+    severity: "high",
+    title: `New Season: ${t.newTitle}${t.seasonLabel ? ` (${t.seasonLabel})` : ""}`,
+    summary: `${fictional ? "A new (procedurally generated) Call of Duty title headlines" : "The competitive scene moves to"} ${t.newTitle}. ${t.rulesNote || ""} Modes: ${(t.modes || []).join(", ")}. Season championship: ${t.championship || "TBD"}.`,
+    season,
+    phase: "offseason",
+    targetScreen: "home",
+    actions: ["dismiss"],
+    dedupKey: `dynasty_title:${season}:${t.newEraId}`,
+  }));
+
+  // Ecosystem change (MLG → CWL → CDL franchising).
+  if (t.ecosystemChanged) {
+    const ecoLabel = { mlg: "open MLG circuit", cwl: "CWL structured league era", cdl: "CDL franchise era", future: "next competitive era" };
+    events.push(makeEvent({
+      type: "dynasty_ecosystem_change",
+      category: "Board",
+      severity: t.ecosystemTo === "cdl" ? "high" : "medium",
+      title: t.ecosystemTo === "cdl" ? "The CDL Franchise Era begins" : `Competitive structure changes: ${ecoLabel[t.ecosystemTo] || t.ecosystemTo}`,
+      summary: t.ecosystemTo === "cdl"
+        ? "Top-level competition moves to fixed, city-based franchise slots. League access now depends on franchise status."
+        : `The ecosystem shifts from the ${ecoLabel[t.ecosystemFrom] || t.ecosystemFrom} to the ${ecoLabel[t.ecosystemTo] || t.ecosystemTo}.`,
+      season,
+      phase: "offseason",
+      targetScreen: "home",
+      actions: ["dismiss"],
+      dedupKey: `dynasty_eco:${season}:${t.newEraId}`,
+    }));
+  }
+
+  // Roster-size change — action required if the user is now non-compliant.
+  if (t.rosterSizeChange !== 0) {
+    const expanding = t.rosterSizeChange > 0;
+    const userCount = (state.players || []).filter(p => p.teamId === state.userTeamId && !p.isSub && !isActuallyInactive(p)).length;
+    const compliant = userCount === t.newRosterSize;
+    events.push(makeEvent({
+      type: "dynasty_roster_size_change",
+      category: compliant ? "Contracts" : "Action Required",
+      severity: compliant ? "medium" : "high",
+      title: expanding
+        ? `Rosters expand to ${t.newRosterSize} players`
+        : `Rosters shrink to ${t.newRosterSize} players`,
+      summary: expanding
+        ? `${t.newTitle} requires ${t.newRosterSize}-player rosters. ${compliant ? "Your roster already meets the new size." : `Sign or promote a player before the season can start (you have ${userCount}/${t.newRosterSize}).`}`
+        : `${t.newTitle} returns to ${t.newRosterSize}-player rosters. ${compliant ? "Your roster already meets the new size." : `Release, bench or transfer a starter before the season can start (you have ${userCount}/${t.newRosterSize}).`}`,
+      season,
+      phase: "offseason",
+      actionRequired: !compliant,
+      targetScreen: "roster",
+      actions: compliant ? ["dismiss"] : ["dismiss"],
+      dedupKey: `dynasty_rostersize:${season}:${t.newEraId}`,
+    }));
+  }
+
+  return events;
+}
+
+function isActuallyInactive(p) {
+  return p?.status === "retired" || p?.status === "inactive" || p?.retired === true;
+}
+
 export function makeOffseasonStartEvent(season, state) {
   return makeEvent({
     type: "offseason_start",

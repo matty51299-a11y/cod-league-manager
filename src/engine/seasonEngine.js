@@ -29,6 +29,7 @@ import { placementText, qualifierPlacementLabel } from "../utils/placementDispla
 import { archiveCompletedSeason } from "../utils/seasonArchive.js";
 import { calculateSeasonAwards, mergeSeasonAwards } from "../utils/seasonAwards.js";
 import { advanceHistoricalEraIfNeeded } from "./historicalDynasty.js";
+import { getEra } from "../data/codEras.js";
 
 const CHALLENGER_QUALIFIER_TEAMS = 4;
 const CHALLENGERS_FINALS_TEAMS = 16;
@@ -2758,7 +2759,11 @@ export function advanceOffseason(gameState) {
   };
 
   if (gameState.schedule?.phase === "contracts") {
-    return withCdlRosterIntegrity(advanceHistoricalEraIfNeeded(withProgression), "open_free_agency");
+    // Contracts → free-agency window keeps the SAME season (no new schedule is
+    // built yet), so the historical era must NOT advance here. The era/title
+    // reveal happens exactly once, when the new season is built below (or in the
+    // freeAgencyOpen finalize path). Advancing here as well would skip an era.
+    return withCdlRosterIntegrity(withProgression, "open_free_agency");
   }
 
   const marketState = runAIFreeAgencyMarket(withProgression);
@@ -3075,13 +3080,18 @@ function buildTeamObj(teamId, gameState) {
   // Attach the team's CDL 2026 map profile so simMatch can derive the veto /
   // map-pool edge. getTeamMapProfile is read-only with a safe fallback, so this
   // works for CDL teams, temporary Challenger event teams, and legacy saves.
+  // Active season's role-weight environment — lets the match sim value roster
+  // roles by the current Call of Duty title (null for legacy/modern callers has
+  // no effect). Only meaningful in Historical Dynasty; modern eras use neutral-ish
+  // weights so behaviour is effectively unchanged.
+  const eraRoleWeights = gameState.careerMode === "historical" ? (getEra(gameState.currentEraId)?.roleWeights ?? null) : null;
   const eventTeam = gameState.schedule?.currentMajorEventTeams?.[teamId];
   if (eventTeam) {
-    return { id: eventTeam.id, name: eventTeam.name, players: eventTeam.players || [], mapProfile: getTeamMapProfile(gameState, teamId) };
+    return { id: eventTeam.id, name: eventTeam.name, players: eventTeam.players || [], mapProfile: getTeamMapProfile(gameState, teamId), eraRoleWeights };
   }
   const meta    = CDL_TEAMS.find(t => t.id === teamId) ?? { id: teamId, name: teamId };
   const players = activeMatchPlayers(gameState, teamId);
-  return { id: meta.id, name: meta.name, players, mapProfile: getTeamMapProfile(gameState, teamId) };
+  return { id: meta.id, name: meta.name, players, mapProfile: getTeamMapProfile(gameState, teamId), eraRoleWeights };
 }
 
 // Non-seeded form update for interactive match results (mirrors updateForm logic).
