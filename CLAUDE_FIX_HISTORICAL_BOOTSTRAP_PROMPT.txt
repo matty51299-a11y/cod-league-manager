@@ -1,0 +1,690 @@
+You are fixing a failed historical-dynasty implementation in my existing Call of Duty esports management game.
+
+I do not code. Inspect the repository and make every change yourself. Do not give me instructions to edit files manually.
+
+The previous implementation is fundamentally wrong because it layered historical features on top of the existing modern CDL/Challengers career bootstrap instead of replacing that bootstrap for historical saves.
+
+The screenshots and current behaviour prove the following failures:
+
+1. A new Ghosts historical save still creates only around 12 teams.
+2. Those teams have incorrect generated/current rosters instead of the Ghosts database rosters.
+3. The game then tries to add the correct historical players as “historical signings,” but sends them to free agency because the incorrect generated roster is already full.
+4. A brand-new Ghosts save produces messages such as:
+   - Replays was historically due to join your team but the roster is full.
+   - Classic was historically due to join your team but the roster is full.
+   - JKap was historically due to join your team but the roster is full.
+   - Proofy was historically due to join your team but the roster is full.
+5. This must never happen during initial historical save creation.
+6. The calendar still begins with “Stage 1” matches.
+7. The standings page still says “CDL League Standings – Season 1.”
+8. The user’s first fixture is a Stage 1 league match rather than an Online 2K/5K or configured Ghosts event.
+9. Teams already have Pro Points before any event has been played.
+10. The new-career screen still allows “Manage Challenger Team.”
+11. The new-career screen still describes a “Road to CDL” career.
+12. The scouting page still contains the modern Challengers/generated player pool.
+13. Challengers tabs, systems and language still appear during a Ghosts historical save.
+14. The historical Ghosts database contains roughly 28–29 organisations, but only a small modern league subset exists in the career.
+15. The old modern four-Major/stage ecosystem is still the authoritative career engine.
+
+Do not patch these symptoms individually while leaving the old bootstrap in control.
+
+Trace and replace the actual source of truth for historical career creation.
+
+======================================================================
+NON-NEGOTIABLE OUTCOME
+======================================================================
+
+A newly created “Historical Dynasty: Ghosts Era” career must be constructed directly from the Ghosts historical database.
+
+It must not:
+
+- create the modern 12 CDL franchises first;
+- create modern generated rosters first;
+- create Challengers teams first;
+- generate Stage 1;
+- generate four modern Majors;
+- pre-award Pro Points;
+- run roster reconciliation against fake initial rosters;
+- show CDL or Challengers UI.
+
+The historical database must be the initial source of truth.
+
+Historical reconciliation is for later season transitions only.
+
+======================================================================
+STEP 1: FIND THE REAL MODERN CAREER BOOTSTRAP
+======================================================================
+
+Inspect the code and identify every path involved in creating a new career, including:
+
+- new-career UI;
+- career mode selection;
+- team list creation;
+- default team records;
+- default player records;
+- roster generation;
+- user-team selection;
+- save-state defaults;
+- tournament/calendar generation;
+- standings generation;
+- Pro Point initialization;
+- Challengers initialization;
+- scouting-pool generation;
+- inbox generation;
+- save migration and hydration.
+
+Search for strings and concepts visible in the broken UI, including:
+
+- “Manage CDL Team”
+- “Manage Challenger Team”
+- “Road to CDL”
+- “CDL League Standings”
+- “Stage 1”
+- “Challengers”
+- “Major 1”
+- “Major 2”
+- “Major 3”
+- “Major 4”
+- default 12-team arrays
+- generated starter rosters
+- default team IDs
+- initial Pro Points
+- current-era player pools
+
+Document in your work log which functions currently create each broken piece.
+
+Then alter the historical path at the source.
+
+Do not simply hide the pages while the modern state still exists underneath.
+
+======================================================================
+STEP 2: SEPARATE INITIAL HISTORICAL CREATION FROM SEASON RECONCILIATION
+======================================================================
+
+There must be two different operations:
+
+A. createHistoricalCareer(...)
+B. reconcileHistoricalSeasonTransition(...)
+
+They must not be the same process.
+
+----------------------------------------------------------------------
+A. INITIAL HISTORICAL CAREER CREATION
+----------------------------------------------------------------------
+
+When the user starts a new Ghosts historical save:
+
+1. Begin with an empty career-world team collection.
+2. Load the Ghosts season from cod_dynasty_rosters.corrected.json.
+3. Create every valid Ghosts organisation in that database.
+4. Create or resolve every player by permanent playerId.
+5. Assign each player directly to their database team.
+6. Set the correct displayed team and player names.
+7. Set four starters for each four-player Ghosts roster.
+8. Do not first create generated players or modern players.
+9. Do not protect an incorrect pre-existing user roster, because no user roster exists yet.
+10. Let the user choose from the full historical Ghosts organisation list.
+11. Once selected, mark that historical team as user-controlled.
+12. Its historical roster is the user’s initial roster.
+13. Initialize every player’s Ghosts-season Pro Points to zero.
+14. Generate the historical Ghosts event calendar.
+15. Do not generate Stage 1 or modern Majors.
+16. Do not initialize Challengers.
+17. Do not generate modern scouting candidates.
+18. Do not create “historical signing sent to free agency” messages.
+19. Persist a marker such as:
+    historicalInitialisationSeasonId: "ghosts"
+20. Ensure this initialization runs exactly once.
+
+The very first Ghosts save state should already contain the correct teams and rosters.
+
+There should be no reconciliation conflict merely because the initial roster is historically accurate.
+
+----------------------------------------------------------------------
+B. LATER HISTORICAL SEASON TRANSITIONS
+----------------------------------------------------------------------
+
+Only when moving from Ghosts to Advanced Warfare, or another later title, use roster reconciliation.
+
+At that point:
+
+- protect the user’s existing roster;
+- preserve user decisions;
+- move AI teams toward the next historical target;
+- send a blocked historical signing to free agency if the user team is full;
+- find AI replacements when the user owns a historically required player.
+
+The previous implementation incorrectly applied transition rules during initial world creation.
+
+Fix that architectural error.
+
+Add a test proving:
+
+- initial Ghosts creation produces no USER_TEAM_FULL_SIGNING_TO_FREE_AGENCY conflicts;
+- later transitions can still produce that conflict legitimately.
+
+======================================================================
+STEP 3: CREATE ALL HISTORICAL GHOSTS TEAMS
+======================================================================
+
+Do not use a hardcoded 12-team CDL collection.
+
+The career team collection for Ghosts must contain every valid team from the Ghosts season of cod_dynasty_rosters.corrected.json, approximately 28–29 teams depending on the unresolved duplicate-data handling.
+
+Requirements:
+
+- iterate the Ghosts database teams;
+- create one persistent team object per historical organisation;
+- preserve historicalTeamId;
+- assign region where available;
+- assign every listed player;
+- ensure every team has a valid four-player active lineup;
+- do not silently omit lower-ranked organisations;
+- do not classify part of the list as Challengers;
+- do not create modern CDL franchises unless they genuinely appear in that historical season;
+- do not create additional fictional organisations during initialisation.
+
+The new-career team selector must use this complete historical team collection.
+
+Do not show only Team Kaliber, Denial, Evil Geniuses, Rise, FaZe Red, compLexity, EnVy, OpTic, Epsilon, Prophecy, Vitality and Strictly Business.
+
+Those may be part of the field, but they are not the entire field.
+
+Add a validation test that:
+
+- the number of initialized Ghosts teams equals the number of usable Ghosts team records in the JSON;
+- every initialized team has its expected roster IDs;
+- no modern default team was added outside that set.
+
+If the unresolved Blackk warning makes one assignment ambiguous:
+
+- keep Blackk on the first configured team as already specified;
+- do not omit the second organisation;
+- leave the second organisation short only if unavoidable, then fill it using a clearly logged free-agent fallback;
+- do not reduce the entire league to 12 teams.
+
+======================================================================
+STEP 4: FIX THE NEW-CAREER SCREEN
+======================================================================
+
+When “Historical Dynasty: Ghosts Era” is selected:
+
+REMOVE or completely hide:
+
+- Manage CDL Team
+- Manage Challenger Team
+- Road to CDL career text
+- CDL franchise count
+- Challengers team count
+- Pro-Am Majors wording
+- Challengers Finals wording
+- modern team cards
+- modern prospect-career language
+
+Replace this section with one historical open-circuit selection:
+
+Heading:
+Choose a Ghosts Organisation
+
+Description:
+Choose from the historical Ghosts field. Every organisation competes in the same open circuit through Online 2Ks, Online 5Ks, open LANs, league events and the Call of Duty Championship.
+
+Show all initialized Ghosts teams.
+
+There must be no CDL-versus-Challengers toggle for historical open-circuit seasons.
+
+Keep the historical strictness selector only if it genuinely changes implementation behaviour.
+
+Ensure:
+
+- Loose History
+- Balanced History
+- Strict History
+
+do not accidentally route through three different modern bootstraps.
+
+All three must use the historical team database.
+
+======================================================================
+STEP 5: REMOVE STAGE 1 AND CDL STANDINGS FROM GHOSTS
+======================================================================
+
+A Ghosts historical save must not create a generic Stage 1 league.
+
+Delete, bypass or gate the code that creates:
+
+- Stage 1;
+- Stage 2;
+- Stage 3;
+- Stage 4;
+- CDL season points;
+- generic CDL league standings;
+- modern Major qualification;
+- modern Major brackets.
+
+For Ghosts:
+
+- the first playable competition should come from the configured historical calendar;
+- online 2K and 5K cups must appear on their scheduled dates;
+- real configured LANs and leagues must appear;
+- MLG League Season 1 may have standings only when that actual configured league is active;
+- that page must say “MLG Call of Duty League 2014 Season 1,” not “CDL League Standings – Season 1”;
+- it must use the configured historical field size, not the same 12-team modern table;
+- MLG League standings must not exist before the league begins unless shown clearly as an upcoming empty competition;
+- the user’s next-match modal must state the actual event, round and phase.
+
+Examples:
+
+Online 2K #1 — Round of 32
+UMG Philadelphia — Open Bracket Round 1
+MLG League Season 1 — Week 1
+Call of Duty Championship — Pool B Match 1
+
+Never:
+
+Stage 1 — Matchday 1
+
+Add a test that a newly initialized Ghosts calendar contains:
+
+- multiple Online 2K events;
+- multiple Online 5K events;
+- configured Ghosts LAN/league events;
+- zero generic Stage events;
+- zero modern Major events.
+
+======================================================================
+STEP 6: PRO POINTS MUST BEGIN AT ZERO
+======================================================================
+
+Every Ghosts player and team currently appears to have Pro Points before playing.
+
+Fix the initialization.
+
+For a brand-new Ghosts historical career:
+
+playerSeasonProPoints["ghosts"][playerId] = 0
+
+Team totals are derived from the eligible active roster:
+
+teamProPoints =
+  sum(active starter player points for the current season)
+
+Do not generate random starting points.
+Do not inherit modern CDL points.
+Do not derive initial points from team rating.
+Do not seed points from historical prestige.
+Do not award points merely for being in the database.
+Do not award points during event generation.
+Do not award points during save hydration.
+Do not award points more than once.
+
+Points are awarded only after a tournament placement is finalized.
+
+Online 2K:
+- winner receives 2,000 per locked player.
+
+Online 5K:
+- winner receives 5,000 per locked player.
+
+Use the configured lower-placement tables already requested.
+
+At the beginning of the save, every ranking must show zero until a point-awarding event completes.
+
+For the first event, use a deterministic fallback seed such as:
+
+1. historical seed/prestige field if explicitly configured;
+2. team overall;
+3. alphabetical or stable team ID.
+
+Do not fake Pro Points just to create a first-event seed.
+
+Label the first-event seeding method honestly in the UI.
+
+Add tests:
+
+- all player points are zero immediately after Ghosts creation;
+- all team totals are zero;
+- generating fixtures changes no points;
+- playing/simulating a 2K awards points exactly once;
+- reloading does not award them again.
+
+======================================================================
+STEP 7: COMPLETELY DISABLE CHALLENGERS FOR HISTORICAL OPEN CIRCUIT
+======================================================================
+
+For Ghosts and other open-circuit historical seasons:
+
+competitionProfile.usesChallengers must be false.
+
+This must control both state and UI.
+
+Do not merely hide one navigation tab.
+
+Do not create:
+
+- Challengers teams;
+- Challengers league;
+- Challengers standings;
+- Challengers points;
+- Challengers schedule;
+- Challengers qualification;
+- Challengers player pool;
+- Challengers scouting pool;
+- promotion/relegation to CDL;
+- Road to CDL objectives;
+- Challengers Finals;
+- Pro-Am Major qualification logic.
+
+Remove or gate every historical-save reference to those systems.
+
+Search for all uses of:
+
+challenger
+challengers
+isChallenger
+challengerTeam
+challengerPlayers
+challengerStandings
+challengerPoints
+roadToCDL
+proAm
+scoutingPool
+
+A historical Ghosts organisation is not a “Challenger team.”
+
+All historical organisations share one open circuit.
+
+Add an invariant:
+
+if career.competitionProfile.usesChallengers === false:
+  historical career state must contain zero active Challengers competitions and zero Challengers-only teams.
+
+======================================================================
+STEP 8: FIX SCOUTING AND PLAYER AVAILABILITY
+======================================================================
+
+The current scouting screen is showing a modern generated/Challengers prospect pool containing players such as:
+
+- VinnyReaper
+- Frenchie
+- Ethan
+- Khhx
+- Alfa
+- DKqrryy
+- Abe
+- Attach
+- Swooty
+- Alluka
+- Infinity
+
+This is evidence that the modern scouting bootstrap still runs.
+
+For the initial Ghosts historical season:
+
+- do not initialize the modern Challengers scouting pool;
+- do not present all real historical players as mysterious generated prospects;
+- players assigned to historical teams must appear only on their teams;
+- unassigned historical players may appear in free agency;
+- genuine free agents should be directly viewable and signable according to the game’s contract rules;
+- scouting may be disabled for the initial historical season if there is no historically coherent prospect system yet;
+- alternatively, scouting may contain only explicitly generated future prospects, clearly separated from active historical players;
+- do not generate 170 modern targets at career creation;
+- do not use current-era age/potential assumptions for old-era players.
+
+Preferred immediate solution:
+
+For historical open-circuit seasons, replace “Prospect Scouting” with:
+
+Player Market
+
+Sections:
+- Free Agents
+- Transfer Listed
+- Expiring Contracts
+- Future Prospects, only if generated prospect support is intentionally enabled
+
+Do not call existing historical professionals “hidden gems” simply because they were in the old Challengers list.
+
+If keeping future generated prospects:
+
+- generate a small configurable number;
+- do not assign them to a Challengers division;
+- keep them separate from the historical roster database;
+- avoid injecting them into initial teams;
+- use era-appropriate ages and availability;
+- do not allow them to crowd out the real historical field.
+
+======================================================================
+STEP 9: FIX THE INCORRECT USER ROSTER SHOWN IN THE SCREENSHOT
+======================================================================
+
+The screenshot shows FaZe Red beginning with:
+
+- Priestahh
+- ZooMaa
+- Replays
+- MboZe
+
+This is not the roster that should be created merely because the modern/generated roster bootstrap chose it.
+
+Do not try to “fix” this by sending Classic, JKap and Proofy to free agency after the incorrect roster is already protected.
+
+The correct fix is:
+
+- determine FaZe Red’s Ghosts roster from the supplied historical JSON;
+- create FaZe Red with that roster during initial career creation;
+- only after the career has begun should the user’s roster become protected;
+- no initial historical signing conflict messages.
+
+The same rule applies to every selectable organisation.
+
+Add a snapshot or data integrity test for several known teams, including the user-selected FaZe Red example, comparing initialized player IDs against the Ghosts database.
+
+======================================================================
+STEP 10: CLEAN SAVE AND MIGRATION BEHAVIOUR
+======================================================================
+
+The existing broken save may already contain:
+
+- 12 modern teams;
+- generated rosters;
+- Stage 1 fixtures;
+- CDL standings;
+- preloaded Pro Points;
+- Challengers state;
+- incorrect scouting targets;
+- historical-signing conflict messages.
+
+Implement a migration with a new schema/version marker.
+
+For development and testing, provide a clearly visible option to create a completely fresh historical save.
+
+For a historical save that has not played any official match:
+
+- rebuild the world from the Ghosts database;
+- replace the 12-team list with the complete Ghosts field;
+- replace generated rosters with database rosters;
+- delete generic Stage fixtures;
+- delete modern Major fixtures;
+- delete Challengers state;
+- reset Ghosts Pro Points to zero;
+- remove invalid initial reconciliation inbox messages;
+- generate the historical calendar;
+- preserve only the user’s chosen historical organisation and settings.
+
+For a historical save where matches have already been played:
+
+- do not silently destroy progress;
+- either migrate results into matching historical events where safe;
+- or mark the save as legacy/broken and require a new historical career;
+- provide a clear explanation in the final report.
+
+Do not continue using polluted old state and then claim the fix failed.
+
+The clean-start flow must be tested from a deleted/local-storage-free state.
+
+Also test save reload after initialization.
+
+======================================================================
+STEP 11: REQUIRED RUNTIME INVARIANTS
+======================================================================
+
+Add development assertions or validation logging for historical Ghosts saves:
+
+1. Team count equals usable Ghosts database team count.
+2. Every active team belongs to the Ghosts historical set.
+3. Every team has no more than four active starters.
+4. Every assigned player appears on at most one team.
+5. vortex-uk and vortex-fr remain separate.
+6. No Challengers competition exists.
+7. No generic Stage competition exists.
+8. No modern Major competition exists.
+9. Every current-season player Pro Point value starts at zero.
+10. No initial USER_TEAM_FULL_SIGNING_TO_FREE_AGENCY messages exist.
+11. Calendar contains 2K and 5K events.
+12. Calendar contains historical Ghosts LAN/league events.
+13. User team roster matches its historical database roster on day one.
+14. Historical initialisation marker is present.
+15. Reloading produces the same team count, rosters and event IDs.
+
+If any invariant fails in development, log a detailed error showing the creating module and offending IDs.
+
+======================================================================
+STEP 12: UI ACCEPTANCE CRITERIA
+======================================================================
+
+A newly created Ghosts save should visibly show:
+
+NEW CAREER:
+- Historical Dynasty: Ghosts Era
+- one historical organisation selection
+- roughly 28–29 selectable historical organisations
+- no Manage CDL Team option
+- no Manage Challenger Team option
+- no Road to CDL text
+
+TEAM PAGE:
+- the selected team’s actual Ghosts database roster
+- four starters
+- no incorrect modern/generated starting roster
+- no immediate historical-signing rejection messages
+
+TOURNAMENT/CALENDAR:
+- Online 2K and Online 5K events
+- historical LANs and MLG league events
+- no Stage 1
+- no four generic Majors
+- no Challengers events
+
+STANDINGS:
+- Pro Points ranking beginning at zero
+- specific MLG League table only when viewing that configured event
+- no “CDL League Standings – Season 1”
+
+SCOUTING/MARKET:
+- no modern Challengers pool
+- no 170-target generated list on day one
+- historical free agents shown coherently
+- no Challengers language
+
+INBOX:
+- open-circuit introduction is acceptable
+- unresolved Blackk warning is acceptable
+- no “historical signing sent to free agency” messages during initial creation
+
+NEXT MATCH:
+- actual event name and round
+- no “Stage 1 – Matchday 1”
+
+======================================================================
+STEP 13: TESTS THAT MUST PASS
+======================================================================
+
+Add or update tests for all of the following:
+
+1. createHistoricalCareer("ghosts") creates the full usable Ghosts team count.
+2. It creates no modern default teams.
+3. Every team roster matches the Ghosts JSON.
+4. The chosen user team starts with its historical roster.
+5. Initial creation produces no blocked historical-signing conflicts.
+6. All player Pro Points start at zero.
+7. All team Pro Point totals start at zero.
+8. No Stage competition is generated.
+9. No generic Major competition is generated.
+10. 2K and 5K events are generated.
+11. Historical LAN and league events are generated.
+12. usesChallengers is false.
+13. No Challengers teams, standings, points or scouting pool exist.
+14. The new-career historical team selector includes the full historical field.
+15. vortex-uk and vortex-fr remain separate.
+16. MethodZ and Methodz remain separate.
+17. Reloading does not duplicate teams, players, events or messages.
+18. A later season transition still protects user roster decisions.
+19. A blocked later historical signing correctly goes to free agency.
+20. Playing a first 2K awards points exactly once.
+
+Run:
+
+- the project’s typecheck;
+- all tests;
+- production build.
+
+Fix every error introduced.
+
+======================================================================
+STEP 14: DO NOT ACCEPT THESE FAKE FIXES
+======================================================================
+
+The task is not complete if you only:
+
+- hide the Challengers button with CSS;
+- rename Stage 1 to Online 2K;
+- rename CDL standings to Pro Points;
+- manually set the displayed team count;
+- add 2K events while Stage 1 remains active;
+- reset the visible Pro Points while hidden points remain in state;
+- add historical teams but keep the 12 modern teams active;
+- keep generated rosters and treat historical rosters as transfers;
+- disable scouting UI while still creating the Challengers player pool;
+- require me to delete or edit data manually;
+- create a second unused historical engine that the real career never calls.
+
+The actual historical career path must use the historical data and historical competition engine as its authoritative state.
+
+======================================================================
+FINAL RESPONSE
+======================================================================
+
+When finished, report:
+
+- the exact root cause;
+- the original historical bootstrap function;
+- the modern bootstrap code that was bypassed or gated;
+- team count created for Ghosts;
+- how initial rosters are now created;
+- how initial creation differs from later reconciliation;
+- how Pro Points are initialized;
+- how Stage 1 was removed;
+- how Challengers was disabled in state and UI;
+- how scouting was changed;
+- how old broken saves are handled;
+- files changed;
+- tests added;
+- typecheck result;
+- test result;
+- production build result.
+
+Include a short manual verification checklist using a completely fresh Ghosts save.
+
+Do not report completion while any of the following remains visible in a fresh historical save:
+
+- Manage Challenger Team
+- Road to CDL
+- Stage 1
+- CDL League Standings
+- four generic Majors
+- preloaded Pro Points
+- the modern Challengers scouting pool
+- only 12 active teams
+- incorrect generated starting rosters
+- initial historical-signing rejection messages
