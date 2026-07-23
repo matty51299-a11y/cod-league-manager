@@ -52,6 +52,7 @@ import {
   generateMatchInboxEvents,
 } from "../engine/eventCentreEngine.js";
 import { createHistoricalStateFields, migrateHistoricalDynastyState, introduceHistoricalRookieClass } from "../engine/historicalDynasty.js";
+import { ensureOpenCircuitSeason, stateUsesOpenCircuit } from "../engine/openCircuitCareer.js";
 import { buildHistoricalStartingRoster, applyEraTeamBranding } from "../data/historicalTeams.js";
 import { HISTORICAL_START_ERA_ID, MODERN_ERA_ID } from "../data/codEras.js";
 
@@ -379,7 +380,11 @@ function createInitialGameState(userTeamId, userTeamType = "cdl", seedOverride =
   finalState.teamMapProfiles = ensureTeamMapProfiles(finalState, { force: true });
   // Squad dynamics: seed neutral-positive morale for every rostered player.
   finalState.playerMorale = migratePlayerMorale(finalState);
-  return ensureMoraleConversationState(finalState);
+  finalState = ensureMoraleConversationState(finalState);
+  // Historical open-circuit (Ghosts-era) seasons build their data-driven circuit
+  // — calendar, Pro Points, brackets — instead of the modern four-Major system.
+  finalState = ensureOpenCircuitSeason(finalState);
+  return finalState;
 }
 
 // ── Board objective (re)generation — sets objectives + explanatory meta ───────
@@ -567,7 +572,10 @@ export function __diagnoseReducer(state, action) {
       if (!cleaned.eventCentre.events.length && (cleaned.feed ?? []).length) {
         cleaned.eventCentre = pushEvents(cleaned.eventCentre, convertFeedToEvents(cleaned.feed));
       }
-      const moraleCleaned = ensureMoraleConversationState(cleaned);
+      let moraleCleaned = ensureMoraleConversationState(cleaned);
+      // Save migration: rebuild the open-circuit season from persisted markers.
+      // Idempotent — the build key prevents re-running / re-awarding on reload.
+      moraleCleaned = ensureOpenCircuitSeason(moraleCleaned);
       return isValidGameState(moraleCleaned) ? moraleCleaned : null;
     }
 
@@ -824,6 +832,10 @@ export function __diagnoseReducer(state, action) {
       // Historical Dynasty: announce the new title / ruleset / roster-size change.
       offseasonEvents.push(...makeEraTransitionEvents(finalOffseasonState));
       finalOffseasonState = pushInboxEvents(finalOffseasonState, offseasonEvents);
+      // New COD title / season → rebuild the open-circuit season for open-circuit
+      // eras (Ghosts…). Idempotent via the era+season build key; also archives
+      // the previous title's Pro Points and generates roster-change inbox news.
+      finalOffseasonState = ensureOpenCircuitSeason(finalOffseasonState);
       return finalOffseasonState;
       };
       return state.schedule?.phase === "contracts" ? runAdvance() : runIfUserRosterValid(state, runAdvance);
