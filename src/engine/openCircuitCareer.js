@@ -56,54 +56,40 @@ function getUserRosterForCircuit(state) {
     .map((p) => ({ id: p.id, name: p.name, overall: p.overall, primary: p.primary || p.role, region: p.region }));
 }
 
-// Compact, serialisable summary of a simulated event for the save/UI.
-function summariseResults(results, world) {
+// Assemble the persisted openCircuit object from an engine run. This carries
+// both the UI-facing summary (results, ranking, calendar) and the compact resume
+// payload (`sim`: raw results + Pro Points store) that lets the season advance
+// one event at a time across saves/reloads without regenerating fixtures.
+function assembleOpenCircuit(run, buildKey) {
+  const world = run.world;
+  const profile = run.profile;
+  const seasonId = run.season.seasonId;
+  const rawResults = run.season.results;
+  const proStore = migrateProPointsStore(run.season.proStore);
   const named = (teamId) => world.teams[teamId]?.name || teamId;
-  const out = {};
-  for (const [id, r] of Object.entries(results)) {
+
+  const results = {};
+  for (const [id, r] of Object.entries(rawResults)) {
     if (!r.completed) continue;
-    out[id] = {
-      completed: true,
-      name: r.name, eventType: r.eventType, tier: r.tier, startDate: r.startDate,
-      skipped: !!r.skipped, fieldSize: r.fieldSize || 0,
+    results[id] = {
+      completed: true, skipped: !!r.skipped,
+      name: r.name, eventType: r.eventType, tier: r.tier, startDate: r.startDate, fieldSize: r.fieldSize || 0,
       phases: (r.phases || []).map((p) => p.phase),
       placements: (r.placements || []).slice(0, 8).map((p) => ({ rank: p.placement, teamId: p.teamId, name: named(p.teamId) })),
       awards: (r.awards || []).slice(0, 3).map((a) => ({ placement: a.placement, teamId: a.teamId, name: named(a.teamId), pointsPerPlayer: a.pointsPerPlayer, teamPrize: a.teamPrize })),
+      userMatches: (r.userMatches || []).map((m) => ({ phase: m.phase, opponent: named(m.opponent), won: m.won, score: m.score })),
     };
   }
-  return out;
-}
 
-// Build (or rebuild for a new season) the open-circuit season for a state.
-// Returns a NEW state; a no-op (same object semantics) when already built.
-export function ensureOpenCircuitSeason(state) {
-  if (!stateUsesOpenCircuit(state)) return state;
-  const buildKey = `${state.currentEraId}:${state.season ?? 1}`;
-  if (state.openCircuit?.buildKey === buildKey) return state; // already built (idempotent)
+  const all = run.season.calendar.all
+    .map((e) => ({ id: e.id, name: e.name, eventType: e.eventType, tier: e.tier, startDate: e.startDate, endDate: e.endDate, location: e.location, prizePool: e.prizePool, qualificationMode: e.qualificationMode, targetFieldSize: e.targetFieldSize }))
+    .sort((a, b) => String(a.startDate).localeCompare(String(b.startDate)) || String(a.id).localeCompare(String(b.id)));
+  const nextEvent = all.find((e) => !rawResults[e.id]?.completed) || null;
 
-  const dynastySeed = (state.dynastySeed ?? 0) >>> 0;
-  const profile = buildCompetitionProfile(state.currentEraId);
-
-  // Provisional world just to resolve the user's DB team id.
-  const probe = buildAndRunOpenCircuitSeason({
-    eraId: state.currentEraId, userTeamId: state.userTeamId,
-    userPlayers: getUserRosterForCircuit(state), dynastySeed,
-  });
-  const userDbTeamId = probe.world ? resolveUserDbTeamId(state, probe.world) : state.userTeamId;
-
-  const run = buildAndRunOpenCircuitSeason({
-    eraId: state.currentEraId, userTeamId: userDbTeamId,
-    userPlayers: getUserRosterForCircuit(state), dynastySeed,
-  });
-  if (!run.world) {
-    return { ...state, competitionProfile: profile, openCircuit: { buildKey, error: run.error || "no_data" } };
-  }
-
-  const proStore = migrateProPointsStore(run.season.proStore);
-  const openCircuit = {
+  return {
     buildKey,
-    seasonId: run.season.seasonId,
-    userTeamId: run.world.userTeamId,
+    seasonId,
+    userTeamId: world.userTeamId,
     ecosystemType: profile.ecosystemType,
     usesChallengers: profile.usesChallengers,
     usesProPoints: profile.usesProPoints,
@@ -112,19 +98,108 @@ export function ensureOpenCircuitSeason(state) {
       cupCount: run.season.calendar.cups.length,
       throwbacks: run.season.calendar.throwbacks.map((e) => ({ id: e.id, name: e.name, startDate: e.startDate })),
       overlaps: run.season.calendar.overlaps,
+      all,
     },
-    results: summariseResults(run.season.results, run.world),
+    results,
     ranking: run.season.ranking.slice(0, 32).map((r) => ({ rank: r.rank, teamId: r.teamId, name: r.name, points: r.points, roster: r.roster })),
-    teamsById: Object.fromEntries(Object.values(run.world.teams).filter((t) => t.isActive).map((t) => [t.id, { name: t.name, region: t.region, roster: t.roster, isUserControlled: !!t.isUserControlled }])),
-    playersById: Object.fromEntries(Object.values(run.world.players).map((p) => [p.id, { name: p.name, gamertag: p.gamertag, overall: p.overall, teamId: p.teamId }])),
+    teamsById: Object.fromEntries(Object.values(world.teams).filter((t) => t.isActive).map((t) => [t.id, { name: t.name, region: t.region, roster: t.roster, isUserControlled: !!t.isUserControlled }])),
+    playersById: Object.fromEntries(Object.values(world.players).map((p) => [p.id, { name: p.name, gamertag: p.gamertag, overall: p.overall, teamId: p.teamId }])),
     conflicts: run.reconciliationConflicts || [],
-    warnings: [...(run.warnings || []), ...((run.world.regionWarnings) || [])],
-    proPoints: proStore.playerSeasonProPoints[run.season.seasonId] || {},
+    warnings: [...(run.warnings || []), ...((world.regionWarnings) || [])],
+    proPoints: proStore.playerSeasonProPoints[seasonId] || {},
+    // Progression cursor + resume payload.
+    playedCount: Object.values(rawResults).filter((r) => r.completed && !r.skipped).length,
+    totalEvents: all.length,
+    nextEventId: nextEvent ? nextEvent.id : null,
+    seasonComplete: !nextEvent,
+    sim: { results: rawResults, proStore },
   };
+}
 
+// Build (or rebuild for a new season) the open-circuit season for a state — the
+// schedule is created but NOTHING is played yet (Pro Points start at zero); the
+// user plays through it event by event via advanceOpenCircuitEvent. Idempotent
+// per era+season build key, so reloads never regenerate or re-simulate.
+export function ensureOpenCircuitSeason(state) {
+  if (!stateUsesOpenCircuit(state)) return state;
+  const buildKey = `${state.currentEraId}:${state.season ?? 1}`;
+  if (state.openCircuit?.buildKey === buildKey) return state; // already built (idempotent)
+
+  const dynastySeed = (state.dynastySeed ?? 0) >>> 0;
+  const profile = buildCompetitionProfile(state.currentEraId);
+  const userPlayers = getUserRosterForCircuit(state);
+
+  // Provisional world just to resolve the user's DB team id (nothing simulated).
+  const probe = buildAndRunOpenCircuitSeason({
+    eraId: state.currentEraId, userTeamId: state.userTeamId, userPlayers, dynastySeed, maxNewEvents: 0,
+  });
+  const userDbTeamId = probe.world ? resolveUserDbTeamId(state, probe.world) : state.userTeamId;
+
+  const run = buildAndRunOpenCircuitSeason({
+    eraId: state.currentEraId, userTeamId: userDbTeamId, userPlayers, dynastySeed, maxNewEvents: 0,
+  });
+  if (!run.world) {
+    return { ...state, competitionProfile: profile, openCircuit: { buildKey, error: run.error || "no_data" } };
+  }
+
+  const openCircuit = assembleOpenCircuit(run, buildKey);
   let next = { ...state, competitionProfile: profile, openCircuit };
   next = pushOpenCircuitInbox(next, openCircuit);
   return next;
+}
+
+// Play the next event on the open-circuit calendar (rolling past any AI-only
+// "no eligible field" skips), award Pro Points once, and record the user team's
+// match log. Returns a NEW state; a no-op when the season is already complete.
+export function advanceOpenCircuitEvent(state) {
+  if (!stateUsesOpenCircuit(state)) return state;
+  const oc = state.openCircuit;
+  if (!oc || oc.error || oc.seasonComplete) return state;
+
+  const dynastySeed = (state.dynastySeed ?? 0) >>> 0;
+  const userPlayers = getUserRosterForCircuit(state);
+  const run = buildAndRunOpenCircuitSeason({
+    eraId: state.currentEraId, userTeamId: oc.userTeamId, userPlayers, dynastySeed,
+    existing: oc.sim, maxNewEvents: 1,
+  });
+  if (!run.world) return state;
+
+  const before = new Set(Object.keys(oc.sim?.results || {}).filter((id) => oc.sim.results[id]?.completed && !oc.sim.results[id]?.skipped));
+  const openCircuit = assembleOpenCircuit(run, oc.buildKey);
+  const justPlayed = Object.entries(run.season.results)
+    .filter(([id, r]) => r.completed && !r.skipped && !before.has(id))
+    .map(([id, r]) => ({ id, name: r.name, placements: r.placements, awards: r.awards, userMatches: r.userMatches }));
+  openCircuit.lastPlayedEventId = justPlayed.length ? justPlayed[justPlayed.length - 1].id : (oc.lastPlayedEventId || null);
+
+  let next = { ...state, openCircuit };
+  next = pushCircuitResultInbox(next, justPlayed, openCircuit);
+  return next;
+}
+
+// Inbox item summarising the user's finish at each freshly-played event.
+function pushCircuitResultInbox(state, justPlayed, oc) {
+  const season = state.season ?? 1;
+  const events = [];
+  const seen = new Set((state.eventCentre?.events || []).map((e) => e.dedupKey).filter(Boolean));
+  for (const ev of justPlayed) {
+    const placement = (ev.placements || []).find((p) => p.teamId === oc.userTeamId);
+    if (!placement) continue;
+    const award = (ev.awards || []).find((a) => a.placement === placement.placement);
+    const dedupKey = `oc_result:${oc.buildKey}:${ev.id}`;
+    if (seen.has(dedupKey)) continue;
+    seen.add(dedupKey);
+    const rank = placement.placement;
+    const finishTxt = rank === 1 ? "won" : `finished ${rank}${rank === 2 ? "nd" : rank === 3 ? "rd" : "th"} at`;
+    events.push(makeEvent({
+      type: "circuit_result", category: "Tournament", severity: rank <= 3 ? "medium" : "low",
+      title: rank === 1 ? `Champions — ${ev.name}` : `${ev.name} result`,
+      summary: `Your team ${finishTxt} ${ev.name}${award ? ` — +${award.pointsPerPlayer.toLocaleString()} Pro Points per player` : ""}.`,
+      season, phase: "stage", targetScreen: "circuit",
+      dedupKey, actions: ["dismiss"],
+    }));
+  }
+  if (!events.length) return state;
+  return { ...state, eventCentre: { ...(state.eventCentre || { events: [], nextId: 1 }), events: [...(state.eventCentre?.events || []), ...events] } };
 }
 
 // Inbox stories for major roster changes surfaced by reconciliation. Deduped by

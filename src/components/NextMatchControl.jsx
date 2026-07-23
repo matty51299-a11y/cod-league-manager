@@ -17,13 +17,25 @@ export default function NextMatchControl({ onOpen }) {
   const { schedule, userTeamId } = state;
 
   // ── Historical open-circuit mode ─────────────────────────────────────────
-  // The whole open-circuit season is simulated up front and reviewed in the
-  // Circuit tab; the primary progression is rolling the dynasty to the next
-  // title/season.
+  // The season is played event by event: the primary control plays the next
+  // tournament, and once the whole calendar is done it rolls the dynasty to the
+  // next title/season.
   if (state.userTeamType === "historical") {
+    const oc = state.openCircuit;
+    const seasonComplete = !oc || oc.error || oc.seasonComplete;
+    const nextEvent = !seasonComplete && (oc.calendar?.all || []).find(e => e.id === oc.nextEventId);
+    if (seasonComplete) {
+      return (
+        <button className="nmc-btn" onClick={() => dispatch({ type: "ADVANCE_OFFSEASON" })} title="Roll the dynasty forward to the next title/season">
+          <span className="nmc-play-label">Advance Season</span>
+          <span className="nmc-arrow">▶</span>
+        </button>
+      );
+    }
     return (
-      <button className="nmc-btn" onClick={() => dispatch({ type: "ADVANCE_OFFSEASON" })} title="Roll the dynasty forward to the next title/season">
-        <span className="nmc-play-label">Advance Season</span>
+      <button className="nmc-btn" onClick={() => dispatch({ type: "SIM_NEXT_CIRCUIT_EVENT" })} title={nextEvent ? `Play ${nextEvent.name}` : "Play the next event"}>
+        <span className="nmc-play-label">Play Next Event</span>
+        {nextEvent && <><span className="nmc-divider">·</span><span className="nmc-opp">{nextEvent.name.length > 22 ? nextEvent.name.slice(0, 22) + "…" : nextEvent.name}</span></>}
         <span className="nmc-arrow">▶</span>
       </button>
     );
