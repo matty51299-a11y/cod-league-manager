@@ -19,11 +19,16 @@
     "test:full-season": "node --import ./scripts/register-assets.mjs scripts/diagnoseFullSeasonFlow.mjs"
   },
   "dependencies": {
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.26.0",
     "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "react-dom": "^19.2.4",
+    "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
+    "@tailwindcss/postcss": "^4.3.3",
+    "@tailwindcss/vite": "^4.3.3",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.0",
@@ -32,6 +37,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.4.0",
     "playwright": "^1.60.0",
+    "tailwindcss": "^4.3.3",
     "vite": "^8.0.0"
   }
 }
