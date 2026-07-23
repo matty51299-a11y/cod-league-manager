@@ -7,8 +7,8 @@
 
 import { useMemo, useState } from "react";
 import { CDL_TEAMS } from "../data/teams.js";
-import { brandSetForEra } from "../data/historicalTeams.js";
 import { HISTORICAL_START_ERA_ID } from "../data/codEras.js";
+import { buildHistoricalSeasonTemplate } from "../data/historicalRosterDb.js";
 import { useGame, buildChallengerPreview } from "../store/gameStore.jsx";
 
 export default function TeamSelect() {
@@ -18,14 +18,7 @@ export default function TeamSelect() {
   const [strictness, setStrictness] = useState("balanced"); // loose | balanced | strict
   const [seedInput, setSeedInput] = useState("");
 
-  // Preview the era's real organisations in the picker without mutating global
-  // state: overlay the Ghosts (MLG-era) brand on each stable slot for display.
-  // The actual re-skin is applied by the store on NEW_GAME.
-  const previewBrands = careerMode === "historical" ? brandSetForEra(HISTORICAL_START_ERA_ID) : null;
-  const brandedTeams = CDL_TEAMS.map(team => {
-    const b = previewBrands?.[team.id];
-    return b ? { ...team, name: b.name, tag: b.tag, color: b.color, logo: null } : team;
-  });
+  const historicalTeams = useMemo(() => buildHistoricalSeasonTemplate(HISTORICAL_START_ERA_ID)?.teams || [], []);
   // One stable seed for this picker session → preview matches the started save.
   // Lazy state initializer runs once; keeps render pure on subsequent renders.
   const [seed] = useState(() => ((Date.now() % 999983) * 31 + 7) | 0 || 1);
@@ -117,7 +110,7 @@ export default function TeamSelect() {
         </div>
       )}
 
-      <div className="ts-mode-tabs">
+      {careerMode !== "historical" && <div className="ts-mode-tabs">
         <button
           className={`ts-mode-tab ${mode === "cdl" ? "active" : ""}`}
           onClick={() => setMode("cdl")}
@@ -132,11 +125,23 @@ export default function TeamSelect() {
           Manage Challenger Team
           <span className="ts-mode-sub">24 teams · Road to CDL career</span>
         </button>
-      </div>
+      </div>}
 
-      {mode === "cdl" ? (
+      {careerMode === "historical" ? (
+        <>
+          <h2>Choose a Ghosts Organisation</h2>
+          <p className="ts-challenger-note">Choose from the historical Ghosts field. Every organisation competes in the same open circuit through Online 2Ks, Online 5Ks, open LANs, league events and the Call of Duty Championship.</p>
+          <div className="team-grid">
+            {historicalTeams.map(team => (
+              <button key={team.historicalTeamId} className="team-card" onClick={() => selectCdl(team.historicalTeamId)}>
+                <span className="team-tag">GHOSTS</span><span className="team-name">{team.teamName}</span>
+              </button>
+            ))}
+          </div>
+        </>
+      ) : mode === "cdl" ? (
         <div className="team-grid">
-          {brandedTeams.map(team => (
+          {CDL_TEAMS.map(team => (
             <button
               key={team.id}
               className="team-card"
