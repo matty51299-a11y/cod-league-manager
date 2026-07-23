@@ -17,6 +17,9 @@ export default function TeamSelect() {
   const [careerMode, setCareerMode] = useState("modern");
   const [strictness, setStrictness] = useState("balanced"); // loose | balanced | strict
   const [seedInput, setSeedInput] = useState("");
+  const [selectedHistoricalTeamId, setSelectedHistoricalTeamId] = useState(null);
+  const [isStartingHistoricalCareer, setIsStartingHistoricalCareer] = useState(false);
+  const [historicalStartError, setHistoricalStartError] = useState("");
 
   const historicalTeams = useMemo(() => buildHistoricalSeasonTemplate(HISTORICAL_START_ERA_ID)?.teams || [], []);
   // One stable seed for this picker session → preview matches the started save.
@@ -49,6 +52,25 @@ export default function TeamSelect() {
       dynastySeed: careerMode === "historical" ? resolveDynastySeed() : undefined,
     });
   }
+  function selectHistoricalTeam(teamId) {
+    setSelectedHistoricalTeamId(teamId);
+    setHistoricalStartError("");
+  }
+  function startHistoricalCareer() {
+    if (!selectedHistoricalTeamId || isStartingHistoricalCareer) return;
+    setIsStartingHistoricalCareer(true);
+    setHistoricalStartError("");
+    try {
+      dispatch({
+        type: "NEW_GAME", teamId: selectedHistoricalTeamId, teamType: "historical", careerMode: "historical",
+        historicalStrictness: strictness, dynastySeed: resolveDynastySeed(),
+      });
+    } catch (error) {
+      setHistoricalStartError(error instanceof Error ? error.message : "Unable to start the historical career.");
+      setIsStartingHistoricalCareer(false);
+    }
+  }
+  const selectedHistoricalTeam = historicalTeams.find((team) => team.historicalTeamId === selectedHistoricalTeamId);
 
   const STRICTNESS = [
     { id: "loose", label: "Loose History", sub: "Only titles, eras & major league changes are historical" },
@@ -133,10 +155,22 @@ export default function TeamSelect() {
           <p className="ts-challenger-note">Choose from the historical Ghosts field. Every organisation competes in the same open circuit through Online 2Ks, Online 5Ks, open LANs, league events and the Call of Duty Championship.</p>
           <div className="team-grid">
             {historicalTeams.map(team => (
-              <button key={team.historicalTeamId} className="team-card" onClick={() => selectCdl(team.historicalTeamId)}>
+              <button
+                type="button"
+                key={team.historicalTeamId}
+                className={`team-card ${selectedHistoricalTeamId === team.historicalTeamId ? "selected" : ""}`}
+                aria-pressed={selectedHistoricalTeamId === team.historicalTeamId}
+                onClick={() => selectHistoricalTeam(team.historicalTeamId)}
+              >
                 <span className="team-tag">GHOSTS</span><span className="team-name">{team.teamName}</span>
               </button>
             ))}
+          </div>
+          <div className="ts-historical-action" aria-live="polite">
+            {historicalStartError && <p className="ts-start-error" role="alert">{historicalStartError}</p>}
+            <button type="button" className="primary-button ts-start-button" disabled={!selectedHistoricalTeamId || isStartingHistoricalCareer} onClick={startHistoricalCareer}>
+              {isStartingHistoricalCareer ? "Starting Historical Career…" : selectedHistoricalTeam ? `Start Historical Career with ${selectedHistoricalTeam.teamName}` : "Select a Ghosts Organisation to Start"}
+            </button>
           </div>
         </>
       ) : mode === "cdl" ? (

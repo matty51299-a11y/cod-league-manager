@@ -82,7 +82,7 @@ export default function App() {
   if (!isValidGameState(state)) {
     return (
       <ErrorBoundary>
-        <div className="app">
+        <div className="app team-select-shell">
           <TeamSelect />
         </div>
       </ErrorBoundary>
