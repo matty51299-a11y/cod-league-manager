@@ -7,6 +7,7 @@
 
 import { useEffect, useState } from "react";
 import { useGame } from "../store/gameStore.jsx";
+import CircuitBracket from "./CircuitBracket.jsx";
 
 function ordinal(n) {
   const v = Number(n); if (!v) return "—";
@@ -22,15 +23,15 @@ export default function CircuitMatchOverlay({ isOpen, onClose }) {
 
   const [seriesIdx, setSeriesIdx] = useState(0);
   const [revealed, setRevealed] = useState(0); // maps revealed in current series
+  const [showBracket, setShowBracket] = useState(false);
 
   // Reset the walkthrough whenever the overlay opens on a new event.
-  useEffect(() => { if (isOpen) { setSeriesIdx(0); setRevealed(0); } }, [isOpen, eventId]);
+  useEffect(() => { if (isOpen) { setSeriesIdx(0); setRevealed(0); setShowBracket(false); } }, [isOpen, eventId]);
 
   if (!isOpen || !state) return null;
 
   const userMatches = result?.userMatches || [];
-  const userPlace = (result?.placements || []).find(p => p.teamId === oc.userTeamId);
-  const award = userPlace && (result?.awards || []).find(a => a.rank === userPlace.rank || a.placement === userPlace.rank);
+  const userRank = result?.userPlacement ?? null;
   const wins = userMatches.filter(m => m.won).length;
 
   const atSummary = seriesIdx >= userMatches.length;
@@ -50,13 +51,19 @@ export default function CircuitMatchOverlay({ isOpen, onClose }) {
 
         <div className="nmo-context">{result?.name || "Open Circuit Event"}</div>
 
-        {/* No user matches → the team wasn't drawn into a played series. */}
+        {/* No user matches → either not in the field, or advanced on byes. */}
         {userMatches.length === 0 ? (
           <>
             <div className="nmo-title">EVENT COMPLETE</div>
             <p className="nmo-no-match muted" style={{ textAlign: "center" }}>
-              {userPlace ? `Your team finished ${ordinal(userPlace.rank)} — no head-to-head series to play out this time.` : "Your team was not in this event's field."}
+              {result?.userInField ? `Your team finished ${ordinal(userRank)} — no head-to-head series this time (byes / group format).` : "Your team was not eligible for this event's region."}
             </p>
+            {result?.bracket && (
+              <>
+                <button className="btn-secondary" style={{ margin: "6px auto", display: "block" }} onClick={() => setShowBracket(v => !v)}>{showBracket ? "Hide" : "View"} Bracket</button>
+                {showBracket && <CircuitBracket bracket={result.bracket} />}
+              </>
+            )}
             <div className="nmo-actions">
               <button className="btn-primary nmo-play-btn" onClick={onClose}>Continue →</button>
             </div>
@@ -64,14 +71,20 @@ export default function CircuitMatchOverlay({ isOpen, onClose }) {
         ) : atSummary ? (
           /* ── Event summary ── */
           <>
-            <div className={`nmo-result-banner ${userPlace?.rank === 1 ? "nmo-win" : ""}`}>
-              <span className="nmo-result-outcome">{userPlace?.rank === 1 ? "CHAMPIONS" : `FINISHED ${ordinal(userPlace?.rank).toUpperCase()}`}</span>
+            <div className={`nmo-result-banner ${userRank === 1 ? "nmo-win" : ""}`}>
+              <span className="nmo-result-outcome">{userRank === 1 ? "CHAMPIONS" : `FINISHED ${ordinal(userRank).toUpperCase()}`}</span>
               <div className="nmo-result-score">{wins}-{userMatches.length - wins} series</div>
             </div>
             <div className="nmo-consequences" style={{ textAlign: "center" }}>
-              <div className="nmo-consequence-line">{ordinal(userPlace?.rank)} of {result?.fieldSize || "the"} field</div>
-              {award && <div className="nmo-consequence-line">+{award.pointsPerPlayer.toLocaleString()} Pro Points per player{award.teamPrize ? ` · $${award.teamPrize.toLocaleString()}` : ""}</div>}
+              <div className="nmo-consequence-line">{ordinal(userRank)} of {result?.fieldSize || "the"} field</div>
+              {result?.userPoints > 0 && <div className="nmo-consequence-line">+{result.userPoints.toLocaleString()} Pro Points per player{result.userPrize ? ` · $${result.userPrize.toLocaleString()}` : ""}</div>}
             </div>
+            {result?.bracket && (
+              <div style={{ margin: "8px 0" }}>
+                <button className="btn-secondary" style={{ margin: "0 auto 8px", display: "block" }} onClick={() => setShowBracket(v => !v)}>{showBracket ? "Hide" : "View"} Bracket</button>
+                {showBracket && <CircuitBracket bracket={result.bracket} />}
+              </div>
+            )}
             <div className="nmo-actions nmo-result-actions">
               <button className="btn-primary nmo-play-btn" onClick={onClose}>Continue →</button>
             </div>

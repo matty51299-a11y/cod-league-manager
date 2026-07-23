@@ -7,6 +7,7 @@
 import { useState } from "react";
 import { useGame } from "../store/gameStore.jsx";
 import { PageHeader, SectionCard, Pill, EmptyState, StatCard } from "./ui.jsx";
+import CircuitBracket from "./CircuitBracket.jsx";
 
 const TIER_TONE = { S: "gold", A: "positive", B: "info", C: "neutral" };
 const PHASE_LABEL = {
@@ -108,52 +109,60 @@ function ProPointsTable({ oc }) {
   );
 }
 
+function EventCard({ ev, r }) {
+  const [showBracket, setShowBracket] = useState(false);
+  return (
+    <div className="ui-section-card" style={{ padding: 12 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+        <div>
+          <strong>{ev.name}</strong>{" "}
+          <Pill tone={TIER_TONE[ev.tier] || "neutral"}>{ev.tier}-Tier</Pill>{" "}
+          <Pill tone="neutral">{QUAL_LABEL[ev.qualificationMode] || ev.qualificationMode}</Pill>
+          <div style={{ fontSize: 12, opacity: 0.8, marginTop: 2 }}>
+            {ev.startDate}{ev.endDate && ev.endDate !== ev.startDate ? `–${ev.endDate}` : ""}
+            {ev.location ? ` · ${ev.location}` : ""} · Field {ev.targetFieldSize} · {money(ev.prizePool)}
+          </div>
+        </div>
+        <div style={{ textAlign: "right" }}>
+          {r?.skipped ? <Pill tone="warning">No eligible field</Pill> : r?.completed ? <Pill tone="positive">Completed</Pill> : <Pill tone="neutral">Scheduled</Pill>}
+        </div>
+      </div>
+      {r && !r.skipped && (
+        <>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", margin: "6px 0" }}>
+            {(r.phases || []).map((ph, i) => <Pill key={i} tone="info">{PHASE_LABEL[ph] || ph}</Pill>)}
+          </div>
+          <div style={{ display: "grid", gap: 2, fontSize: 13 }}>
+            {(r.placements || []).slice(0, 4).map((p) => {
+              const award = (r.awards || []).find((a) => a.placement === p.rank);
+              return (
+                <div key={p.teamId} style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span>{p.rank}. {p.name}</span>
+                  {award && <span style={{ opacity: 0.75 }}>{award.pointsPerPlayer.toLocaleString()} pts/player · {money(award.teamPrize)}</span>}
+                </div>
+              );
+            })}
+          </div>
+          {r.bracket && (
+            <div style={{ marginTop: 8 }}>
+              <button className="btn-secondary-sm" onClick={() => setShowBracket((v) => !v)}>{showBracket ? "Hide bracket" : "View bracket"}</button>
+              {showBracket && <div style={{ marginTop: 8 }}><CircuitBracket bracket={r.bracket} /></div>}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 function TournamentHub({ oc }) {
   const results = oc.results || {};
   // Show curated LAN/league events (with any simulated result) in date order.
   const events = [...oc.calendar.events].sort((a, b) => String(a.startDate).localeCompare(String(b.startDate)));
   return (
-    <SectionCard title="Tournament Hub" subtitle="Every historical event, its format, phases and final placements.">
+    <SectionCard title="Tournament Hub" subtitle="Every historical event, its format, phases, bracket and final placements.">
       <div className="ui-event-list" style={{ display: "grid", gap: 10 }}>
-        {events.map((ev) => {
-          const r = results[ev.id];
-          return (
-            <div key={ev.id} className="ui-section-card" style={{ padding: 12 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
-                <div>
-                  <strong>{ev.name}</strong>{" "}
-                  <Pill tone={TIER_TONE[ev.tier] || "neutral"}>{ev.tier}-Tier</Pill>{" "}
-                  <Pill tone="neutral">{QUAL_LABEL[ev.qualificationMode] || ev.qualificationMode}</Pill>
-                  <div style={{ fontSize: 12, opacity: 0.8, marginTop: 2 }}>
-                    {ev.startDate}{ev.endDate && ev.endDate !== ev.startDate ? `–${ev.endDate}` : ""}
-                    {ev.location ? ` · ${ev.location}` : ""} · Field {ev.targetFieldSize} · {money(ev.prizePool)}
-                  </div>
-                </div>
-                <div style={{ textAlign: "right" }}>
-                  {r?.skipped ? <Pill tone="warning">No eligible field</Pill> : r?.completed ? <Pill tone="positive">Completed</Pill> : <Pill tone="neutral">Scheduled</Pill>}
-                </div>
-              </div>
-              {r && !r.skipped && (
-                <>
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", margin: "6px 0" }}>
-                    {(r.phases || []).map((ph, i) => <Pill key={i} tone="info">{PHASE_LABEL[ph] || ph}</Pill>)}
-                  </div>
-                  <div style={{ display: "grid", gap: 2, fontSize: 13 }}>
-                    {(r.placements || []).slice(0, 4).map((p) => {
-                      const award = (r.awards || []).find((a) => a.placement === p.rank);
-                      return (
-                        <div key={p.teamId} style={{ display: "flex", justifyContent: "space-between" }}>
-                          <span>{p.rank}. {p.name}</span>
-                          {award && <span style={{ opacity: 0.75 }}>{award.pointsPerPlayer.toLocaleString()} pts/player · {money(award.teamPrize)}</span>}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
-            </div>
-          );
-        })}
+        {events.map((ev) => <EventCard key={ev.id} ev={ev} r={results[ev.id]} />)}
       </div>
     </SectionCard>
   );
