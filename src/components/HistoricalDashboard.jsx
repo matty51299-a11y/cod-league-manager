@@ -14,6 +14,7 @@ import { resolveUserTeamMeta } from "../utils/userTeam.js";
 import { getEra } from "../data/codEras.js";
 import { PageHeader, SectionCard, StatCard, Pill, EmptyState } from "./ui.jsx";
 import CircuitBracket from "./CircuitBracket.jsx";
+import TeamLogo from "./TeamLogo.jsx";
 
 function money(n) { return n ? `$${Number(n).toLocaleString("en-US")}` : "—"; }
 function ordinal(n) {
@@ -80,6 +81,7 @@ export default function HistoricalDashboard({ setScreen, onPlayEvent }) {
         title={team?.name || userTeamId}
         subtitle={`${era?.gameTitle || "Open circuit"} · ${era?.seasonLabel || `Season ${state.season}`} — play through online 2K/5K cups, open LANs, league play and the Championship. Pro Points decide seeding.`}
         accent={team?.color}
+        logo={<TeamLogo team={team} variant="hero" size={56} />}
         action={
           oc.seasonComplete ? (
             <button className="btn-cta" onClick={() => dispatch({ type: "ADVANCE_OFFSEASON" })} title="Roll the dynasty forward to the next title/season">

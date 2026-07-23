@@ -11776,3 +11776,113 @@ body { background: #111317; }
   font-family: var(--font-condensed);
   font-weight: 700 !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   V0 MANAGER REDESIGN — PASS 2 (correcting the miss)
+   Pass 1 only touched Dashboard.jsx's `.fm-*` classes and left the app shell
+   partially team-colour-filled. This pass:
+   (a) fully flattens the topbar/sidebar to a neutral dark shell (team accent
+       becomes a thin highlight only, matching the v0 concept exactly instead
+       of a compromise), and
+   (b) restyles the actual shared primitives used by HistoricalDashboard.jsx
+       (and every other screen built on ui.jsx) — `.ui-page-header` (=
+       v0 TeamHeader), `.ui-stat-card`, `.ui-section-card` (= v0 Panel),
+       `.ui-pill`, `.ui-empty-state` — which pass 1 never touched at all.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Shell: force neutral-dark, drop the team-colour fill ───────────────── */
+.topbar { background: #0c0e13 !important; }
+.sidebar { background: #0a0c10 !important; }
+
+/* ── PageHeader → flat banner with arena backdrop, crest, condensed type ── */
+.ui-page-header,
+.oh-hero {
+  background:
+    linear-gradient(90deg, rgba(8,10,14,0.95) 0%, rgba(8,10,14,0.86) 45%, rgba(8,10,14,0.55) 100%),
+    url(/arena-bg.png) center/cover !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-left: 3px solid var(--page-accent, var(--user-accent, #5b9dff)) !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  padding: 16px 20px !important;
+  align-items: center !important;
+}
+.ui-page-header::before,
+.ui-page-header::after { content: none !important; }
+.ui-page-header-main { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.ui-page-header-logo { flex-shrink: 0; }
+.ui-page-header-logo .team-logo,
+.ui-page-header-logo .team-logo-fallback {
+  width: 56px !important;
+  height: 56px !important;
+  font-size: 15px;
+  border-width: 2px;
+  background: rgba(10,12,16,0.7);
+  filter: none !important;
+}
+.ui-page-header h2 {
+  font-family: var(--font-condensed);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  font-size: 26px !important;
+  text-shadow: none !important;
+}
+.ui-eyebrow {
+  font-family: var(--font-condensed);
+  letter-spacing: 0.18em !important;
+  color: var(--page-accent, var(--user-accent, #5b9dff)) !important;
+}
+
+/* ── Stat tiles: flat, condensed, no glass/blur ──────────────────────────── */
+.ui-stat-card {
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 3px !important;
+  background: #12141a !important;
+  padding: 8px 12px !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.ui-stat-card span { font-family: var(--font-condensed); letter-spacing: 0.09em; }
+.ui-stat-card strong { font-family: var(--font-condensed); font-size: 20px !important; }
+
+/* ── SectionCard → v0 Panel: thin border, tight radius, real header bar ─── */
+.ui-section-card {
+  background: #14161c !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  padding: 15px !important;
+}
+.ui-section-card:hover { border-color: rgba(255,255,255,0.16) !important; box-shadow: none !important; }
+.ui-section-head {
+  margin: -15px -15px 12px -15px !important;
+  padding: 9px 15px !important;
+  background: #1a1d24 !important;
+  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+}
+.ui-section-head h3 {
+  font-family: var(--font-condensed) !important;
+  letter-spacing: 0.12em !important;
+  font-size: 11px !important;
+}
+
+/* ── Pills / empty state: condensed, quiet ───────────────────────────────── */
+.ui-pill {
+  font-family: var(--font-condensed);
+  border-radius: 3px !important;
+  letter-spacing: 0.03em;
+  font-weight: 700 !important;
+}
+.ui-empty-state {
+  background: rgba(255,255,255,0.02) !important;
+  border: 1px dashed rgba(255,255,255,0.14) !important;
+  border-radius: 3px !important;
+  align-items: center;
+  text-align: center;
+  padding: 26px 18px !important;
+}

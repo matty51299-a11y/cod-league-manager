@@ -1,13 +1,16 @@
 // src/components/ui.jsx
 // Small shared presentation primitives for the sports-management UI shell.
 
-export function PageHeader({ eyebrow, title, subtitle, meta, action, accent }) {
+export function PageHeader({ eyebrow, title, subtitle, meta, action, accent, logo }) {
   return (
     <header className="ui-page-header" style={accent ? { "--page-accent": accent } : undefined}>
-      <div>
-        {eyebrow && <div className="ui-eyebrow">{eyebrow}</div>}
-        <h2>{title}</h2>
-        {subtitle && <p>{subtitle}</p>}
+      <div className="ui-page-header-main">
+        {logo && <div className="ui-page-header-logo">{logo}</div>}
+        <div>
+          {eyebrow && <div className="ui-eyebrow">{eyebrow}</div>}
+          <h2>{title}</h2>
+          {subtitle && <p>{subtitle}</p>}
+        </div>
       </div>
       {(meta || action) && (
         <div className="ui-page-header-side">
