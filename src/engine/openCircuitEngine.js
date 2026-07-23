@@ -130,8 +130,10 @@ function teamOvr(world, teamId, rosterSize) {
   return ovrs.reduce((a, b) => a + b, 0) / ovrs.length;
 }
 
-// Deterministic best-of series result with a seeded upset chance.
-function makeSeriesPlayer(world, rosterSize, seedBase) {
+// Deterministic best-of series result with a seeded upset chance. `record`, when
+// supplied, is invoked once per played series with the full result so callers
+// can capture (e.g.) the user team's match log.
+function makeSeriesPlayer(world, rosterSize, seedBase, record) {
   return (a, b, meta) => {
     const oa = teamOvr(world, a, rosterSize);
     const ob = teamOvr(world, b, rosterSize);
@@ -142,7 +144,9 @@ function makeSeriesPlayer(world, rosterSize, seedBase) {
     while (am < 3 && bm < 3) {
       if (rng() < pA) am++; else bm++;
     }
-    return { winner: am > bm ? a : b, aMaps: am, bMaps: bm };
+    const result = { winner: am > bm ? a : b, aMaps: am, bMaps: bm };
+    if (record) record(a, b, result, meta);
+    return result;
   };
 }
 
@@ -170,8 +174,25 @@ function lockRoster(world, proStore, seasonId, teamId, rosterSize) {
 
 // ── event simulation ───────────────────────────────────────────────────────────
 // Returns { placements: [{teamId, placement}], phases: [...] }.
-function simulateEvent(world, proStore, seasonId, template, eligibleSeeds, rosterSize, seedBase) {
-  const playSeries = makeSeriesPlayer(world, rosterSize, seedBase);
+function simulateEvent(world, proStore, seasonId, template, eligibleSeeds, rosterSize, seedBase, userTeamId) {
+  // Capture the user team's series as a match log ("play match" flow).
+  const userMatches = [];
+  const phaseName = (meta) => meta?.bracket === "GF" ? "Grand Final"
+    : meta?.bracket === "WB" ? `Winners R${(meta.round ?? 0) + 1}`
+    : meta?.bracket === "LB" ? `Losers R${(meta.round ?? 0) + 1}`
+    : meta?.phase === "league" ? "League"
+    : meta?.poolIdx != null || meta?.phase === "pool" ? "Pool Play"
+    : meta?.groupIdx != null ? "Group Stage"
+    : meta?.round != null ? `Round ${meta.round + 1}` : "Match";
+  const record = userTeamId ? (a, b, res, meta) => {
+    if (a !== userTeamId && b !== userTeamId) return;
+    const isA = a === userTeamId;
+    const opp = isA ? b : a;
+    const my = isA ? res.aMaps : res.bMaps;
+    const th = isA ? res.bMaps : res.aMaps;
+    userMatches.push({ phase: phaseName(meta), opponent: opp, won: res.winner === userTeamId, score: `${my}-${th}` });
+  } : null;
+  const playSeries = makeSeriesPlayer(world, rosterSize, seedBase, record);
   const playMatch = (a, b, meta) => playSeries(a, b, meta).winner;
   const phases = [];
 
@@ -179,7 +200,7 @@ function simulateEvent(world, proStore, seasonId, template, eligibleSeeds, roste
     const champ = runChampionship({ seededTeams: eligibleSeeds, playSeries, groupSize: template.poolSize || 4, maxPlayoff: template.playoffSize || 16 });
     phases.push({ phase: "GROUP_STAGE", groups: champ.plan.groups.length, playInCut: champ.plan.playInTeams.length });
     phases.push({ phase: "CHAMPIONSHIP_BRACKET", playoffSize: champ.playoffSeeds.length });
-    return { placements: appendNonPlayoff(champ.placements, eligibleSeeds), phases, detail: { groupStandings: champ.groupStandings, playoffSeeds: champ.playoffSeeds } };
+    return { placements: appendNonPlayoff(champ.placements, eligibleSeeds), phases, detail: { groupStandings: champ.groupStandings, playoffSeeds: champ.playoffSeeds }, userMatches };
   }
 
   if (template.eventType === "LEAGUE_SEASON") {
@@ -191,7 +212,7 @@ function simulateEvent(world, proStore, seasonId, template, eligibleSeeds, roste
     const playoff = runDoubleElimination({ seeds: playoffSeeds, playMatch });
     phases.push({ phase: "PLAYOFFS", playoffSize });
     const placements = mergePlacements(playoff.placements, standings.map((r) => r.teamId));
-    return { placements, phases, detail: { standings } };
+    return { placements, phases, detail: { standings }, userMatches };
   }
 
   // Open LAN / invitational / regional: registration → open bracket → pools →
@@ -209,7 +230,7 @@ function simulateEvent(world, proStore, seasonId, template, eligibleSeeds, roste
       ? runDoubleElimination({ seeds: eligibleSeeds.slice(0, Math.max(2, template.playoffSize || eligibleSeeds.length)), playMatch })
       : runSingleElimination({ seeds: eligibleSeeds.slice(0, Math.max(2, template.playoffSize || eligibleSeeds.length)), playMatch });
     phases.push({ phase: "CHAMPIONSHIP_BRACKET", bracketType: template.bracketType || "SINGLE_ELIMINATION" });
-    return { placements: appendNonPlayoff(bracket.placements, eligibleSeeds), phases, detail: {} };
+    return { placements: appendNonPlayoff(bracket.placements, eligibleSeeds), phases, detail: {}, userMatches };
   }
 
   // Direct-pool invites + open bracket qualifiers.
@@ -248,7 +269,7 @@ function simulateEvent(world, proStore, seasonId, template, eligibleSeeds, roste
     ...(openBracketResult ? openBracketResult.placements.map((p) => p.teamId).filter((t) => !poolTeams.includes(t)) : []),
   ];
   const placements = mergePlacements(order.map((teamId, i) => ({ teamId, placement: i + 1 })), eligibleSeeds);
-  return { placements, phases, detail: { poolStandings: poolResult.poolStandings } };
+  return { placements, phases, detail: { poolStandings: poolResult.poolStandings }, userMatches };
 }
 
 // Append teams not in the playoff to the end of a placement list (dedup).
@@ -279,9 +300,15 @@ export function simulateOpenCircuitSeason(world, profile, options = {}) {
   const seasonId = profile.seasonId;
   const rosterSize = profile.rosterSize || 4;
   const dynastySeed = options.dynastySeed ?? 0;
+  // maxNewEvents lets the caller simulate the season incrementally: 0 builds the
+  // schedule without playing anything (season starts unplayed), 1 plays the next
+  // real event (rolling past AI-only "no field" skips), Infinity plays it all.
+  const maxNewEvents = options.maxNewEvents ?? Infinity;
+  const userTeamId = options.userTeamId || null;
   const proStore = ensureSeason(migrateProPointsStore(options.proStore), seasonId);
   const calendar = options.calendar || buildSeasonCalendar(profile);
   const results = options.results ? { ...options.results } : {};
+  let newlyCompleted = 0;
   const commitments = new Map(); // teamId -> [{start,end}] committed date ranges
 
   const parse = (s) => new Date(`${s}T00:00:00Z`).getTime();
@@ -310,6 +337,10 @@ export function simulateOpenCircuitSeason(world, profile, options = {}) {
       if (isBlocking) for (const p of results[template.id].placements || []) commit(p.teamId, template);
       continue;
     }
+    // Incremental stepping: stop once we've played the requested number of new
+    // (non-skipped) events. Checked after the resume-bookkeeping above so prior
+    // commitments are always re-applied first.
+    if (newlyCompleted >= maxNewEvents) break;
     // Eligible = active, region-eligible, not busy in an overlapping event.
     const eligible = allTeamIds.filter((id) => {
       const team = world.teams[id];
@@ -334,7 +365,7 @@ export function simulateOpenCircuitSeason(world, profile, options = {}) {
     const lockedRosters = {};
     for (const id of field) lockedRosters[id] = lockRoster(world, proStore, seasonId, id, rosterSize);
 
-    const sim = simulateEvent(world, proStore, seasonId, template, field, rosterSize, seedBase);
+    const sim = simulateEvent(world, proStore, seasonId, template, field, rosterSize, seedBase, userTeamId);
 
     // Award Pro Points + prize exactly once.
     const placements = sim.placements.map((p) => ({
@@ -357,7 +388,9 @@ export function simulateOpenCircuitSeason(world, profile, options = {}) {
       awards: award.awards,
       lockedRosters,
       detail: sim.detail,
+      userMatches: sim.userMatches || [],
     };
+    newlyCompleted += 1;
   }
 
   // Final team Pro Points ranking from locked active rosters.
@@ -372,7 +405,7 @@ export function simulateOpenCircuitSeason(world, profile, options = {}) {
 
 // One-call builder: from an era id + the user's team + protected roster, build
 // the world, reconcile the historical target, and simulate the whole season.
-export function buildAndRunOpenCircuitSeason({ eraId, userTeamId, userPlayers = [], dynastySeed = 0, existing = null }) {
+export function buildAndRunOpenCircuitSeason({ eraId, userTeamId, userPlayers = [], dynastySeed = 0, existing = null, maxNewEvents = Infinity }) {
   const dbTemplate = buildHistoricalSeasonTemplate(eraId);
   const profile = buildCompetitionProfile(eraId);
   if (!dbTemplate) {
@@ -390,6 +423,8 @@ export function buildAndRunOpenCircuitSeason({ eraId, userTeamId, userPlayers = 
     dynastySeed,
     proStore: existing?.proStore,
     results: existing?.results,
+    maxNewEvents,
+    userTeamId: reconciledWorld.userTeamId,
   });
   return { profile, world: reconciledWorld, reconciliationConflicts: recon.conflicts, season, warnings };
 }
