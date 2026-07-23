@@ -10,6 +10,7 @@
 
 import { buildHistoricalSeasonTemplate, getValidationWarningsForSeason } from "../data/historicalRosterDb.js";
 import { buildCompetitionProfile } from "../data/competitionProfiles.js";
+import { historicalPlayerOverall } from "../data/historicalRatings.js";
 import { applyHistoricalSeasonTemplate } from "./seasonRosterEngine.js";
 import {
   migrateProPointsStore, ensureSeason,
@@ -76,11 +77,10 @@ export function buildCircuitWorld(dbTemplate, { userTeamId, userPlayers = [] }) 
     };
     for (const pl of t.players) {
       if (!players[pl.playerId]) {
-        const h = hashString(pl.playerId);
         players[pl.playerId] = {
           id: pl.playerId, playerId: pl.playerId,
           gamertag: pl.displayName, name: pl.displayName,
-          teamId: null, overall: 66 + (h % 26), region: teams[careerTeamId].region,
+          teamId: null, overall: historicalPlayerOverall(pl.playerId, pl.displayName), region: teams[careerTeamId].region,
         };
         freeAgentIds.push(pl.playerId);
       }

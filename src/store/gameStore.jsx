@@ -308,7 +308,7 @@ function createInitialGameState(userTeamId, userTeamType = "cdl", seedOverride =
   // used by the later-era transition pipeline.
   if (careerMode === "historical") {
     const historical = createHistoricalCareer(HISTORICAL_START_ERA_ID, { userTeamId });
-    const state = {
+    let state = {
       userTeamId: `historical:${userTeamId}`, userTeamType: "historical", season: 1,
       notifications: [], feed: [], saveExists: true, enteredMajorIdx: null,
       playerSeasonStats: {}, playerOvrHistory: {}, challengersLog: [], challengerTransactions: [],
@@ -318,6 +318,10 @@ function createInitialGameState(userTeamId, userTeamType = "cdl", seedOverride =
       eventCentre: migrateEventCentre(null), contractNegotiations: {},
       ...createHistoricalStateFields(careerMode, dynastyOptions), ...historical,
     };
+    // Build + simulate the data-driven open circuit (calendar, brackets, Pro
+    // Points, 28-team ranking, results) via the real engine — this is what the
+    // Circuit and Standings screens read.
+    state = ensureOpenCircuitSeason(state);
     state.playerMorale = migratePlayerMorale(state);
     return ensureMoraleConversationState(state);
   }

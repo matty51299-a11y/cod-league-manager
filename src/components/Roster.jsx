@@ -33,10 +33,22 @@ function ratingColor(v) {
   return "#f87171";
 }
 
+// Deterministic display tag/colour for a historical organisation (no logo
+// assets exist for old-era orgs; TeamLogo falls back to a coloured tag box).
+function historicalTag(name) {
+  return String(name || "").replace(/[^A-Za-z0-9]/g, "").slice(0, 3).toUpperCase() || "HST";
+}
+function historicalColor(id) {
+  let h = 2166136261;
+  for (const ch of String(id || "")) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); }
+  return `hsl(${(h >>> 0) % 360} 62% 58%)`;
+}
+
 export default function Roster({ setScreen }) {
   const { state, dispatch } = useGame();
   const { openPlayerProfile } = usePlayerProfile();
   const challengerMode = isChallengerMode(state);
+  const historicalMode = state?.userTeamType === "historical";
   const [selectedTeam, setSelectedTeam] = useState(state?.userTeamId ?? "boston");
   const [swapSubId, setSwapSubId] = useState(null);
   const [swapStarterId, setSwapStarterId] = useState(null);
@@ -52,9 +64,12 @@ export default function Roster({ setScreen }) {
     ? getChallengerRosterPlayers(state)
     : players.filter(p => p.teamId === selectedTeam);
 
+  const historicalTeamObj = historicalMode ? (state.teams || []).find(t => t.id === selectedTeam) : null;
   const team = userChallengerTab
     ? { name: challengerTeam?.name ?? "Your Challenger Team", color: challengerTeam?.color, tag: challengerTeam?.tag }
-    : CDL_TEAMS.find(t => t.id === selectedTeam);
+    : historicalMode
+      ? (historicalTeamObj ? { id: historicalTeamObj.id, name: historicalTeamObj.name, color: historicalColor(historicalTeamObj.id), tag: historicalTag(historicalTeamObj.name) } : null)
+      : CDL_TEAMS.find(t => t.id === selectedTeam);
 
   const starters = sortByOverallDesc(myPlayers.filter(p => !p.isSub));
   const subs = sortByOverallDesc(myPlayers.filter(p => p.isSub));
@@ -69,9 +84,18 @@ export default function Roster({ setScreen }) {
   const starCount = myPlayers.filter(p => (p.overall ?? 0) >= 85).length;
 
   const cdlTabs = CDL_TEAMS.map(t => ({ id: t.id, tag: t.tag, color: t.color }));
-  const tabs = challengerMode
-    ? [{ id: userTeamId, tag: challengerTeam?.tag ?? "ME", color: challengerTeam?.color }, ...cdlTabs]
-    : cdlTabs;
+  // Historical open-circuit careers field the full era organisation list (~28)
+  // — the user's team first — instead of the 12 modern CDL franchises.
+  const historicalTabs = historicalMode
+    ? [...(state.teams || [])]
+        .sort((a, b) => (a.id === userTeamId ? -1 : b.id === userTeamId ? 1 : String(a.name).localeCompare(String(b.name))))
+        .map(t => ({ id: t.id, tag: historicalTag(t.name), color: historicalColor(t.id) }))
+    : [];
+  const tabs = historicalMode
+    ? historicalTabs
+    : challengerMode
+      ? [{ id: userTeamId, tag: challengerTeam?.tag ?? "ME", color: challengerTeam?.color }, ...cdlTabs]
+      : cdlTabs;
 
   const releaseAction = userChallengerTab ? "RELEASE_CHALLENGER_PLAYER" : "RELEASE_PLAYER";
   const canManageCdlSlots = isUserTab && !userChallengerTab;
@@ -196,7 +220,7 @@ export default function Roster({ setScreen }) {
       <div className="team-tabs">
         {tabs.map(t => (
           <button key={t.id} className={`tab-btn ${selectedTeam === t.id ? "active" : ""}`} style={selectedTeam === t.id ? { borderBottomColor: t.color, color: t.color } : {}} onClick={() => { setSelectedTeam(t.id); clearSwapState(); }}>
-            {t.tag}{challengerMode && t.id === userTeamId ? " ★" : ""}
+            {t.tag}{(challengerMode || historicalMode) && t.id === userTeamId ? " ★" : ""}
           </button>
         ))}
       </div>
