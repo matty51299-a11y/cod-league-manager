@@ -10,8 +10,8 @@
 // them) contest the DE16 playoff bracket; seeds 17+ place below it.
 
 import {
-  buildMajorBracketDE16, findNextBracketMatch, _advanceQualifierBracket, computeDE16Placements,
-} from "./seasonEngine.js";
+  createLiveDE, findNextLiveMatch, recordLiveMatch, computeLivePlacements,
+} from "./openCircuit/liveDE.js";
 import { simMatch } from "./matchSim.js";
 import {
   migrateProPointsStore, ensureSeason, awardTournamentPoints, rankTeamsByProPoints, eligibleLockedRoster,
@@ -54,19 +54,14 @@ function topRosterIds(state, teamId) {
     .map((p) => p.id);
 }
 
-// Seed the field by current Pro Points ranking (already sorted); force the user
-// into the top 16 so they always contest the playoff bracket.
+// Seed the whole field by current Pro Points ranking (already sorted). Every
+// eligible team is in the bracket; the top seeds get first-round byes.
 function seedField(state) {
   const oc = state.openCircuit;
-  const userTeamId = oc.userTeamId;
   const ranked = (oc.ranking || []).map((r) => r.teamId).filter((id) => (state.teams || []).some((t) => t.id === id));
-  const all = ranked.length ? ranked : (state.teams || []).map((t) => t.id);
-  const top16 = all.slice(0, 16);
-  if (userTeamId && !top16.includes(userTeamId)) {
-    if (top16.length >= 16) top16[15] = userTeamId; else top16.push(userTeamId);
-  }
-  const rest = all.filter((id) => !top16.includes(id));
-  return { top16, rest };
+  const seen = new Set(ranked);
+  const rest = (state.teams || []).map((t) => t.id).filter((id) => !seen.has(id));
+  return [...ranked, ...rest];
 }
 
 // Build the live tournament for an event. Returns null when the event isn't an
@@ -77,10 +72,10 @@ export function buildCircuitTournament(state, eventId) {
   const template = findEventTemplate(state, eventId) || (oc.calendar?.all || []).find((e) => e.id === eventId);
   if (!template || !isInteractiveCircuitEvent(template.eventType)) return null;
 
-  const { top16, rest } = seedField(state);
-  const bracket = buildMajorBracketDE16(top16);
+  const seeds = seedField(state);
+  const bracket = createLiveDE(seeds);
   const teamsById = {};
-  for (const id of [...top16, ...rest]) {
+  for (const id of seeds) {
     teamsById[id] = { name: teamName(state, id), tag: circuitTeamTag(teamName(state, id)), color: circuitTeamColor(id) };
   }
   return {
@@ -90,9 +85,8 @@ export function buildCircuitTournament(state, eventId) {
     tier: template.tier,
     prizePool: template.prizePool || 0,
     proPointTableId: template.proPointTableId,
-    fieldSize: top16.length + rest.length,
-    seeds: top16,
-    outsideSeeds: rest,
+    fieldSize: seeds.length,
+    seeds,
     bracket,
     matchLog: [],
     teamsById,
@@ -109,49 +103,76 @@ export function simCircuitAiUntilUser(tournament, state) {
   const b = tournament.bracket;
   const dynastySeed = (state.dynastySeed ?? 0) >>> 0;
   let guard = 0;
-  while (guard++ < 200) {
-    const next = findNextBracketMatch(b);
-    if (!next) return { userMatch: false, done: !!b.champion };
+  while (guard++ < 400) {
+    const next = findNextLiveMatch(b);
+    if (!next) return { userMatch: false, done: b._de.phase === "done" };
     const { roundIdx, round, matchIdx, match } = next;
     if (match.a === tournament.userTeamId || match.b === tournament.userTeamId) {
       return { userMatch: true, done: false, roundName: round.name };
     }
     const seed = dynastySeed ^ hashString(`${tournament.eventId}|${roundIdx}|${matchIdx}|${match.a}|${match.b}`);
     const result = simMatch(teamObj(state, match.a), teamObj(state, match.b), seed);
-    match.played = true;
-    match.result = result;
-    recordMatch(tournament, roundIdx, round, matchIdx, result);
-    _advanceQualifierBracket(b, roundIdx);
+    recordLiveMatch(b, roundIdx, matchIdx, result);
+    logMatch(tournament, round.name, result);
   }
-  return { userMatch: false, done: !!b.champion };
+  return { userMatch: false, done: b._de.phase === "done" };
 }
 
 // Apply the user's live Match Center result to their pending bracket match, then
 // resume AI sim up to their next match or completion. Mutates `tournament`.
 export function applyUserCircuitResult(tournament, state, result) {
   const b = tournament.bracket;
-  const next = findNextBracketMatch(b);
-  if (!next) return { userMatch: false, done: !!b.champion };
-  const { roundIdx, round, matchIdx, match } = next;
-  match.played = true;
-  match.result = result;
-  recordMatch(tournament, roundIdx, round, matchIdx, result);
-  _advanceQualifierBracket(b, roundIdx);
+  const next = findNextLiveMatch(b);
+  if (!next) return { userMatch: false, done: b._de.phase === "done" };
+  recordLiveMatch(b, next.roundIdx, next.matchIdx, result);
+  logMatch(tournament, next.round.name, result);
   return simCircuitAiUntilUser(tournament, state);
 }
 
-function recordMatch(tournament, roundIdx, round, matchIdx, result) {
+function logMatch(tournament, roundName, result) {
   tournament.matchLog.push({
-    roundIdx, roundName: round.name, matchIdx,
+    roundName,
     teamAId: result.teamAId, teamBId: result.teamBId,
     winnerId: result.winnerId, loserId: result.loserId,
     score: result.score, result,
   });
 }
 
+// Auto-sim the user's pending match (when they'd rather not play it live), then
+// resume AI up to their next match / completion.
+export function simUserCircuitMatch(tournament, state) {
+  const b = tournament.bracket;
+  const next = findNextLiveMatch(b);
+  if (!next || (next.match.a !== tournament.userTeamId && next.match.b !== tournament.userTeamId)) {
+    return simCircuitAiUntilUser(tournament, state);
+  }
+  const dynastySeed = (state.dynastySeed ?? 0) >>> 0;
+  const seed = dynastySeed ^ hashString(`${tournament.eventId}|user|${next.roundIdx}|${next.matchIdx}`);
+  const result = simMatch(teamObj(state, next.match.a), teamObj(state, next.match.b), seed);
+  recordLiveMatch(b, next.roundIdx, next.matchIdx, result);
+  logMatch(tournament, next.round.name, result);
+  return simCircuitAiUntilUser(tournament, state);
+}
+
+// Sim every remaining match (user included) to the champion.
+export function simCircuitToEnd(tournament, state) {
+  const b = tournament.bracket;
+  const dynastySeed = (state.dynastySeed ?? 0) >>> 0;
+  let guard = 0;
+  while (guard++ < 400) {
+    const next = findNextLiveMatch(b);
+    if (!next) break;
+    const seed = dynastySeed ^ hashString(`${tournament.eventId}|fin|${next.roundIdx}|${next.matchIdx}|${next.match.a}|${next.match.b}`);
+    const result = simMatch(teamObj(state, next.match.a), teamObj(state, next.match.b), seed);
+    recordLiveMatch(b, next.roundIdx, next.matchIdx, result);
+    logMatch(tournament, next.round.name, result);
+  }
+  return { userMatch: false, done: b._de.phase === "done" };
+}
+
 // The user's next opponent/match info, for the tournament overlay preview.
 export function nextUserCircuitMatch(tournament) {
-  const next = findNextBracketMatch(tournament.bracket);
+  const next = findNextLiveMatch(tournament.bracket);
   if (!next) return null;
   const { round, match } = next;
   if (match.a !== tournament.userTeamId && match.b !== tournament.userTeamId) return null;
@@ -188,14 +209,10 @@ export function finalizeCircuitTournament(state, tournament) {
   const seasonId = tournament.seasonId;
   const proStore = ensureSeason(migrateProPointsStore(oc.sim?.proStore), seasonId);
 
-  const de16 = computeDE16Placements(tournament.bracket); // { teamId: 1..16 }
-  const allPlacements = [];
-  for (const teamId of tournament.seeds) {
-    allPlacements.push({ teamId, placement: de16[teamId] || 16, lockedRoster: topRosterIds(state, teamId) });
-  }
-  tournament.outsideSeeds.forEach((teamId, i) => {
-    allPlacements.push({ teamId, placement: 17 + i, lockedRoster: topRosterIds(state, teamId) });
-  });
+  const placeMap = computeLivePlacements(tournament.bracket); // { teamId: 1..N }
+  const allPlacements = tournament.seeds.map((teamId) => ({
+    teamId, placement: placeMap[teamId] || tournament.seeds.length, lockedRoster: topRosterIds(state, teamId),
+  }));
 
   const award = awardTournamentPoints(proStore, {
     seasonId, tournamentId: tournament.eventId, placements: allPlacements,
