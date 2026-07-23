@@ -188,7 +188,7 @@ export const MAJOR_PLACEMENT_POINTS = {
   12: 0,
 };
 
-function computeDE16Placements(bracket) {
+export function computeDE16Placements(bracket) {
   if (!bracket?.rounds?.length) return {};
   const placements = {};
   const claimed = new Set();
@@ -334,7 +334,7 @@ function buildMajorBracket(standings, userTeamId) {
 }
 
 
-function buildMajorBracketDE16(majorSeeds) {
+export function buildMajorBracketDE16(majorSeeds) {
   const s = majorSeeds;
   const wbR1Matches = [
     { a: s[0], b: s[15], seedA: 1, seedB: 16, played: false, result: null },
@@ -736,7 +736,7 @@ function challengerTeamObj(teamId, gameState, field = []) {
   return { id: teamId, name: row?.teamName || base.name || teamId, players: roster, mapProfile };
 }
 
-function findNextBracketMatch(bracket) {
+export function findNextBracketMatch(bracket) {
   for (let r = 0; r < (bracket?.rounds || []).length; r++) {
     const round = bracket.rounds[r];
     const idx = (round.matches || []).findIndex(m => !m.played && m.a && m.b);
@@ -745,7 +745,7 @@ function findNextBracketMatch(bracket) {
   return null;
 }
 
-function _advanceQualifierBracket(bracket, roundIdx) {
+export function _advanceQualifierBracket(bracket, roundIdx) {
   if (bracket.type === "DE24") return _advanceQualifierBracketDE24(bracket, roundIdx);
   const round = bracket.rounds[roundIdx];
   if (!round.matches.every(m => m.played)) return false;

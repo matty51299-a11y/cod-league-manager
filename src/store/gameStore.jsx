@@ -53,6 +53,7 @@ import {
 } from "../engine/eventCentreEngine.js";
 import { createHistoricalStateFields, createHistoricalCareer, migrateHistoricalDynastyState, introduceHistoricalRookieClass } from "../engine/historicalDynasty.js";
 import { ensureOpenCircuitSeason, advanceOpenCircuitEvent, simCircuitToNextMajor, stateUsesOpenCircuit } from "../engine/openCircuitCareer.js";
+import { buildCircuitTournament, simCircuitAiUntilUser, applyUserCircuitResult, finalizeCircuitTournament } from "../engine/circuitTournament.js";
 import { applyEraTeamBranding } from "../data/historicalTeams.js";
 import { HISTORICAL_START_ERA_ID, MODERN_ERA_ID } from "../data/codEras.js";
 
@@ -652,6 +653,22 @@ export function __diagnoseReducer(state, action) {
       return runIfUserRosterValid(state, () => simCircuitToNextMajor(state));
     }
 
+    // ── Live open-circuit LAN/championship (interactive DE16 tournament) ───
+    case "START_CIRCUIT_EVENT": {
+      return runIfUserRosterValid(state, () => {
+        const eventId = action.eventId || state.openCircuit?.nextEventId;
+        const t = buildCircuitTournament(state, eventId);
+        // Cups / non-bracket events fall back to the quick event sim.
+        if (!t) return advanceOpenCircuitEvent(state);
+        const step = simCircuitAiUntilUser(t, state);
+        if (step.done) return { ...finalizeCircuitTournament(state, t), circuitTournament: { ...t, status: "complete" } };
+        return { ...state, circuitTournament: t };
+      });
+    }
+
+    case "CLOSE_CIRCUIT_TOURNAMENT":
+      return { ...state, circuitTournament: null };
+
     case "SIM_STAGE": {
       return runIfUserRosterValid(state, () => {
       const prevLogLen = state.schedule?.matchLog?.length ?? 0;
@@ -708,6 +725,14 @@ export function __diagnoseReducer(state, action) {
 
     // ── Interactive match result from MatchCenterOverlay ──────────────
     case "COMMIT_USER_MATCH_RESULT": {
+      // Live open-circuit tournament: apply the user's real Match Center result
+      // to their bracket match, resume AI, and finalise when the bracket ends.
+      if (state.circuitTournament?.status === "active") {
+        const t = JSON.parse(JSON.stringify(state.circuitTournament));
+        const step = applyUserCircuitResult(t, state, action.result);
+        if (step.done) return { ...finalizeCircuitTournament(state, t), circuitTournament: { ...t, status: "complete" } };
+        return { ...state, circuitTournament: t };
+      }
       return runIfUserRosterValid(state, () => {
       const majorIdx     = state.schedule?.majorIdx;
       const wasCompleted = majorIdx != null

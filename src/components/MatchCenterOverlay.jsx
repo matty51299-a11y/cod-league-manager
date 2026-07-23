@@ -568,13 +568,35 @@ export default function MatchCenterOverlay() {
   function buildSide(id) {
     const eventTeam = state?.schedule?.currentMajorEventTeams?.[id];
     if (eventTeam) return { id: eventTeam.id, name: eventTeam.name, tag: eventTeam.tag, color: eventTeam.color, players: eventTeam.players || [], mapProfile: getTeamMapProfile(state, id) };
+    // Live open-circuit tournament: resolve display from the historical field and
+    // the team's top-4 historical roster.
+    const circuitMeta = state?.circuitTournament?.teamsById?.[id];
+    if (circuitMeta) {
+      const players = (state.players || []).filter(p => p.teamId === id && !p.isSub).sort((a, b) => (b.overall || 0) - (a.overall || 0)).slice(0, 4);
+      return { id, name: circuitMeta.name, tag: circuitMeta.tag, color: circuitMeta.color, players, mapProfile: getTeamMapProfile(state, id) };
+    }
     const meta = CDL_TEAMS.find(t => t.id === id) ?? { id, name: id, tag: id, color: "#888" };
     return { id: meta.id, name: meta.name, tag: meta.tag, color: meta.color, players: (state.players || []).filter(p => p.teamId === id), mapProfile: getTeamMapProfile(state, id) };
+  }
+
+  // The user's next unplayed match in a live open-circuit tournament bracket.
+  function nextCircuitUserMatch() {
+    const t = state?.circuitTournament;
+    if (!t?.bracket?.rounds) return null;
+    for (const round of t.bracket.rounds) {
+      const m = (round.matches || []).find(mx => !mx.played && mx.a && mx.b && (mx.a === state.userTeamId || mx.b === state.userTeamId));
+      if (m) return { round, match: m };
+    }
+    return null;
   }
 
   const teamA = (() => {
     if (!state || !ctx) return null;
     const { schedule, userTeamId } = state;
+    if (ctx.type === "circuit") {
+      const nm = nextCircuitUserMatch();
+      return nm ? buildSide(nm.match.a) : null;
+    }
     if (ctx.type === "stage") {
       const stage = schedule.stages?.[schedule.stageIdx];
       const m = stage?.matches.find(mx => !mx.played && (mx.a === userTeamId || mx.b === userTeamId));
@@ -599,6 +621,10 @@ export default function MatchCenterOverlay() {
   const teamB = (() => {
     if (!state || !ctx || !teamA) return null;
     const { schedule, userTeamId } = state;
+    if (ctx.type === "circuit") {
+      const nm = nextCircuitUserMatch();
+      return nm ? buildSide(nm.match.b) : null;
+    }
     if (ctx.type === "stage") {
       const stage = schedule.stages?.[schedule.stageIdx];
       const m = stage?.matches.find(mx => !mx.played && (mx.a === userTeamId || mx.b === userTeamId));
@@ -689,7 +715,9 @@ export default function MatchCenterOverlay() {
     };
     const userOvr = userTeamIsA ? teamOvr(teamA) : teamOvr(teamB);
     const oppOvr  = userTeamIsA ? teamOvr(teamB) : teamOvr(teamA);
-    const ctxLabel = ctx.type === "major"
+    const ctxLabel = ctx.type === "circuit"
+      ? (state.circuitTournament?.name ? `${state.circuitTournament.name} — ${nextCircuitUserMatch()?.round?.name ?? "Bracket"}` : "Open Circuit")
+      : ctx.type === "major"
       ? (() => {
           const bracket = state.schedule.majors?.[state.schedule.majorIdx]?.bracket;
           for (const r of bracket?.rounds ?? []) {
