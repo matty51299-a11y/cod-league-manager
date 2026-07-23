@@ -63,6 +63,7 @@ function summariseResults(results, world) {
   for (const [id, r] of Object.entries(results)) {
     if (!r.completed) continue;
     out[id] = {
+      completed: true,
       name: r.name, eventType: r.eventType, tier: r.tier, startDate: r.startDate,
       skipped: !!r.skipped, fieldSize: r.fieldSize || 0,
       phases: (r.phases || []).map((p) => p.phase),

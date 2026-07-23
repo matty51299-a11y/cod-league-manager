@@ -16,6 +16,19 @@ export default function NextMatchControl({ onOpen }) {
 
   const { schedule, userTeamId } = state;
 
+  // ── Historical open-circuit mode ─────────────────────────────────────────
+  // The whole open-circuit season is simulated up front and reviewed in the
+  // Circuit tab; the primary progression is rolling the dynasty to the next
+  // title/season.
+  if (state.userTeamType === "historical") {
+    return (
+      <button className="nmc-btn" onClick={() => dispatch({ type: "ADVANCE_OFFSEASON" })} title="Roll the dynasty forward to the next title/season">
+        <span className="nmc-play-label">Advance Season</span>
+        <span className="nmc-arrow">▶</span>
+      </button>
+    );
+  }
+
   // ── Challenger mode ──────────────────────────────────────────────────────
   if (isChallengerMode(state)) {
     if (schedule.phase !== "stage") return null; // qualifier/major overlays take over

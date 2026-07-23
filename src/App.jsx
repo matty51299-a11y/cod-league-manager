@@ -17,6 +17,7 @@ import NextMatchControl  from "./components/NextMatchControl.jsx";
 import NextMatchOverlay  from "./components/NextMatchOverlay.jsx";
 import Dashboard         from "./components/Dashboard.jsx";
 import ChallengerDashboard from "./components/ChallengerDashboard.jsx";
+import HistoricalDashboard from "./components/HistoricalDashboard.jsx";
 import Standings         from "./components/Standings.jsx";
 import Schedule          from "./components/Schedule.jsx";
 import KDLeaders         from "./components/KDLeaders.jsx";
@@ -92,6 +93,7 @@ export default function App() {
   const team         = resolveUserTeamMeta(state);
   const teamThemeStyle = getTeamThemeStyle(team);
   const challengerMode = isChallengerMode(state);
+  const historicalMode = state?.userTeamType === "historical";
   const notification = state.notifications?.[0];
   const popupMoraleEvents = getPopupRequiredMoraleEvents(state);
   const appMoralePrompt = !activeMoraleMeeting && screen !== "dynamics"
@@ -118,7 +120,7 @@ export default function App() {
       {/* ── Top bar ── */}
       <header className="topbar">
         <div className="topbar-left">
-          <span className="app-title">{challengerMode ? "CHALLENGER MANAGER" : "CDL MANAGER"}</span>
+          <span className="app-title">{historicalMode ? "DYNASTY MANAGER" : challengerMode ? "CHALLENGER MANAGER" : "CDL MANAGER"}</span>
           <span className="season-badge">S{state.season}</span>
           {team && (
             <span className="user-team-badge" style={{ color: "var(--shell-text)" }}>
@@ -196,7 +198,7 @@ export default function App() {
 
         {/* Screen content */}
         <main className="main-content">
-          {screen === "home"      && (challengerMode ? <ChallengerDashboard setScreen={setScreen} /> : <Dashboard setScreen={setScreen} />)}
+          {screen === "home"      && (historicalMode ? <HistoricalDashboard setScreen={setScreen} /> : challengerMode ? <ChallengerDashboard setScreen={setScreen} /> : <Dashboard setScreen={setScreen} />)}
           {screen === "inbox"    && <Inbox setScreen={setScreen} />}
           {screen === "standings" && <Standings />}
           {screen === "schedule"  && <Schedule />}

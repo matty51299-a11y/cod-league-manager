@@ -6,8 +6,7 @@ import { HISTORICAL_ROOKIE_CLASSES } from "../data/historicalRookieClasses.js";
 import { applyEraTeamBranding } from "../data/historicalTeams.js";
 import { buildHistoricalSeasonTemplate } from "../data/historicalRosterDb.js";
 import { buildCompetitionProfile } from "../data/competitionProfiles.js";
-import { buildSeasonCalendar } from "./openCircuit/calendar.js";
-import { createProPointsStore, ensureSeason, rankTeamsByProPoints } from "./proPoints.js";
+import { buildHistoricalPlayerRecord } from "../data/historicalRatings.js";
 
 function clamp(v, min = 40, max = 99) { return Math.max(min, Math.min(max, Math.round(v))); }
 function hashString(str) { let h = 2166136261; for (const ch of String(str || "")) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
@@ -34,21 +33,18 @@ export function createHistoricalCareer(eraId = HISTORICAL_START_ERA_ID, options 
   if (!teams.some((t) => t.isUserControlled)) {
     throw new Error(`Historical user team ${options.userTeamId} is not in ${eraId}`);
   }
+  // Build real, deterministic player records (identity from the DB, ratings from
+  // historicalRatings). No flat 70s; full stat blocks so chemistry has inputs.
   const playerById = new Map();
-  for (const team of teams) for (const playerId of team.playerIds) {
-    const source = template.teams.find((t) => t.historicalTeamId === team.historicalTeamId)
-      ?.players.find((p) => p.playerId === playerId);
-    if (!playerById.has(playerId)) playerById.set(playerId, {
-      id: playerId, playerId, name: source?.displayName || playerId, gamertag: source?.displayName || playerId,
-      teamId: team.id, primary: "Flex", secondary: "Flex", region: team.region,
-      overall: 70, potential: 78, age: 20, contractYears: 1, isProspect: false, dataStatus: "historical",
-    });
+  for (const row of template.teams) {
+    const teamId = `historical:${row.historicalTeamId}`;
+    for (const p of row.players) {
+      if (playerById.has(p.playerId)) continue;
+      playerById.set(p.playerId, buildHistoricalPlayerRecord({
+        playerId: p.playerId, displayName: p.displayName, teamId, eraId,
+      }));
+    }
   }
-  const proPoints = createProPointsStore();
-  ensureSeason(proPoints, eraId);
-  for (const playerId of playerById.keys()) proPoints.playerSeasonProPoints[eraId][playerId] = 0;
-  const calendar = buildSeasonCalendar(profile);
-  const ranking = rankTeamsByProPoints(proPoints, eraId, teams.map((t) => ({ id: t.id, name: t.name, roster: t.activeStarterIds })), template.rosterSize);
   return {
     teams,
     players: [...playerById.values()],
@@ -56,15 +52,10 @@ export function createHistoricalCareer(eraId = HISTORICAL_START_ERA_ID, options 
     challengerTeams: [],
     competitionProfile: profile,
     historicalInitialisationSeasonId: eraId,
-    proPoints,
-    openCircuit: {
-      buildKey: `${eraId}:1`, seasonId: eraId, userTeamId: `historical:${options.userTeamId}`,
-      ecosystemType: profile.ecosystemType, usesChallengers: false, usesProPoints: true,
-      calendar: { events: calendar.events, cups: calendar.cups, all: calendar.all, overlaps: calendar.overlaps },
-      results: {}, ranking, teamsById: Object.fromEntries(teams.map((t) => [t.id, { name: t.name, region: t.region, roster: t.activeStarterIds, isUserControlled: t.isUserControlled }])),
-      playersById: Object.fromEntries([...playerById.values()].map((p) => [p.id, { name: p.name, gamertag: p.gamertag, overall: p.overall, teamId: p.teamId }])),
-      conflicts: [], warnings: [], proPoints: proPoints.playerSeasonProPoints[eraId],
-    },
+    // The open-circuit season (calendar, brackets, Pro Points, results, 28-team
+    // ranking) is built and simulated by ensureOpenCircuitSeason from the real
+    // engine — deliberately NOT hand-rolled here, so there is exactly one source
+    // of truth for the circuit and reloading never regenerates it.
     schedule: { season: 1, phase: "openCircuit", stages: [], majors: [], standings: {}, stageStandings: {}, matchLog: [] },
   };
 }
