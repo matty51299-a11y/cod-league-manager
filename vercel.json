@@ -2,5 +2,9 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "installCommand": "npm install",
-  "framework": "vite"
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/v0-dashboard-test", "destination": "/v0-dashboard-test.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }

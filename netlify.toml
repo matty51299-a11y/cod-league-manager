@@ -5,6 +5,14 @@
   command   = "npm run build"
   publish   = "dist"
 
+# Isolated v0-dashboard visual test page — must be matched before the SPA
+# catch-all below, since it's a separate static HTML bundle, not part of the
+# React app's client-side routing.
+[[redirects]]
+  from   = "/v0-dashboard-test"
+  to     = "/v0-dashboard-test.html"
+  status = 200
+
 # Redirect all routes to index.html so React handles routing client-side.
 [[redirects]]
   from   = "/*"
