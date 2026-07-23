@@ -53,7 +53,7 @@ import {
 } from "../engine/eventCentreEngine.js";
 import { createHistoricalStateFields, createHistoricalCareer, migrateHistoricalDynastyState, introduceHistoricalRookieClass } from "../engine/historicalDynasty.js";
 import { ensureOpenCircuitSeason, advanceOpenCircuitEvent, simCircuitToNextMajor, stateUsesOpenCircuit } from "../engine/openCircuitCareer.js";
-import { buildCircuitTournament, simCircuitAiUntilUser, applyUserCircuitResult, finalizeCircuitTournament } from "../engine/circuitTournament.js";
+import { buildCircuitTournament, simCircuitAiUntilUser, applyUserCircuitResult, finalizeCircuitTournament, simUserCircuitMatch, simCircuitToEnd } from "../engine/circuitTournament.js";
 import { applyEraTeamBranding } from "../data/historicalTeams.js";
 import { HISTORICAL_START_ERA_ID, MODERN_ERA_ID } from "../data/codEras.js";
 
@@ -653,21 +653,43 @@ export function __diagnoseReducer(state, action) {
       return runIfUserRosterValid(state, () => simCircuitToNextMajor(state));
     }
 
-    // ── Live open-circuit LAN/championship (interactive DE16 tournament) ───
+    // ── Live open-circuit LAN/championship (interactive full-field DE) ───
     case "START_CIRCUIT_EVENT": {
       return runIfUserRosterValid(state, () => {
         const eventId = action.eventId || state.openCircuit?.nextEventId;
         const t = buildCircuitTournament(state, eventId);
         // Cups / non-bracket events fall back to the quick event sim.
         if (!t) return advanceOpenCircuitEvent(state);
-        const step = simCircuitAiUntilUser(t, state);
-        if (step.done) return { ...finalizeCircuitTournament(state, t), circuitTournament: { ...t, status: "complete" } };
-        return { ...state, circuitTournament: t };
+        // Register the field so resolveTeamDisplay / the Match Center render the
+        // historical orgs with names, tags and rosters.
+        const eventTeams = Object.fromEntries(Object.entries(t.teamsById).map(([id, m]) => [id, {
+          id, name: m.name, tag: m.tag, color: m.color,
+          players: (state.players || []).filter((p) => p.teamId === id && !p.isSub).sort((a, b) => (b.overall || 0) - (a.overall || 0)).slice(0, 4),
+        }]));
+        const withTeams = { ...state, schedule: { ...state.schedule, currentMajorEventTeams: eventTeams } };
+        const step = simCircuitAiUntilUser(t, withTeams);
+        if (step.done) return { ...finalizeCircuitTournament(withTeams, t), circuitTournament: { ...t, status: "complete" } };
+        return { ...withTeams, circuitTournament: t };
       });
     }
 
+    case "SIM_CIRCUIT_USER_MATCH": {
+      if (state.circuitTournament?.status !== "active") return state;
+      const t = JSON.parse(JSON.stringify(state.circuitTournament));
+      const step = simUserCircuitMatch(t, state);
+      if (step.done) return { ...finalizeCircuitTournament(state, t), circuitTournament: { ...t, status: "complete" } };
+      return { ...state, circuitTournament: t };
+    }
+
+    case "SIM_CIRCUIT_FINISH": {
+      if (state.circuitTournament?.status !== "active") return state;
+      const t = JSON.parse(JSON.stringify(state.circuitTournament));
+      simCircuitToEnd(t, state);
+      return { ...finalizeCircuitTournament(state, t), circuitTournament: { ...t, status: "complete" } };
+    }
+
     case "CLOSE_CIRCUIT_TOURNAMENT":
-      return { ...state, circuitTournament: null };
+      return { ...state, circuitTournament: null, schedule: { ...state.schedule, currentMajorEventTeams: null } };
 
     case "SIM_STAGE": {
       return runIfUserRosterValid(state, () => {

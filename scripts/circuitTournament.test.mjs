@@ -22,8 +22,8 @@ const teamObj = (teamId) => ({
 // A LAN builds an interactive DE16 tournament with the user always seeded.
 const tourney = buildCircuitTournament(state, "mlg_fall_champ_2013");
 assert.ok(tourney, "LAN builds an interactive tournament");
-assert.equal(tourney.seeds.length, 16, "16-team playoff bracket");
-assert.ok(tourney.seeds.includes(state.userTeamId), "the user is always seeded into the playoff");
+assert.equal(tourney.seeds.length, template.teams.length, "the WHOLE field is in the bracket");
+assert.ok(tourney.seeds.includes(state.userTeamId), "the user is seeded into the bracket");
 assert.equal(tourney.fieldSize, template.teams.length, "the full field is scored");
 
 // Online cups do NOT build an interactive tournament (they quick-sim).
@@ -59,5 +59,5 @@ assert.equal(finalState.openCircuit.playedCount, 1, "the event counts as played"
 const winnerPoints = Object.values(finalState.openCircuit.proPoints).some((v) => v > 0);
 assert.ok(winnerPoints, "Pro Points are awarded");
 
-console.log(`circuit tournament: 16-seed playoff of a ${tourney.fieldSize}-team field, user played ${userMatches} live matches`);
+console.log(`circuit tournament: full ${tourney.fieldSize}-team double-elimination, user played ${userMatches} live matches`);
 console.log(`circuit tournament: champion crowned, user finished ${res.userPlacement}th, points folded into the circuit ✓`);
