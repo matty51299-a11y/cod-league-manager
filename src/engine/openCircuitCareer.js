@@ -77,7 +77,7 @@ function assembleOpenCircuit(run, buildKey) {
       phases: (r.phases || []).map((p) => p.phase),
       placements: (r.placements || []).slice(0, 8).map((p) => ({ rank: p.placement, teamId: p.teamId, name: named(p.teamId) })),
       awards: (r.awards || []).slice(0, 3).map((a) => ({ placement: a.placement, teamId: a.teamId, name: named(a.teamId), pointsPerPlayer: a.pointsPerPlayer, teamPrize: a.teamPrize })),
-      userMatches: (r.userMatches || []).map((m) => ({ phase: m.phase, opponent: named(m.opponent), won: m.won, score: m.score })),
+      userMatches: (r.userMatches || []).map((m) => ({ phase: m.phase, opponent: named(m.opponent), won: m.won, score: m.score, maps: m.maps || [] })),
     };
   }
 
@@ -174,6 +174,26 @@ export function advanceOpenCircuitEvent(state) {
   let next = { ...state, openCircuit };
   next = pushCircuitResultInbox(next, justPlayed, openCircuit);
   return next;
+}
+
+// Batch-play the online 2K/5K cups up to (but not including) the next LAN /
+// league / championship, so the user can grind seeding quickly and then play the
+// big events live. Stops at the next major event or season end.
+export function simCircuitToNextMajor(state) {
+  if (!stateUsesOpenCircuit(state)) return state;
+  const isCup = (s, id) => {
+    const e = (s.openCircuit?.calendar?.all || []).find((x) => x.id === id);
+    return e && (e.eventType === "ONLINE_2K" || e.eventType === "ONLINE_5K");
+  };
+  let s = state;
+  let guard = 0;
+  // Always advance at least once; then keep going while the NEXT queued event is
+  // an online cup. This lands the user on the next major (or season complete).
+  do {
+    s = advanceOpenCircuitEvent(s);
+    guard += 1;
+  } while (!s.openCircuit.seasonComplete && s.openCircuit.nextEventId && isCup(s, s.openCircuit.nextEventId) && guard < 200);
+  return s;
 }
 
 // Inbox item summarising the user's finish at each freshly-played event.

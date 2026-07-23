@@ -26,10 +26,11 @@ const EVENT_TYPE_LABEL = {
   WORLD_CHAMPIONSHIP: "Championship", INVITATIONAL: "Invitational", REGIONAL: "Regional",
 };
 
-export default function HistoricalDashboard({ setScreen }) {
+export default function HistoricalDashboard({ setScreen, onPlayEvent }) {
   const { state, dispatch } = useGame();
   const [expanded, setExpanded] = useState(null);
   if (!state) return null;
+  const playNext = () => (onPlayEvent ? onPlayEvent() : dispatch({ type: "SIM_NEXT_CIRCUIT_EVENT" }));
 
   const oc = state.openCircuit;
   const team = resolveUserTeamMeta(state);
@@ -87,7 +88,7 @@ export default function HistoricalDashboard({ setScreen }) {
               Advance to Next Season ›
             </button>
           ) : (
-            <button className="btn-cta" onClick={() => dispatch({ type: "SIM_NEXT_CIRCUIT_EVENT" })} title={nextEvent ? `Play ${nextEvent.name}` : "Play the next event"}>
+            <button className="btn-cta" onClick={playNext} title={nextEvent ? `Play ${nextEvent.name}` : "Play the next event"}>
               Play Next Event ›
             </button>
           )
@@ -119,7 +120,14 @@ export default function HistoricalDashboard({ setScreen }) {
               </div>
               {nextEvent.location && <div style={{ fontSize: 12, opacity: 0.75, marginTop: 4 }}>{nextEvent.location}</div>}
             </div>
-            <button className="btn-cta" onClick={() => dispatch({ type: "SIM_NEXT_CIRCUIT_EVENT" })}>Play {EVENT_TYPE_LABEL[nextEvent.eventType] || "Event"} ›</button>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "stretch" }}>
+              <button className="btn-cta" onClick={playNext}>▶ Play {EVENT_TYPE_LABEL[nextEvent.eventType] || "Event"}</button>
+              {(nextEvent.eventType === "ONLINE_2K" || nextEvent.eventType === "ONLINE_5K") && (
+                <button className="btn-secondary-sm" onClick={() => dispatch({ type: "SIM_CIRCUIT_TO_MAJOR" })} title="Quick-sim the online cups up to the next LAN / league / championship">
+                  Sim cups to next LAN »
+                </button>
+              )}
+            </div>
           </div>
         </SectionCard>
       ) : (

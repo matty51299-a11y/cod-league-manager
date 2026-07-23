@@ -52,7 +52,7 @@ import {
   generateMatchInboxEvents,
 } from "../engine/eventCentreEngine.js";
 import { createHistoricalStateFields, createHistoricalCareer, migrateHistoricalDynastyState, introduceHistoricalRookieClass } from "../engine/historicalDynasty.js";
-import { ensureOpenCircuitSeason, advanceOpenCircuitEvent, stateUsesOpenCircuit } from "../engine/openCircuitCareer.js";
+import { ensureOpenCircuitSeason, advanceOpenCircuitEvent, simCircuitToNextMajor, stateUsesOpenCircuit } from "../engine/openCircuitCareer.js";
 import { applyEraTeamBranding } from "../data/historicalTeams.js";
 import { HISTORICAL_START_ERA_ID, MODERN_ERA_ID } from "../data/codEras.js";
 
@@ -646,6 +646,10 @@ export function __diagnoseReducer(state, action) {
     // ── Open circuit: play the next tournament on the calendar ────────────
     case "SIM_NEXT_CIRCUIT_EVENT": {
       return runIfUserRosterValid(state, () => advanceOpenCircuitEvent(state));
+    }
+
+    case "SIM_CIRCUIT_TO_MAJOR": {
+      return runIfUserRosterValid(state, () => simCircuitToNextMajor(state));
     }
 
     case "SIM_STAGE": {
