@@ -11548,3 +11548,231 @@ body { background: #111317; }
   background: #1b1f27 !important;
   box-shadow: none !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   V0 MANAGER REDESIGN — condensed esports-broadcast cockpit skin
+   Display-only. Restyles the app shell (topbar/sidebar), dashboard panels and
+   buttons to a tighter, condensed-type, flat-panel look inspired by the
+   "Dynasty Manager" v0 concept. Keeps the existing per-team accent system
+   (--user-accent / --shell-* tokens from teamTheme.js) — only typography,
+   spacing, radii and chrome density change. Overrides earlier passes by
+   source order, matching this file's established convention.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&display=swap');
+
+:root {
+  --font-condensed: 'Oswald', var(--sans);
+}
+
+/* ── Topbar ───────────────────────────────────────────────────────────────── */
+.topbar {
+  height: 44px !important;
+  min-height: 44px !important;
+  padding: 0 14px !important;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--shell-topbar-bg, #16803A) 82%, #05070a), var(--shell-topbar-bg, #16803A) 90%) !important;
+  border-bottom: 1px solid var(--user-accent-border, rgba(130,155,220,0.3)) !important;
+  box-shadow: none !important;
+}
+.topbar::after { content: none !important; }
+.topbar-left { gap: 10px !important; }
+.app-title {
+  font-family: var(--font-condensed);
+  font-weight: 700 !important;
+  font-size: 12.5px !important;
+  letter-spacing: 0.17em !important;
+  text-shadow: none !important;
+}
+.season-badge {
+  font-family: var(--font-condensed);
+  background: rgba(255,255,255,0.14) !important;
+  border: 1px solid rgba(255,255,255,0.22) !important;
+  color: #fff !important;
+  border-radius: 3px !important;
+  padding: 2px 7px !important;
+  font-weight: 700 !important;
+  font-size: 10px !important;
+  letter-spacing: 0.06em;
+  box-shadow: none !important;
+}
+.user-team-badge {
+  min-height: auto !important;
+  border-radius: 3px !important;
+  background: rgba(0,0,0,0.18) !important;
+  border: 1px solid rgba(255,255,255,0.24) !important;
+  box-shadow: none !important;
+  padding: 3px 9px !important;
+}
+.user-team-badge strong { font-family: var(--font-condensed); font-size: 11px; letter-spacing: 0.09em; }
+.user-team-name { font-family: var(--font-condensed); letter-spacing: 0.02em; }
+.btn-new-game {
+  border-radius: 3px !important;
+  background: transparent !important;
+  border: 1px solid rgba(255,255,255,0.22) !important;
+  box-shadow: none !important;
+  font-family: var(--font-condensed);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 600 !important;
+  font-size: 11px !important;
+  padding: 4px 10px !important;
+}
+.btn-new-game:hover { background: rgba(255,255,255,0.1) !important; color: #fff !important; }
+
+/* ── Sidebar ──────────────────────────────────────────────────────────────── */
+.sidebar {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--shell-sidebar-bg, #146B2E) 20%, #0c0e12) 0%, #0c0e12 62%) !important;
+  border-right: 1px solid rgba(255,255,255,0.08) !important;
+  box-shadow: none !important;
+}
+.sb-team-block {
+  background: none !important;
+  border-bottom: 1px solid rgba(255,255,255,0.09) !important;
+  min-height: auto !important;
+  padding: 14px 16px !important;
+}
+.sb-team-block::before { content: none !important; }
+.sb-team-tag {
+  font-family: var(--font-condensed);
+  font-size: 13px !important;
+  letter-spacing: 0.1em;
+  color: var(--user-accent-text, #fff) !important;
+  text-shadow: none !important;
+}
+.sb-season { font-family: var(--font-condensed); letter-spacing: 0.06em; }
+.sb-team-dot { box-shadow: 0 0 10px var(--user-accent-border, rgba(91,157,255,0.5)) !important; }
+.sb-nav { padding: 6px 0 !important; gap: 0 !important; }
+.sb-item {
+  border-radius: 0 !important;
+  border: none !important;
+  border-left: 2px solid transparent !important;
+  background: transparent !important;
+  color: rgba(233,238,255,0.72) !important;
+  font-family: var(--font-condensed);
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 9px 14px !important;
+  min-height: auto !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+.sb-item:hover {
+  background: var(--user-accent-softer, rgba(255,255,255,0.05)) !important;
+  border-left-color: var(--user-accent-border, rgba(255,255,255,0.4)) !important;
+  color: #fff !important;
+  transform: none !important;
+}
+.sb-item.active {
+  background: var(--user-accent-softer, rgba(255,255,255,0.07)) !important;
+  border-left-color: var(--user-accent, #5b9dff) !important;
+  color: var(--user-accent-text, #fff) !important;
+  box-shadow: none !important;
+  font-weight: 700 !important;
+}
+.sb-item.active .sb-icon,
+.sb-item.active .sb-label { color: var(--user-accent-text, #fff) !important; }
+.sb-icon { opacity: 0.9; }
+.sb-footer { background: none !important; border-top: 1px solid rgba(255,255,255,0.09) !important; }
+.sb-pill {
+  border-radius: 3px !important;
+  font-family: var(--font-condensed);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700 !important;
+  font-size: 10px !important;
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────────────── */
+.btn-primary,
+.btn-primary-sm,
+.btn-cta,
+.btn-secondary,
+.btn-secondary-sm,
+.nmc-btn,
+.nmo-play-btn,
+.mto-play-match-btn,
+.filter-btn.active {
+  font-family: var(--font-condensed) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-radius: 3px !important;
+}
+.btn-primary,
+.btn-primary-sm,
+.btn-cta,
+.nmc-btn,
+.nmo-play-btn,
+.mto-play-match-btn,
+.filter-btn.active {
+  background: var(--user-accent, #5b9dff) !important;
+  border: 1px solid var(--user-accent, #5b9dff) !important;
+  color: var(--readable-accent-text, #06110a) !important;
+  box-shadow: none !important;
+}
+.btn-primary:hover,
+.btn-primary-sm:hover,
+.btn-cta:hover,
+.nmc-btn:hover,
+.nmo-play-btn:hover { filter: brightness(1.08) !important; opacity: 1 !important; }
+.btn-secondary,
+.btn-secondary-sm {
+  background: transparent !important;
+  border: 1px solid rgba(255,255,255,0.2) !important;
+  color: var(--text) !important;
+  box-shadow: none !important;
+}
+.btn-secondary:hover,
+.btn-secondary-sm:hover { background: rgba(255,255,255,0.06) !important; border-color: var(--user-accent-border, rgba(255,255,255,0.35)) !important; }
+
+/* ── Dashboard: condensed panel type + tightened chrome ──────────────────── */
+.fm-dashboard .fm-panel-title h3,
+.fm-kicker {
+  font-family: var(--font-condensed) !important;
+  letter-spacing: 0.13em !important;
+}
+.fm-dashboard .fm-panel,
+.fm-dashboard .fm-club-strip { border-radius: 3px !important; }
+.fm-club-main h2 {
+  font-family: var(--font-condensed);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.fm-mini-metric strong,
+.fm-table-row strong,
+.fm-result-row strong,
+.fm-dev-row strong {
+  font-family: var(--font-condensed);
+}
+.fm-panel-link {
+  font-family: var(--font-condensed);
+  letter-spacing: 0.05em;
+}
+
+/* Club strip banner: arena backdrop behind the team-tint gradient, like a
+   broadcast-style team header. */
+.fm-dashboard .fm-club-strip {
+  background:
+    linear-gradient(90deg, rgba(9,11,15,0.95) 0%, rgba(9,11,15,0.86) 45%, rgba(9,11,15,0.55) 100%),
+    color-mix(in srgb, var(--user-accent, #5b9dff) 10%, #0e1014) !important;
+  background-image:
+    linear-gradient(90deg, rgba(9,11,15,0.95) 0%, rgba(9,11,15,0.86) 45%, rgba(9,11,15,0.55) 100%),
+    url(/arena-bg.png) !important;
+  background-size: cover !important;
+  background-position: center !important;
+  border-left: 3px solid var(--user-accent, #5b9dff) !important;
+}
+.oh-hero {
+  position: relative;
+  background:
+    linear-gradient(90deg, rgba(9,11,15,0.95) 0%, rgba(9,11,15,0.88) 50%, rgba(9,11,15,0.7) 100%),
+    url(/arena-bg.png) center/cover !important;
+}
+
+/* Inbox / feed unread badges: small bold condensed chip like v0's nav badges */
+.sb-badge {
+  font-family: var(--font-condensed);
+  font-weight: 700 !important;
+}
