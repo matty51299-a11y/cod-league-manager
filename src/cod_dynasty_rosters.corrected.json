@@ -1,0 +1,6676 @@
+{
+  "schemaVersion": 1,
+  "sourceWorkbook": "cod_manager_rosters_database (1)(1)(1).xlsx",
+  "matchingRule": "Use playerId for identity. Never match players by lowercased gamertag alone.",
+  "playerAliasesApplied": {
+    "C6": "Crimsix",
+    "Kuavo": "Kenny",
+    "AquA": "Aqua",
+    "TonyJ's": "TonyJs",
+    "Swiftazor": "Swiftaz0r",
+    "Ko1gaa": "Kolgaa"
+  },
+  "players": [
+    {
+      "playerId": "2real",
+      "canonicalGamertag": "2ReaL",
+      "knownAliases": []
+    },
+    {
+      "playerId": "abezy",
+      "canonicalGamertag": "aBeZy",
+      "knownAliases": []
+    },
+    {
+      "playerId": "accuracy",
+      "canonicalGamertag": "Accuracy",
+      "knownAliases": []
+    },
+    {
+      "playerId": "aches",
+      "canonicalGamertag": "ACHES",
+      "knownAliases": []
+    },
+    {
+      "playerId": "afro",
+      "canonicalGamertag": "Afro",
+      "knownAliases": []
+    },
+    {
+      "playerId": "agonie",
+      "canonicalGamertag": "Agonie",
+      "knownAliases": []
+    },
+    {
+      "playerId": "alexx",
+      "canonicalGamertag": "Alexx",
+      "knownAliases": []
+    },
+    {
+      "playerId": "anticity",
+      "canonicalGamertag": "Anticity",
+      "knownAliases": []
+    },
+    {
+      "playerId": "apathy",
+      "canonicalGamertag": "Apathy",
+      "knownAliases": []
+    },
+    {
+      "playerId": "apox",
+      "canonicalGamertag": "Apox",
+      "knownAliases": []
+    },
+    {
+      "playerId": "aqua",
+      "canonicalGamertag": "Aqua",
+      "knownAliases": [
+        "AquA"
+      ]
+    },
+    {
+      "playerId": "arcitys",
+      "canonicalGamertag": "Arcitys",
+      "knownAliases": []
+    },
+    {
+      "playerId": "artshot",
+      "canonicalGamertag": "ArtShot",
+      "knownAliases": []
+    },
+    {
+      "playerId": "asim",
+      "canonicalGamertag": "Asim",
+      "knownAliases": []
+    },
+    {
+      "playerId": "assault",
+      "canonicalGamertag": "Assault",
+      "knownAliases": []
+    },
+    {
+      "playerId": "attach",
+      "canonicalGamertag": "Attach",
+      "knownAliases": []
+    },
+    {
+      "playerId": "atura",
+      "canonicalGamertag": "Atura",
+      "knownAliases": []
+    },
+    {
+      "playerId": "aykon",
+      "canonicalGamertag": "AyKoN",
+      "knownAliases": []
+    },
+    {
+      "playerId": "azox",
+      "canonicalGamertag": "AzoX",
+      "knownAliases": []
+    },
+    {
+      "playerId": "bacabec",
+      "canonicalGamertag": "Bacabec",
+      "knownAliases": []
+    },
+    {
+      "playerId": "bance",
+      "canonicalGamertag": "Bance",
+      "knownAliases": []
+    },
+    {
+      "playerId": "bbconor",
+      "canonicalGamertag": "BBConor",
+      "knownAliases": []
+    },
+    {
+      "playerId": "beakd",
+      "canonicalGamertag": "beakd",
+      "knownAliases": []
+    },
+    {
+      "playerId": "beehzy",
+      "canonicalGamertag": "Beehzy",
+      "knownAliases": []
+    },
+    {
+      "playerId": "believe",
+      "canonicalGamertag": "Believe",
+      "knownAliases": []
+    },
+    {
+      "playerId": "benji",
+      "canonicalGamertag": "Benji",
+      "knownAliases": []
+    },
+    {
+      "playerId": "benjinuri",
+      "canonicalGamertag": "BenjiNuri",
+      "knownAliases": []
+    },
+    {
+      "playerId": "bidz",
+      "canonicalGamertag": "Bidz",
+      "knownAliases": []
+    },
+    {
+      "playerId": "bissell",
+      "canonicalGamertag": "Bissell",
+      "knownAliases": []
+    },
+    {
+      "playerId": "blackk",
+      "canonicalGamertag": "Blackk",
+      "knownAliases": []
+    },
+    {
+      "playerId": "blazt",
+      "canonicalGamertag": "Blazt",
+      "knownAliases": []
+    },
+    {
+      "playerId": "blfire",
+      "canonicalGamertag": "Blfire",
+      "knownAliases": []
+    },
+    {
+      "playerId": "blue",
+      "canonicalGamertag": "bLue",
+      "knownAliases": []
+    },
+    {
+      "playerId": "bounce",
+      "canonicalGamertag": "BounCe",
+      "knownAliases": []
+    },
+    {
+      "playerId": "braaain",
+      "canonicalGamertag": "Braaain",
+      "knownAliases": []
+    },
+    {
+      "playerId": "brack",
+      "canonicalGamertag": "Brack",
+      "knownAliases": []
+    },
+    {
+      "playerId": "breszy",
+      "canonicalGamertag": "Breszy",
+      "knownAliases": []
+    },
+    {
+      "playerId": "brock",
+      "canonicalGamertag": "Brock",
+      "knownAliases": []
+    },
+    {
+      "playerId": "broken",
+      "canonicalGamertag": "BroKeN",
+      "knownAliases": []
+    },
+    {
+      "playerId": "bullet",
+      "canonicalGamertag": "Bullet",
+      "knownAliases": []
+    },
+    {
+      "playerId": "burns",
+      "canonicalGamertag": "Burns",
+      "knownAliases": []
+    },
+    {
+      "playerId": "buzzo",
+      "canonicalGamertag": "BuZZO",
+      "knownAliases": []
+    },
+    {
+      "playerId": "caio",
+      "canonicalGamertag": "Caio",
+      "knownAliases": []
+    },
+    {
+      "playerId": "califa",
+      "canonicalGamertag": "CaLiFa",
+      "knownAliases": []
+    },
+    {
+      "playerId": "cammy",
+      "canonicalGamertag": "Cammy",
+      "knownAliases": []
+    },
+    {
+      "playerId": "cappeh",
+      "canonicalGamertag": "Cappeh",
+      "knownAliases": []
+    },
+    {
+      "playerId": "carlao",
+      "canonicalGamertag": "Carlao",
+      "knownAliases": []
+    },
+    {
+      "playerId": "cellium",
+      "canonicalGamertag": "Cellium",
+      "knownAliases": []
+    },
+    {
+      "playerId": "cells",
+      "canonicalGamertag": "Cells",
+      "knownAliases": []
+    },
+    {
+      "playerId": "censor",
+      "canonicalGamertag": "Censor",
+      "knownAliases": []
+    },
+    {
+      "playerId": "chaaxter",
+      "canonicalGamertag": "Chaaxter",
+      "knownAliases": []
+    },
+    {
+      "playerId": "chain",
+      "canonicalGamertag": "Chain",
+      "knownAliases": []
+    },
+    {
+      "playerId": "charullz",
+      "canonicalGamertag": "Charullz",
+      "knownAliases": []
+    },
+    {
+      "playerId": "chilean",
+      "canonicalGamertag": "Chilean",
+      "knownAliases": []
+    },
+    {
+      "playerId": "chino",
+      "canonicalGamertag": "Chino",
+      "knownAliases": []
+    },
+    {
+      "playerId": "classic",
+      "canonicalGamertag": "Classic",
+      "knownAliases": []
+    },
+    {
+      "playerId": "clayster",
+      "canonicalGamertag": "Clayster",
+      "knownAliases": []
+    },
+    {
+      "playerId": "cleanx",
+      "canonicalGamertag": "CleanX",
+      "knownAliases": []
+    },
+    {
+      "playerId": "clumzy",
+      "canonicalGamertag": "Clumzy",
+      "knownAliases": []
+    },
+    {
+      "playerId": "colechan",
+      "canonicalGamertag": "ColeChan",
+      "knownAliases": []
+    },
+    {
+      "playerId": "cookie",
+      "canonicalGamertag": "Cookie",
+      "knownAliases": []
+    },
+    {
+      "playerId": "creza",
+      "canonicalGamertag": "Creza",
+      "knownAliases": []
+    },
+    {
+      "playerId": "crimsix",
+      "canonicalGamertag": "Crimsix",
+      "knownAliases": [
+        "C6"
+      ]
+    },
+    {
+      "playerId": "crowster",
+      "canonicalGamertag": "Crowster",
+      "knownAliases": []
+    },
+    {
+      "playerId": "cxllum",
+      "canonicalGamertag": "Cxllum",
+      "knownAliases": []
+    },
+    {
+      "playerId": "damage",
+      "canonicalGamertag": "Damage",
+      "knownAliases": []
+    },
+    {
+      "playerId": "daredevil",
+      "canonicalGamertag": "DaReDeViL",
+      "knownAliases": []
+    },
+    {
+      "playerId": "dashy",
+      "canonicalGamertag": "Dashy",
+      "knownAliases": []
+    },
+    {
+      "playerId": "davpadie",
+      "canonicalGamertag": "Davpadie",
+      "knownAliases": []
+    },
+    {
+      "playerId": "dean",
+      "canonicalGamertag": "Dean",
+      "knownAliases": []
+    },
+    {
+      "playerId": "decemate",
+      "canonicalGamertag": "Decemate",
+      "knownAliases": []
+    },
+    {
+      "playerId": "dedo",
+      "canonicalGamertag": "Dedo",
+      "knownAliases": []
+    },
+    {
+      "playerId": "deelo",
+      "canonicalGamertag": "Deelo",
+      "knownAliases": []
+    },
+    {
+      "playerId": "defrag",
+      "canonicalGamertag": "Defrag",
+      "knownAliases": []
+    },
+    {
+      "playerId": "deleo",
+      "canonicalGamertag": "Deleo",
+      "knownAliases": []
+    },
+    {
+      "playerId": "demise",
+      "canonicalGamertag": "Demise",
+      "knownAliases": []
+    },
+    {
+      "playerId": "demon",
+      "canonicalGamertag": "Demon",
+      "knownAliases": []
+    },
+    {
+      "playerId": "denz",
+      "canonicalGamertag": "Denz",
+      "knownAliases": []
+    },
+    {
+      "playerId": "denza",
+      "canonicalGamertag": "Denza",
+      "knownAliases": []
+    },
+    {
+      "playerId": "depaa",
+      "canonicalGamertag": "Depaa",
+      "knownAliases": []
+    },
+    {
+      "playerId": "desire",
+      "canonicalGamertag": "Desire",
+      "knownAliases": []
+    },
+    {
+      "playerId": "detain",
+      "canonicalGamertag": "Detain",
+      "knownAliases": []
+    },
+    {
+      "playerId": "diabolic",
+      "canonicalGamertag": "Diabolic",
+      "knownAliases": []
+    },
+    {
+      "playerId": "diamondcon",
+      "canonicalGamertag": "Diamondcon",
+      "knownAliases": []
+    },
+    {
+      "playerId": "dimi",
+      "canonicalGamertag": "Dimi",
+      "knownAliases": []
+    },
+    {
+      "playerId": "disarray",
+      "canonicalGamertag": "Disarray",
+      "knownAliases": []
+    },
+    {
+      "playerId": "dmk0",
+      "canonicalGamertag": "DMK0",
+      "knownAliases": []
+    },
+    {
+      "playerId": "doloshi",
+      "canonicalGamertag": "Doloshi",
+      "knownAliases": []
+    },
+    {
+      "playerId": "doubt",
+      "canonicalGamertag": "Doubt",
+      "knownAliases": []
+    },
+    {
+      "playerId": "dqvee",
+      "canonicalGamertag": "Dqvee",
+      "knownAliases": []
+    },
+    {
+      "playerId": "drama",
+      "canonicalGamertag": "DraMa",
+      "knownAliases": []
+    },
+    {
+      "playerId": "drazah",
+      "canonicalGamertag": "Drazah",
+      "knownAliases": []
+    },
+    {
+      "playerId": "dreal",
+      "canonicalGamertag": "DREAL",
+      "knownAliases": []
+    },
+    {
+      "playerId": "duke",
+      "canonicalGamertag": "Duke",
+      "knownAliases": []
+    },
+    {
+      "playerId": "dylan",
+      "canonicalGamertag": "Dylan",
+      "knownAliases": []
+    },
+    {
+      "playerId": "dylux",
+      "canonicalGamertag": "dyLux",
+      "knownAliases": []
+    },
+    {
+      "playerId": "dynamic",
+      "canonicalGamertag": "Dynamic",
+      "knownAliases": []
+    },
+    {
+      "playerId": "eazy",
+      "canonicalGamertag": "Eazy",
+      "knownAliases": []
+    },
+    {
+      "playerId": "efatal",
+      "canonicalGamertag": "EFatal",
+      "knownAliases": []
+    },
+    {
+      "playerId": "enable",
+      "canonicalGamertag": "Enable",
+      "knownAliases": []
+    },
+    {
+      "playerId": "enduraaa",
+      "canonicalGamertag": "EndurAAA",
+      "knownAliases": []
+    },
+    {
+      "playerId": "enduraaaa",
+      "canonicalGamertag": "enduraAAA",
+      "knownAliases": []
+    },
+    {
+      "playerId": "envoy",
+      "canonicalGamertag": "Envoy",
+      "knownAliases": []
+    },
+    {
+      "playerId": "exceed",
+      "canonicalGamertag": "Exceed",
+      "knownAliases": []
+    },
+    {
+      "playerId": "excite",
+      "canonicalGamertag": "Excite",
+      "knownAliases": []
+    },
+    {
+      "playerId": "eyedi",
+      "canonicalGamertag": "Eyedi",
+      "knownAliases": []
+    },
+    {
+      "playerId": "fa5tballa",
+      "canonicalGamertag": "FA5TBALLA",
+      "knownAliases": []
+    },
+    {
+      "playerId": "faccento",
+      "canonicalGamertag": "Faccento",
+      "knownAliases": []
+    },
+    {
+      "playerId": "fame",
+      "canonicalGamertag": "Fame",
+      "knownAliases": []
+    },
+    {
+      "playerId": "fate",
+      "canonicalGamertag": "Fate",
+      "knownAliases": []
+    },
+    {
+      "playerId": "fears",
+      "canonicalGamertag": "FEARS",
+      "knownAliases": []
+    },
+    {
+      "playerId": "felo",
+      "canonicalGamertag": "FeLo",
+      "knownAliases": []
+    },
+    {
+      "playerId": "felon",
+      "canonicalGamertag": "Felon",
+      "knownAliases": []
+    },
+    {
+      "playerId": "fero",
+      "canonicalGamertag": "Fero",
+      "knownAliases": []
+    },
+    {
+      "playerId": "fighta",
+      "canonicalGamertag": "Fighta",
+      "knownAliases": []
+    },
+    {
+      "playerId": "fire",
+      "canonicalGamertag": "Fire",
+      "knownAliases": []
+    },
+    {
+      "playerId": "flexz",
+      "canonicalGamertag": "FlexZ",
+      "knownAliases": []
+    },
+    {
+      "playerId": "flux",
+      "canonicalGamertag": "Flux",
+      "knownAliases": []
+    },
+    {
+      "playerId": "foncho",
+      "canonicalGamertag": "Foncho",
+      "knownAliases": []
+    },
+    {
+      "playerId": "formal",
+      "canonicalGamertag": "FormaL",
+      "knownAliases": []
+    },
+    {
+      "playerId": "frido",
+      "canonicalGamertag": "Frido",
+      "knownAliases": []
+    },
+    {
+      "playerId": "frosty",
+      "canonicalGamertag": "Frosty",
+      "knownAliases": []
+    },
+    {
+      "playerId": "fusionz",
+      "canonicalGamertag": "Fusionz",
+      "knownAliases": []
+    },
+    {
+      "playerId": "gefkid",
+      "canonicalGamertag": "GefKid",
+      "knownAliases": []
+    },
+    {
+      "playerId": "general",
+      "canonicalGamertag": "General",
+      "knownAliases": []
+    },
+    {
+      "playerId": "genesis",
+      "canonicalGamertag": "Genesis",
+      "knownAliases": []
+    },
+    {
+      "playerId": "getsom",
+      "canonicalGamertag": "Getsom",
+      "knownAliases": []
+    },
+    {
+      "playerId": "gismo",
+      "canonicalGamertag": "Gismo",
+      "knownAliases": []
+    },
+    {
+      "playerId": "glofrosty",
+      "canonicalGamertag": "GloFrosty",
+      "knownAliases": []
+    },
+    {
+      "playerId": "glory",
+      "canonicalGamertag": "Glory",
+      "knownAliases": []
+    },
+    {
+      "playerId": "godlike",
+      "canonicalGamertag": "GodLike",
+      "knownAliases": []
+    },
+    {
+      "playerId": "godrx",
+      "canonicalGamertag": "GodRx",
+      "knownAliases": []
+    },
+    {
+      "playerId": "goonjar",
+      "canonicalGamertag": "Goonjar",
+      "knownAliases": []
+    },
+    {
+      "playerId": "gotaga",
+      "canonicalGamertag": "Gotaga",
+      "knownAliases": []
+    },
+    {
+      "playerId": "grad",
+      "canonicalGamertag": "Grad",
+      "knownAliases": []
+    },
+    {
+      "playerId": "grvty",
+      "canonicalGamertag": "GRVTY",
+      "knownAliases": []
+    },
+    {
+      "playerId": "gunelite",
+      "canonicalGamertag": "GunElite",
+      "knownAliases": []
+    },
+    {
+      "playerId": "gunless",
+      "canonicalGamertag": "Gunless",
+      "knownAliases": []
+    },
+    {
+      "playerId": "gunshy",
+      "canonicalGamertag": "GunShy",
+      "knownAliases": []
+    },
+    {
+      "playerId": "gunsii",
+      "canonicalGamertag": "Gunsii",
+      "knownAliases": []
+    },
+    {
+      "playerId": "gunsiii",
+      "canonicalGamertag": "Gunsiii",
+      "knownAliases": []
+    },
+    {
+      "playerId": "h",
+      "canonicalGamertag": "H",
+      "knownAliases": []
+    },
+    {
+      "playerId": "happy",
+      "canonicalGamertag": "Happy",
+      "knownAliases": []
+    },
+    {
+      "playerId": "harry",
+      "canonicalGamertag": "Harry",
+      "knownAliases": []
+    },
+    {
+      "playerId": "hasbroken",
+      "canonicalGamertag": "hAsbroken",
+      "knownAliases": []
+    },
+    {
+      "playerId": "hate",
+      "canonicalGamertag": "Hate",
+      "knownAliases": []
+    },
+    {
+      "playerId": "havok",
+      "canonicalGamertag": "Havok",
+      "knownAliases": []
+    },
+    {
+      "playerId": "hawqeh",
+      "canonicalGamertag": "Hawqeh",
+      "knownAliases": []
+    },
+    {
+      "playerId": "henry",
+      "canonicalGamertag": "Henry",
+      "knownAliases": []
+    },
+    {
+      "playerId": "hicksy",
+      "canonicalGamertag": "Hicksy",
+      "knownAliases": []
+    },
+    {
+      "playerId": "hollow",
+      "canonicalGamertag": "Hollow",
+      "knownAliases": []
+    },
+    {
+      "playerId": "hopey",
+      "canonicalGamertag": "Hopey",
+      "knownAliases": []
+    },
+    {
+      "playerId": "huke",
+      "canonicalGamertag": "Huke",
+      "knownAliases": []
+    },
+    {
+      "playerId": "humanjesus",
+      "canonicalGamertag": "HumanJesus",
+      "knownAliases": []
+    },
+    {
+      "playerId": "hunt",
+      "canonicalGamertag": "Hunt",
+      "knownAliases": []
+    },
+    {
+      "playerId": "hydra",
+      "canonicalGamertag": "HyDra",
+      "knownAliases": []
+    },
+    {
+      "playerId": "icemann",
+      "canonicalGamertag": "IceManN",
+      "knownAliases": []
+    },
+    {
+      "playerId": "illey",
+      "canonicalGamertag": "iLLEy",
+      "knownAliases": []
+    },
+    {
+      "playerId": "illskill",
+      "canonicalGamertag": "iLLSkiLL",
+      "knownAliases": []
+    },
+    {
+      "playerId": "incepts",
+      "canonicalGamertag": "Incepts",
+      "knownAliases": []
+    },
+    {
+      "playerId": "infamous",
+      "canonicalGamertag": "Infamous",
+      "knownAliases": []
+    },
+    {
+      "playerId": "insight",
+      "canonicalGamertag": "Insight",
+      "knownAliases": []
+    },
+    {
+      "playerId": "iskatuu",
+      "canonicalGamertag": "Iskatuu",
+      "knownAliases": []
+    },
+    {
+      "playerId": "iviano",
+      "canonicalGamertag": "Iviano",
+      "knownAliases": []
+    },
+    {
+      "playerId": "ivy",
+      "canonicalGamertag": "Ivy",
+      "knownAliases": []
+    },
+    {
+      "playerId": "jacko",
+      "canonicalGamertag": "Jacko",
+      "knownAliases": []
+    },
+    {
+      "playerId": "jb",
+      "canonicalGamertag": "JB",
+      "knownAliases": []
+    },
+    {
+      "playerId": "jetli",
+      "canonicalGamertag": "JetLi",
+      "knownAliases": []
+    },
+    {
+      "playerId": "jimbo",
+      "canonicalGamertag": "Jimbo",
+      "knownAliases": []
+    },
+    {
+      "playerId": "jintroid",
+      "canonicalGamertag": "Jintroid",
+      "knownAliases": []
+    },
+    {
+      "playerId": "jk7",
+      "canonicalGamertag": "JK7",
+      "knownAliases": []
+    },
+    {
+      "playerId": "jkap",
+      "canonicalGamertag": "JKap",
+      "knownAliases": []
+    },
+    {
+      "playerId": "joee",
+      "canonicalGamertag": "Joee",
+      "knownAliases": []
+    },
+    {
+      "playerId": "john",
+      "canonicalGamertag": "John",
+      "knownAliases": []
+    },
+    {
+      "playerId": "johnny",
+      "canonicalGamertag": "Johnny",
+      "knownAliases": []
+    },
+    {
+      "playerId": "joocy",
+      "canonicalGamertag": "Joocy",
+      "knownAliases": []
+    },
+    {
+      "playerId": "jorgeh",
+      "canonicalGamertag": "JorGeh",
+      "knownAliases": []
+    },
+    {
+      "playerId": "joshh",
+      "canonicalGamertag": "Joshh",
+      "knownAliases": []
+    },
+    {
+      "playerId": "jtee",
+      "canonicalGamertag": "JTee",
+      "knownAliases": []
+    },
+    {
+      "playerId": "juju",
+      "canonicalGamertag": "JuJu",
+      "knownAliases": []
+    },
+    {
+      "playerId": "jurd",
+      "canonicalGamertag": "Jurd",
+      "knownAliases": []
+    },
+    {
+      "playerId": "jurnii",
+      "canonicalGamertag": "JurNii",
+      "knownAliases": []
+    },
+    {
+      "playerId": "juunaz",
+      "canonicalGamertag": "Juunaz",
+      "knownAliases": []
+    },
+    {
+      "playerId": "kade",
+      "canonicalGamertag": "Kade",
+      "knownAliases": []
+    },
+    {
+      "playerId": "karma",
+      "canonicalGamertag": "Karma",
+      "knownAliases": []
+    },
+    {
+      "playerId": "kenny",
+      "canonicalGamertag": "Kenny",
+      "knownAliases": [
+        "Kuavo"
+      ]
+    },
+    {
+      "playerId": "keza",
+      "canonicalGamertag": "Keza",
+      "knownAliases": []
+    },
+    {
+      "playerId": "killa",
+      "canonicalGamertag": "KiLLa",
+      "knownAliases": []
+    },
+    {
+      "playerId": "kindok",
+      "canonicalGamertag": "KiNDoK",
+      "knownAliases": []
+    },
+    {
+      "playerId": "kismet",
+      "canonicalGamertag": "KiSMET",
+      "knownAliases": []
+    },
+    {
+      "playerId": "kivi",
+      "canonicalGamertag": "Kivi",
+      "knownAliases": []
+    },
+    {
+      "playerId": "klink",
+      "canonicalGamertag": "KlinK",
+      "knownAliases": []
+    },
+    {
+      "playerId": "kolgaa",
+      "canonicalGamertag": "Kolgaa",
+      "knownAliases": [
+        "Ko1gaa"
+      ]
+    },
+    {
+      "playerId": "kraqz",
+      "canonicalGamertag": "KraQz",
+      "knownAliases": []
+    },
+    {
+      "playerId": "krnage",
+      "canonicalGamertag": "Krnage",
+      "knownAliases": []
+    },
+    {
+      "playerId": "lacefield",
+      "canonicalGamertag": "Lacefield",
+      "knownAliases": []
+    },
+    {
+      "playerId": "lawless",
+      "canonicalGamertag": "Lawless",
+      "knownAliases": []
+    },
+    {
+      "playerId": "le",
+      "canonicalGamertag": "Le",
+      "knownAliases": []
+    },
+    {
+      "playerId": "lewis",
+      "canonicalGamertag": "Lewis",
+      "knownAliases": []
+    },
+    {
+      "playerId": "lewtee",
+      "canonicalGamertag": "LewTee",
+      "knownAliases": []
+    },
+    {
+      "playerId": "lgend",
+      "canonicalGamertag": "Lgend",
+      "knownAliases": []
+    },
+    {
+      "playerId": "linney",
+      "canonicalGamertag": "Linney",
+      "knownAliases": []
+    },
+    {
+      "playerId": "llamagod",
+      "canonicalGamertag": "LlamaGod",
+      "knownAliases": []
+    },
+    {
+      "playerId": "loony",
+      "canonicalGamertag": "Loony",
+      "knownAliases": []
+    },
+    {
+      "playerId": "louicm",
+      "canonicalGamertag": "LouiCM",
+      "knownAliases": []
+    },
+    {
+      "playerId": "louqa",
+      "canonicalGamertag": "Louqa",
+      "knownAliases": []
+    },
+    {
+      "playerId": "lucky",
+      "canonicalGamertag": "Lucky",
+      "knownAliases": []
+    },
+    {
+      "playerId": "lxt",
+      "canonicalGamertag": "LXT",
+      "knownAliases": []
+    },
+    {
+      "playerId": "mack",
+      "canonicalGamertag": "Mack",
+      "knownAliases": []
+    },
+    {
+      "playerId": "macka",
+      "canonicalGamertag": "Macka",
+      "knownAliases": []
+    },
+    {
+      "playerId": "madcat",
+      "canonicalGamertag": "MadCat",
+      "knownAliases": []
+    },
+    {
+      "playerId": "majormaniak",
+      "canonicalGamertag": "MajorManiak",
+      "knownAliases": []
+    },
+    {
+      "playerId": "malls",
+      "canonicalGamertag": "Malls",
+      "knownAliases": []
+    },
+    {
+      "playerId": "mance",
+      "canonicalGamertag": "Mance",
+      "knownAliases": []
+    },
+    {
+      "playerId": "maple",
+      "canonicalGamertag": "Maple",
+      "knownAliases": []
+    },
+    {
+      "playerId": "markyb",
+      "canonicalGamertag": "MarkyB",
+      "knownAliases": []
+    },
+    {
+      "playerId": "maux",
+      "canonicalGamertag": "Maux",
+      "knownAliases": []
+    },
+    {
+      "playerId": "maxxie",
+      "canonicalGamertag": "MAxxie",
+      "knownAliases": []
+    },
+    {
+      "playerId": "mayhem",
+      "canonicalGamertag": "Mayhem",
+      "knownAliases": []
+    },
+    {
+      "playerId": "mboze",
+      "canonicalGamertag": "MBoZe",
+      "knownAliases": []
+    },
+    {
+      "playerId": "mech",
+      "canonicalGamertag": "Mech",
+      "knownAliases": []
+    },
+    {
+      "playerId": "melo",
+      "canonicalGamertag": "MeLo",
+      "knownAliases": []
+    },
+    {
+      "playerId": "merk",
+      "canonicalGamertag": "MerK",
+      "knownAliases": []
+    },
+    {
+      "playerId": "methodz-es",
+      "canonicalGamertag": "MethodZ",
+      "knownAliases": []
+    },
+    {
+      "playerId": "methodz-na",
+      "canonicalGamertag": "Methodz",
+      "knownAliases": []
+    },
+    {
+      "playerId": "mettalzz",
+      "canonicalGamertag": "MeTTalZz",
+      "knownAliases": []
+    },
+    {
+      "playerId": "mirx",
+      "canonicalGamertag": "MiRx",
+      "knownAliases": []
+    },
+    {
+      "playerId": "mochila",
+      "canonicalGamertag": "Mochila",
+      "knownAliases": []
+    },
+    {
+      "playerId": "moose",
+      "canonicalGamertag": "Moose",
+      "knownAliases": []
+    },
+    {
+      "playerId": "mosh",
+      "canonicalGamertag": "Mosh",
+      "knownAliases": []
+    },
+    {
+      "playerId": "mruiz",
+      "canonicalGamertag": "MRuiz",
+      "knownAliases": []
+    },
+    {
+      "playerId": "muddawg",
+      "canonicalGamertag": "Muddawg",
+      "knownAliases": []
+    },
+    {
+      "playerId": "nadeshot",
+      "canonicalGamertag": "NaDeSHoT",
+      "knownAliases": []
+    },
+    {
+      "playerId": "nagafen",
+      "canonicalGamertag": "Nagafen",
+      "knownAliases": []
+    },
+    {
+      "playerId": "naked",
+      "canonicalGamertag": "Naked",
+      "knownAliases": []
+    },
+    {
+      "playerId": "nameless",
+      "canonicalGamertag": "NAMELESS",
+      "knownAliases": []
+    },
+    {
+      "playerId": "nastie",
+      "canonicalGamertag": "Nastie",
+      "knownAliases": []
+    },
+    {
+      "playerId": "natshay",
+      "canonicalGamertag": "Natshay",
+      "knownAliases": []
+    },
+    {
+      "playerId": "necrome",
+      "canonicalGamertag": "NeCRoMe",
+      "knownAliases": []
+    },
+    {
+      "playerId": "nelson",
+      "canonicalGamertag": "Nelson",
+      "knownAliases": []
+    },
+    {
+      "playerId": "neooosz",
+      "canonicalGamertag": "NeooosZ",
+      "knownAliases": []
+    },
+    {
+      "playerId": "neslo",
+      "canonicalGamertag": "Neslo",
+      "knownAliases": []
+    },
+    {
+      "playerId": "nevo",
+      "canonicalGamertag": "Nevo",
+      "knownAliases": []
+    },
+    {
+      "playerId": "nexxx",
+      "canonicalGamertag": "NeXxX",
+      "knownAliases": []
+    },
+    {
+      "playerId": "niall",
+      "canonicalGamertag": "Niall",
+      "knownAliases": []
+    },
+    {
+      "playerId": "nightmare",
+      "canonicalGamertag": "Nightmare",
+      "knownAliases": []
+    },
+    {
+      "playerId": "nimble",
+      "canonicalGamertag": "Nimble",
+      "knownAliases": []
+    },
+    {
+      "playerId": "nolson",
+      "canonicalGamertag": "Nolson",
+      "knownAliases": []
+    },
+    {
+      "playerId": "nova",
+      "canonicalGamertag": "Nova",
+      "knownAliases": []
+    },
+    {
+      "playerId": "noysii",
+      "canonicalGamertag": "Noysii",
+      "knownAliases": []
+    },
+    {
+      "playerId": "octane",
+      "canonicalGamertag": "Octane",
+      "knownAliases": []
+    },
+    {
+      "playerId": "owakening",
+      "canonicalGamertag": "Owakening",
+      "knownAliases": []
+    },
+    {
+      "playerId": "oxygen",
+      "canonicalGamertag": "Oxygen",
+      "knownAliases": []
+    },
+    {
+      "playerId": "pacman",
+      "canonicalGamertag": "Pacman",
+      "knownAliases": []
+    },
+    {
+      "playerId": "pandur",
+      "canonicalGamertag": "Pandur",
+      "knownAliases": []
+    },
+    {
+      "playerId": "paradoxx",
+      "canonicalGamertag": "ParadoxX",
+      "knownAliases": []
+    },
+    {
+      "playerId": "parasite",
+      "canonicalGamertag": "Parasite",
+      "knownAliases": []
+    },
+    {
+      "playerId": "parzelion",
+      "canonicalGamertag": "Parzelion",
+      "knownAliases": []
+    },
+    {
+      "playerId": "paulehx",
+      "canonicalGamertag": "PaulEhx",
+      "knownAliases": []
+    },
+    {
+      "playerId": "pazy",
+      "canonicalGamertag": "Pazy",
+      "knownAliases": []
+    },
+    {
+      "playerId": "peatie",
+      "canonicalGamertag": "Peatie",
+      "knownAliases": []
+    },
+    {
+      "playerId": "pentagrxm",
+      "canonicalGamertag": "Pentagrxm",
+      "knownAliases": []
+    },
+    {
+      "playerId": "phantom",
+      "canonicalGamertag": "Phantom",
+      "knownAliases": []
+    },
+    {
+      "playerId": "phantomz",
+      "canonicalGamertag": "Phantomz",
+      "knownAliases": []
+    },
+    {
+      "playerId": "phenom",
+      "canonicalGamertag": "Phenom",
+      "knownAliases": []
+    },
+    {
+      "playerId": "phizzurp",
+      "canonicalGamertag": "pHiZZURP",
+      "knownAliases": []
+    },
+    {
+      "playerId": "pibo",
+      "canonicalGamertag": "Pibo",
+      "knownAliases": []
+    },
+    {
+      "playerId": "piero",
+      "canonicalGamertag": "Piero",
+      "knownAliases": []
+    },
+    {
+      "playerId": "pow3r",
+      "canonicalGamertag": "POW3R",
+      "knownAliases": []
+    },
+    {
+      "playerId": "prestinni",
+      "canonicalGamertag": "Prestinni",
+      "knownAliases": []
+    },
+    {
+      "playerId": "priestahh",
+      "canonicalGamertag": "Priestahh",
+      "knownAliases": []
+    },
+    {
+      "playerId": "profeezy",
+      "canonicalGamertag": "ProFeeZy",
+      "knownAliases": []
+    },
+    {
+      "playerId": "prolute",
+      "canonicalGamertag": "Prolute",
+      "knownAliases": []
+    },
+    {
+      "playerId": "proofy",
+      "canonicalGamertag": "ProoFy",
+      "knownAliases": []
+    },
+    {
+      "playerId": "prophet",
+      "canonicalGamertag": "Prophet",
+      "knownAliases": []
+    },
+    {
+      "playerId": "proto",
+      "canonicalGamertag": "Proto",
+      "knownAliases": []
+    },
+    {
+      "playerId": "pupsky",
+      "canonicalGamertag": "Pupsky",
+      "knownAliases": []
+    },
+    {
+      "playerId": "pure",
+      "canonicalGamertag": "Pure",
+      "knownAliases": []
+    },
+    {
+      "playerId": "quicky",
+      "canonicalGamertag": "QuiCky",
+      "knownAliases": []
+    },
+    {
+      "playerId": "qwiker",
+      "canonicalGamertag": "QwiKeR",
+      "knownAliases": []
+    },
+    {
+      "playerId": "raidn",
+      "canonicalGamertag": "raidN",
+      "knownAliases": []
+    },
+    {
+      "playerId": "ramba",
+      "canonicalGamertag": "RaMba",
+      "knownAliases": []
+    },
+    {
+      "playerId": "rambo",
+      "canonicalGamertag": "Rambo",
+      "knownAliases": []
+    },
+    {
+      "playerId": "ramby",
+      "canonicalGamertag": "Ramby",
+      "knownAliases": []
+    },
+    {
+      "playerId": "rampage",
+      "canonicalGamertag": "Rampage",
+      "knownAliases": []
+    },
+    {
+      "playerId": "randm",
+      "canonicalGamertag": "Randm",
+      "knownAliases": []
+    },
+    {
+      "playerId": "rated",
+      "canonicalGamertag": "Rated",
+      "knownAliases": []
+    },
+    {
+      "playerId": "realize",
+      "canonicalGamertag": "Realize",
+      "knownAliases": []
+    },
+    {
+      "playerId": "reece",
+      "canonicalGamertag": "Reece",
+      "knownAliases": []
+    },
+    {
+      "playerId": "reedy",
+      "canonicalGamertag": "Reedy",
+      "knownAliases": []
+    },
+    {
+      "playerId": "remy",
+      "canonicalGamertag": "Remy",
+      "knownAliases": []
+    },
+    {
+      "playerId": "replays",
+      "canonicalGamertag": "Replays",
+      "knownAliases": []
+    },
+    {
+      "playerId": "reppin",
+      "canonicalGamertag": "REPPIN",
+      "knownAliases": []
+    },
+    {
+      "playerId": "revolt",
+      "canonicalGamertag": "Revolt",
+      "knownAliases": []
+    },
+    {
+      "playerId": "ricky",
+      "canonicalGamertag": "Ricky",
+      "knownAliases": []
+    },
+    {
+      "playerId": "riskin",
+      "canonicalGamertag": "RiskiN",
+      "knownAliases": []
+    },
+    {
+      "playerId": "rival",
+      "canonicalGamertag": "Rival",
+      "knownAliases": []
+    },
+    {
+      "playerId": "rizk",
+      "canonicalGamertag": "rizK",
+      "knownAliases": []
+    },
+    {
+      "playerId": "robbieb3319",
+      "canonicalGamertag": "RobbieB3319",
+      "knownAliases": []
+    },
+    {
+      "playerId": "robz",
+      "canonicalGamertag": "Robz",
+      "knownAliases": []
+    },
+    {
+      "playerId": "rockz",
+      "canonicalGamertag": "RockZ",
+      "knownAliases": []
+    },
+    {
+      "playerId": "royalty",
+      "canonicalGamertag": "Royalty",
+      "knownAliases": []
+    },
+    {
+      "playerId": "rush",
+      "canonicalGamertag": "RusH",
+      "knownAliases": []
+    },
+    {
+      "playerId": "ryangray",
+      "canonicalGamertag": "RyanGray",
+      "knownAliases": []
+    },
+    {
+      "playerId": "ryza",
+      "canonicalGamertag": "Ryza",
+      "knownAliases": []
+    },
+    {
+      "playerId": "saints",
+      "canonicalGamertag": "Saints",
+      "knownAliases": []
+    },
+    {
+      "playerId": "sammy",
+      "canonicalGamertag": "Sammy",
+      "knownAliases": []
+    },
+    {
+      "playerId": "scotland",
+      "canonicalGamertag": "Scotland",
+      "knownAliases": []
+    },
+    {
+      "playerId": "scump",
+      "canonicalGamertag": "Scump",
+      "knownAliases": []
+    },
+    {
+      "playerId": "seany",
+      "canonicalGamertag": "Seany",
+      "knownAliases": []
+    },
+    {
+      "playerId": "sempa",
+      "canonicalGamertag": "Sempa",
+      "knownAliases": []
+    },
+    {
+      "playerId": "sender",
+      "canonicalGamertag": "Sender",
+      "knownAliases": []
+    },
+    {
+      "playerId": "setzyy",
+      "canonicalGamertag": "Setzyy",
+      "knownAliases": []
+    },
+    {
+      "playerId": "shane",
+      "canonicalGamertag": "ShAnE",
+      "knownAliases": []
+    },
+    {
+      "playerId": "sharko",
+      "canonicalGamertag": "Sharko",
+      "knownAliases": []
+    },
+    {
+      "playerId": "sharp",
+      "canonicalGamertag": "Sharp",
+      "knownAliases": []
+    },
+    {
+      "playerId": "shockz",
+      "canonicalGamertag": "Shockz",
+      "knownAliases": []
+    },
+    {
+      "playerId": "shotzzy",
+      "canonicalGamertag": "Shotzzy",
+      "knownAliases": []
+    },
+    {
+      "playerId": "sibilants",
+      "canonicalGamertag": "Sibilants",
+      "knownAliases": []
+    },
+    {
+      "playerId": "silly",
+      "canonicalGamertag": "SiLLY",
+      "knownAliases": []
+    },
+    {
+      "playerId": "simp",
+      "canonicalGamertag": "Simp",
+      "knownAliases": []
+    },
+    {
+      "playerId": "sinful",
+      "canonicalGamertag": "SinfuL",
+      "knownAliases": []
+    },
+    {
+      "playerId": "skittlez",
+      "canonicalGamertag": "SkittleZ",
+      "knownAliases": []
+    },
+    {
+      "playerId": "skrapz",
+      "canonicalGamertag": "Skrapz",
+      "knownAliases": []
+    },
+    {
+      "playerId": "skyz",
+      "canonicalGamertag": "Skyz",
+      "knownAliases": []
+    },
+    {
+      "playerId": "slacked",
+      "canonicalGamertag": "Slacked",
+      "knownAliases": []
+    },
+    {
+      "playerId": "slasher",
+      "canonicalGamertag": "SlasheR",
+      "knownAliases": []
+    },
+    {
+      "playerId": "slumber",
+      "canonicalGamertag": "Slumber",
+      "knownAliases": []
+    },
+    {
+      "playerId": "spacely",
+      "canonicalGamertag": "Spacely",
+      "knownAliases": []
+    },
+    {
+      "playerId": "spart",
+      "canonicalGamertag": "Spart",
+      "knownAliases": []
+    },
+    {
+      "playerId": "spoof",
+      "canonicalGamertag": "Spoof",
+      "knownAliases": []
+    },
+    {
+      "playerId": "stamino",
+      "canonicalGamertag": "Stamino",
+      "knownAliases": []
+    },
+    {
+      "playerId": "standy",
+      "canonicalGamertag": "Standy",
+      "knownAliases": []
+    },
+    {
+      "playerId": "strife",
+      "canonicalGamertag": "Strife",
+      "knownAliases": []
+    },
+    {
+      "playerId": "studyy",
+      "canonicalGamertag": "StuDyy",
+      "knownAliases": []
+    },
+    {
+      "playerId": "stumpfy",
+      "canonicalGamertag": "Stumpfy",
+      "knownAliases": []
+    },
+    {
+      "playerId": "sukry",
+      "canonicalGamertag": "Sukry",
+      "knownAliases": []
+    },
+    {
+      "playerId": "sunnyb",
+      "canonicalGamertag": "SunnyB",
+      "knownAliases": []
+    },
+    {
+      "playerId": "super",
+      "canonicalGamertag": "Super",
+      "knownAliases": []
+    },
+    {
+      "playerId": "swanny",
+      "canonicalGamertag": "Swanny",
+      "knownAliases": []
+    },
+    {
+      "playerId": "swarley",
+      "canonicalGamertag": "Swarley",
+      "knownAliases": []
+    },
+    {
+      "playerId": "swiftaz0r",
+      "canonicalGamertag": "Swiftaz0r",
+      "knownAliases": [
+        "Swiftazor"
+      ]
+    },
+    {
+      "playerId": "swifty",
+      "canonicalGamertag": "Swifty",
+      "knownAliases": []
+    },
+    {
+      "playerId": "t-mac",
+      "canonicalGamertag": "T Mac",
+      "knownAliases": []
+    },
+    {
+      "playerId": "tcm",
+      "canonicalGamertag": "TcM",
+      "knownAliases": []
+    },
+    {
+      "playerId": "teddyrecks",
+      "canonicalGamertag": "TeddyRecKs",
+      "knownAliases": []
+    },
+    {
+      "playerId": "teepee",
+      "canonicalGamertag": "TeePee",
+      "knownAliases": []
+    },
+    {
+      "playerId": "temp",
+      "canonicalGamertag": "Temp",
+      "knownAliases": []
+    },
+    {
+      "playerId": "theory",
+      "canonicalGamertag": "Theory",
+      "knownAliases": []
+    },
+    {
+      "playerId": "theros",
+      "canonicalGamertag": "Theros",
+      "knownAliases": []
+    },
+    {
+      "playerId": "tisch",
+      "canonicalGamertag": "Tisch",
+      "knownAliases": []
+    },
+    {
+      "playerId": "tjhaly",
+      "canonicalGamertag": "TJHaLy",
+      "knownAliases": []
+    },
+    {
+      "playerId": "tojor",
+      "canonicalGamertag": "TojoR",
+      "knownAliases": []
+    },
+    {
+      "playerId": "tommey",
+      "canonicalGamertag": "Tommey",
+      "knownAliases": []
+    },
+    {
+      "playerId": "tonyjs",
+      "canonicalGamertag": "TonyJs",
+      "knownAliases": [
+        "TonyJ's"
+      ]
+    },
+    {
+      "playerId": "torres",
+      "canonicalGamertag": "Torres",
+      "knownAliases": []
+    },
+    {
+      "playerId": "tuquick",
+      "canonicalGamertag": "TuQuick",
+      "knownAliases": []
+    },
+    {
+      "playerId": "turbo",
+      "canonicalGamertag": "Turbo",
+      "knownAliases": []
+    },
+    {
+      "playerId": "turnup2ez",
+      "canonicalGamertag": "TurnUp2eZ",
+      "knownAliases": []
+    },
+    {
+      "playerId": "twizz",
+      "canonicalGamertag": "TwiZz",
+      "knownAliases": []
+    },
+    {
+      "playerId": "urban",
+      "canonicalGamertag": "Urban",
+      "knownAliases": []
+    },
+    {
+      "playerId": "venom",
+      "canonicalGamertag": "Venom",
+      "knownAliases": []
+    },
+    {
+      "playerId": "vert",
+      "canonicalGamertag": "Vert",
+      "knownAliases": []
+    },
+    {
+      "playerId": "veziok",
+      "canonicalGamertag": "Veziok",
+      "knownAliases": []
+    },
+    {
+      "playerId": "vivid",
+      "canonicalGamertag": "Vivid",
+      "knownAliases": []
+    },
+    {
+      "playerId": "vizze",
+      "canonicalGamertag": "Vizze",
+      "knownAliases": []
+    },
+    {
+      "playerId": "vortex-fr",
+      "canonicalGamertag": "Vortex",
+      "knownAliases": [],
+      "country": "France",
+      "identityNote": "French Vortex; associated with Supremacy in this database."
+    },
+    {
+      "playerId": "vortex-uk",
+      "canonicalGamertag": "Vortex",
+      "knownAliases": [],
+      "country": "England",
+      "identityNote": "English Vortex; associated with FAB Games eSports and Epsilon Esports in this database."
+    },
+    {
+      "playerId": "wailers",
+      "canonicalGamertag": "Wailers",
+      "knownAliases": []
+    },
+    {
+      "playerId": "wartex",
+      "canonicalGamertag": "Wartex",
+      "knownAliases": []
+    },
+    {
+      "playerId": "watson",
+      "canonicalGamertag": "Watson",
+      "knownAliases": []
+    },
+    {
+      "playerId": "weeman",
+      "canonicalGamertag": "Weeman",
+      "knownAliases": []
+    },
+    {
+      "playerId": "whea7s",
+      "canonicalGamertag": "Whea7s",
+      "knownAliases": []
+    },
+    {
+      "playerId": "willett",
+      "canonicalGamertag": "Willett",
+      "knownAliases": []
+    },
+    {
+      "playerId": "wolf",
+      "canonicalGamertag": "Wolf",
+      "knownAliases": []
+    },
+    {
+      "playerId": "wonder",
+      "canonicalGamertag": "Wonder",
+      "knownAliases": []
+    },
+    {
+      "playerId": "wrecks",
+      "canonicalGamertag": "Wrecks",
+      "knownAliases": []
+    },
+    {
+      "playerId": "wuskin",
+      "canonicalGamertag": "wuskin",
+      "knownAliases": []
+    },
+    {
+      "playerId": "xotic",
+      "canonicalGamertag": "Xotic",
+      "knownAliases": []
+    },
+    {
+      "playerId": "yako",
+      "canonicalGamertag": "YaKo",
+      "knownAliases": []
+    },
+    {
+      "playerId": "yuuzl",
+      "canonicalGamertag": "YuuzL",
+      "knownAliases": []
+    },
+    {
+      "playerId": "zaaq",
+      "canonicalGamertag": "ZaaQ",
+      "knownAliases": []
+    },
+    {
+      "playerId": "zaptius",
+      "canonicalGamertag": "Zaptius",
+      "knownAliases": []
+    },
+    {
+      "playerId": "zayrox",
+      "canonicalGamertag": "Zayrox",
+      "knownAliases": []
+    },
+    {
+      "playerId": "zed",
+      "canonicalGamertag": "Zed",
+      "knownAliases": []
+    },
+    {
+      "playerId": "zeek",
+      "canonicalGamertag": "ZeeK",
+      "knownAliases": []
+    },
+    {
+      "playerId": "zepa",
+      "canonicalGamertag": "Zepa",
+      "knownAliases": []
+    },
+    {
+      "playerId": "zer0",
+      "canonicalGamertag": "Zer0",
+      "knownAliases": []
+    },
+    {
+      "playerId": "zeuss",
+      "canonicalGamertag": "Zeuss",
+      "knownAliases": []
+    },
+    {
+      "playerId": "zinx",
+      "canonicalGamertag": "Zinx",
+      "knownAliases": []
+    },
+    {
+      "playerId": "zoomaa",
+      "canonicalGamertag": "ZooMaa",
+      "knownAliases": []
+    },
+    {
+      "playerId": "zyyral",
+      "canonicalGamertag": "Zyyral",
+      "knownAliases": []
+    }
+  ],
+  "seasons": [
+    {
+      "seasonId": "ghosts",
+      "startYear": 2013,
+      "endYear": 2014,
+      "rosterSize": 4,
+      "gameTitle": "Ghosts",
+      "teams": [
+        {
+          "historicalTeamId": "complexity",
+          "teamName": "compLexity",
+          "players": [
+            {
+              "playerId": "aches",
+              "displayName": "ACHES"
+            },
+            {
+              "playerId": "teepee",
+              "displayName": "TeePee"
+            },
+            {
+              "playerId": "crimsix",
+              "displayName": "Crimsix"
+            },
+            {
+              "playerId": "karma",
+              "displayName": "Karma"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "envy",
+          "teamName": "Envy",
+          "players": [
+            {
+              "playerId": "rambo",
+              "displayName": "Rambo"
+            },
+            {
+              "playerId": "merk",
+              "displayName": "MerK"
+            },
+            {
+              "playerId": "nameless",
+              "displayName": "NAMELESS"
+            },
+            {
+              "playerId": "studyy",
+              "displayName": "StuDyy"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "optic-gaming",
+          "teamName": "OpTic Gaming",
+          "players": [
+            {
+              "playerId": "nadeshot",
+              "displayName": "NaDeSHoT"
+            },
+            {
+              "playerId": "clayster",
+              "displayName": "Clayster"
+            },
+            {
+              "playerId": "mboze",
+              "displayName": "MBoZe"
+            },
+            {
+              "playerId": "scump",
+              "displayName": "Scump"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "strictly-business",
+          "teamName": "Strictly Business",
+          "players": [
+            {
+              "playerId": "censor",
+              "displayName": "Censor"
+            },
+            {
+              "playerId": "apathy",
+              "displayName": "Apathy"
+            },
+            {
+              "playerId": "saints",
+              "displayName": "Saints"
+            },
+            {
+              "playerId": "dedo",
+              "displayName": "Dedo"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "trident-t1-dotters",
+          "teamName": "Trident T1 Dotters",
+          "players": [
+            {
+              "playerId": "iskatuu",
+              "displayName": "Iskatuu"
+            },
+            {
+              "playerId": "chilean",
+              "displayName": "Chilean"
+            },
+            {
+              "playerId": "denz",
+              "displayName": "Denz"
+            },
+            {
+              "playerId": "damage",
+              "displayName": "Damage"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "faze-clan",
+          "teamName": "FaZe Clan",
+          "players": [
+            {
+              "playerId": "replays",
+              "displayName": "Replays"
+            },
+            {
+              "playerId": "classic",
+              "displayName": "Classic"
+            },
+            {
+              "playerId": "jkap",
+              "displayName": "JKap"
+            },
+            {
+              "playerId": "proofy",
+              "displayName": "ProoFy"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "rise-nation",
+          "teamName": "Rise Nation",
+          "players": [
+            {
+              "playerId": "pacman",
+              "displayName": "Pacman"
+            },
+            {
+              "playerId": "whea7s",
+              "displayName": "Whea7s"
+            },
+            {
+              "playerId": "loony",
+              "displayName": "Loony"
+            },
+            {
+              "playerId": "fears",
+              "displayName": "FEARS"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "vexx-revenge",
+          "teamName": "VexX Revenge",
+          "players": [
+            {
+              "playerId": "slumber",
+              "displayName": "Slumber"
+            },
+            {
+              "playerId": "illskill",
+              "displayName": "iLLSkiLL"
+            },
+            {
+              "playerId": "mech",
+              "displayName": "Mech"
+            },
+            {
+              "playerId": "demon",
+              "displayName": "Demon"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "epsilon-esports",
+          "teamName": "Epsilon Esports",
+          "players": [
+            {
+              "playerId": "jurd",
+              "displayName": "Jurd"
+            },
+            {
+              "playerId": "swanny",
+              "displayName": "Swanny"
+            },
+            {
+              "playerId": "tommey",
+              "displayName": "Tommey"
+            },
+            {
+              "playerId": "flux",
+              "displayName": "Flux"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "tcm-gaming",
+          "teamName": "TCM-Gaming",
+          "players": [
+            {
+              "playerId": "markyb",
+              "displayName": "MarkyB"
+            },
+            {
+              "playerId": "moose",
+              "displayName": "Moose"
+            },
+            {
+              "playerId": "gunshy",
+              "displayName": "GunShy"
+            },
+            {
+              "playerId": "madcat",
+              "displayName": "MadCat"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "xfinity-gaming",
+          "teamName": "Xfinity Gaming",
+          "players": [
+            {
+              "playerId": "muddawg",
+              "displayName": "Muddawg"
+            },
+            {
+              "playerId": "crowster",
+              "displayName": "Crowster"
+            },
+            {
+              "playerId": "sinful",
+              "displayName": "SinfuL"
+            },
+            {
+              "playerId": "doubt",
+              "displayName": "Doubt"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "vitality-rises",
+          "teamName": "Vitality.Rises",
+          "players": [
+            {
+              "playerId": "gotaga",
+              "displayName": "Gotaga"
+            },
+            {
+              "playerId": "broken",
+              "displayName": "BroKeN"
+            },
+            {
+              "playerId": "krnage",
+              "displayName": "Krnage"
+            },
+            {
+              "playerId": "blue",
+              "displayName": "bLue"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "team-kaliber",
+          "teamName": "Team Kaliber",
+          "players": [
+            {
+              "playerId": "sharp",
+              "displayName": "Sharp"
+            },
+            {
+              "playerId": "theory",
+              "displayName": "Theory"
+            },
+            {
+              "playerId": "goonjar",
+              "displayName": "Goonjar"
+            },
+            {
+              "playerId": "formal",
+              "displayName": "FormaL"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "team-immunity",
+          "teamName": "Team Immunity",
+          "players": [
+            {
+              "playerId": "buzzo",
+              "displayName": "BuZZO"
+            },
+            {
+              "playerId": "naked",
+              "displayName": "Naked"
+            },
+            {
+              "playerId": "shockz",
+              "displayName": "Shockz"
+            },
+            {
+              "playerId": "rampage",
+              "displayName": "Rampage"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "wild-gaming",
+          "teamName": "WiLD Gaming",
+          "players": [
+            {
+              "playerId": "brock",
+              "displayName": "Brock"
+            },
+            {
+              "playerId": "incepts",
+              "displayName": "Incepts"
+            },
+            {
+              "playerId": "anticity",
+              "displayName": "Anticity"
+            },
+            {
+              "playerId": "nexxx",
+              "displayName": "NeXxX"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "vitality-returns",
+          "teamName": "Vitality.Returns",
+          "players": [
+            {
+              "playerId": "agonie",
+              "displayName": "Agonie"
+            },
+            {
+              "playerId": "azox",
+              "displayName": "AzoX"
+            },
+            {
+              "playerId": "getsom",
+              "displayName": "Getsom"
+            },
+            {
+              "playerId": "dylux",
+              "displayName": "dyLux"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "team-rize-za",
+          "teamName": "Team RiZe ZA",
+          "players": [
+            {
+              "playerId": "jb",
+              "displayName": "JB"
+            },
+            {
+              "playerId": "paradoxx",
+              "displayName": "ParadoxX"
+            },
+            {
+              "playerId": "pupsky",
+              "displayName": "Pupsky"
+            },
+            {
+              "playerId": "mance",
+              "displayName": "Mance"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "team-orbit",
+          "teamName": "Team Orbit",
+          "players": [
+            {
+              "playerId": "enduraaa",
+              "displayName": "EndurAAA"
+            },
+            {
+              "playerId": "lewis",
+              "displayName": "Lewis"
+            },
+            {
+              "playerId": "jacko",
+              "displayName": "Jacko"
+            },
+            {
+              "playerId": "bounce",
+              "displayName": "BounCe"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "lightning-pandas",
+          "teamName": "Lightning Pandas",
+          "players": [
+            {
+              "playerId": "shane",
+              "displayName": "ShAnE"
+            },
+            {
+              "playerId": "necrome",
+              "displayName": "NeCRoMe"
+            },
+            {
+              "playerId": "ramba",
+              "displayName": "RaMba"
+            },
+            {
+              "playerId": "randm",
+              "displayName": "Randm"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "sk-gaming",
+          "teamName": "SK Gaming",
+          "players": [
+            {
+              "playerId": "quicky",
+              "displayName": "QuiCky"
+            },
+            {
+              "playerId": "kivi",
+              "displayName": "Kivi"
+            },
+            {
+              "playerId": "rockz",
+              "displayName": "RockZ"
+            },
+            {
+              "playerId": "raidn",
+              "displayName": "raidN"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "tec-intensity",
+          "teamName": "TEC Intensity",
+          "players": [
+            {
+              "playerId": "realize",
+              "displayName": "Realize"
+            },
+            {
+              "playerId": "melo",
+              "displayName": "MeLo"
+            },
+            {
+              "playerId": "robz",
+              "displayName": "Robz"
+            },
+            {
+              "playerId": "wonder",
+              "displayName": "Wonder"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "wizards-e-sports-club",
+          "teamName": "Wizards e-Sports Club",
+          "players": [
+            {
+              "playerId": "flexz",
+              "displayName": "FlexZ"
+            },
+            {
+              "playerId": "t-mac",
+              "displayName": "T Mac"
+            },
+            {
+              "playerId": "kindok",
+              "displayName": "KiNDoK"
+            },
+            {
+              "playerId": "jorgeh",
+              "displayName": "JorGeh"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "new-star-player",
+          "teamName": "New Star Player",
+          "players": [
+            {
+              "playerId": "artshot",
+              "displayName": "ArtShot"
+            },
+            {
+              "playerId": "doloshi",
+              "displayName": "Doloshi"
+            },
+            {
+              "playerId": "benjinuri",
+              "displayName": "BenjiNuri"
+            },
+            {
+              "playerId": "turbo",
+              "displayName": "Turbo"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "killerfish-esport",
+          "teamName": "KILLERFISH eSport",
+          "players": [
+            {
+              "playerId": "blackk",
+              "displayName": "Blackk"
+            },
+            {
+              "playerId": "hasbroken",
+              "displayName": "hAsbroken"
+            },
+            {
+              "playerId": "theros",
+              "displayName": "Theros"
+            },
+            {
+              "playerId": "aykon",
+              "displayName": "AyKoN"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "sublime-gaming",
+          "teamName": "Sublime Gaming",
+          "players": [
+            {
+              "playerId": "kolgaa",
+              "displayName": "Kolgaa"
+            },
+            {
+              "playerId": "frido",
+              "displayName": "Frido"
+            },
+            {
+              "playerId": "pibo",
+              "displayName": "Pibo"
+            },
+            {
+              "playerId": "pow3r",
+              "displayName": "POW3R"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "real-allstars",
+          "teamName": "Real AllStars",
+          "players": [
+            {
+              "playerId": "blackk",
+              "displayName": "Blackk"
+            },
+            {
+              "playerId": "bissell",
+              "displayName": "Bissell"
+            },
+            {
+              "playerId": "torres",
+              "displayName": "Torres"
+            },
+            {
+              "playerId": "daredevil",
+              "displayName": "DaReDeViL"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "reign-mix",
+          "teamName": "Reign Mix",
+          "players": [
+            {
+              "playerId": "reece",
+              "displayName": "Reece"
+            },
+            {
+              "playerId": "joocy",
+              "displayName": "Joocy"
+            },
+            {
+              "playerId": "vizze",
+              "displayName": "Vizze"
+            },
+            {
+              "playerId": "icemann",
+              "displayName": "IceManN"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "aztek-gaming",
+          "teamName": "Aztek Gaming",
+          "players": [
+            {
+              "playerId": "neooosz",
+              "displayName": "NeooosZ"
+            },
+            {
+              "playerId": "clumzy",
+              "displayName": "Clumzy"
+            },
+            {
+              "playerId": "dynamic",
+              "displayName": "Dynamic"
+            },
+            {
+              "playerId": "afro",
+              "displayName": "Afro"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "seasonId": "advanced-warfare",
+      "startYear": 2014,
+      "endYear": 2015,
+      "rosterSize": 4,
+      "gameTitle": "Advanced Warfare",
+      "teams": [
+        {
+          "historicalTeamId": "denial-esports",
+          "teamName": "Denial Esports",
+          "players": [
+            {
+              "playerId": "replays",
+              "displayName": "Replays"
+            },
+            {
+              "playerId": "attach",
+              "displayName": "Attach"
+            },
+            {
+              "playerId": "clayster",
+              "displayName": "Clayster"
+            },
+            {
+              "playerId": "jkap",
+              "displayName": "JKap"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "revenge",
+          "teamName": "Revenge",
+          "players": [
+            {
+              "playerId": "remy",
+              "displayName": "Remy"
+            },
+            {
+              "playerId": "nagafen",
+              "displayName": "Nagafen"
+            },
+            {
+              "playerId": "faccento",
+              "displayName": "Faccento"
+            },
+            {
+              "playerId": "aqua",
+              "displayName": "Aqua"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "faze-red",
+          "teamName": "FaZe Red",
+          "players": [
+            {
+              "playerId": "aches",
+              "displayName": "ACHES"
+            },
+            {
+              "playerId": "slasher",
+              "displayName": "SlasheR"
+            },
+            {
+              "playerId": "parasite",
+              "displayName": "Parasite"
+            },
+            {
+              "playerId": "enable",
+              "displayName": "Enable"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "prophecy",
+          "teamName": "Prophecy",
+          "players": [
+            {
+              "playerId": "ricky",
+              "displayName": "Ricky"
+            },
+            {
+              "playerId": "mboze",
+              "displayName": "MBoZe"
+            },
+            {
+              "playerId": "mochila",
+              "displayName": "Mochila"
+            },
+            {
+              "playerId": "classic",
+              "displayName": "Classic"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "automatic-reload",
+          "teamName": "Automatic Reload",
+          "players": [
+            {
+              "playerId": "burns",
+              "displayName": "Burns"
+            },
+            {
+              "playerId": "blfire",
+              "displayName": "Blfire"
+            },
+            {
+              "playerId": "anticity",
+              "displayName": "Anticity"
+            },
+            {
+              "playerId": "whea7s",
+              "displayName": "Whea7s"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "mindfreak",
+          "teamName": "Mindfreak",
+          "players": [
+            {
+              "playerId": "buzzo",
+              "displayName": "BuZZO"
+            },
+            {
+              "playerId": "shockz",
+              "displayName": "Shockz"
+            },
+            {
+              "playerId": "fighta",
+              "displayName": "Fighta"
+            },
+            {
+              "playerId": "denz",
+              "displayName": "Denz"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "optic-gaming",
+          "teamName": "OpTic Gaming",
+          "players": [
+            {
+              "playerId": "nadeshot",
+              "displayName": "NaDeSHoT"
+            },
+            {
+              "playerId": "scump",
+              "displayName": "Scump"
+            },
+            {
+              "playerId": "formal",
+              "displayName": "FormaL"
+            },
+            {
+              "playerId": "crimsix",
+              "displayName": "Crimsix"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "team-kaliber",
+          "teamName": "Team Kaliber",
+          "players": [
+            {
+              "playerId": "sharp",
+              "displayName": "Sharp"
+            },
+            {
+              "playerId": "goonjar",
+              "displayName": "Goonjar"
+            },
+            {
+              "playerId": "theory",
+              "displayName": "Theory"
+            },
+            {
+              "playerId": "loony",
+              "displayName": "Loony"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "envy",
+          "teamName": "Envy",
+          "players": [
+            {
+              "playerId": "merk",
+              "displayName": "MerK"
+            },
+            {
+              "playerId": "nameless",
+              "displayName": "NAMELESS"
+            },
+            {
+              "playerId": "saints",
+              "displayName": "Saints"
+            },
+            {
+              "playerId": "zoomaa",
+              "displayName": "ZooMaa"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "strictly-business",
+          "teamName": "Strictly Business",
+          "players": [
+            {
+              "playerId": "phizzurp",
+              "displayName": "pHiZZURP"
+            },
+            {
+              "playerId": "john",
+              "displayName": "John"
+            },
+            {
+              "playerId": "dedo",
+              "displayName": "Dedo"
+            },
+            {
+              "playerId": "neslo",
+              "displayName": "Neslo"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "aware-gaming",
+          "teamName": "Aware Gaming",
+          "players": [
+            {
+              "playerId": "watson",
+              "displayName": "Watson"
+            },
+            {
+              "playerId": "jtee",
+              "displayName": "JTee"
+            },
+            {
+              "playerId": "joee",
+              "displayName": "Joee"
+            },
+            {
+              "playerId": "peatie",
+              "displayName": "Peatie"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "orbit-esport",
+          "teamName": "Orbit eSport",
+          "players": [
+            {
+              "playerId": "sinful",
+              "displayName": "SinfuL"
+            },
+            {
+              "playerId": "twizz",
+              "displayName": "TwiZz"
+            },
+            {
+              "playerId": "accuracy",
+              "displayName": "Accuracy"
+            },
+            {
+              "playerId": "lawless",
+              "displayName": "Lawless"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "faze-black",
+          "teamName": "FaZe Black",
+          "players": [
+            {
+              "playerId": "censor",
+              "displayName": "Censor"
+            },
+            {
+              "playerId": "apathy",
+              "displayName": "Apathy"
+            },
+            {
+              "playerId": "proofy",
+              "displayName": "ProoFy"
+            },
+            {
+              "playerId": "studyy",
+              "displayName": "StuDyy"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "optic-nation",
+          "teamName": "OpTic Nation",
+          "players": [
+            {
+              "playerId": "teepee",
+              "displayName": "TeePee"
+            },
+            {
+              "playerId": "karma",
+              "displayName": "Karma"
+            },
+            {
+              "playerId": "killa",
+              "displayName": "KiLLa"
+            },
+            {
+              "playerId": "mirx",
+              "displayName": "MiRx"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "below-zero",
+          "teamName": "Below Zero",
+          "players": [
+            {
+              "playerId": "godlike",
+              "displayName": "GodLike"
+            },
+            {
+              "playerId": "assault",
+              "displayName": "Assault"
+            },
+            {
+              "playerId": "wolf",
+              "displayName": "Wolf"
+            },
+            {
+              "playerId": "reppin",
+              "displayName": "REPPIN"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "gamers2",
+          "teamName": "Gamers2",
+          "players": [
+            {
+              "playerId": "tojor",
+              "displayName": "TojoR"
+            },
+            {
+              "playerId": "lgend",
+              "displayName": "Lgend"
+            },
+            {
+              "playerId": "methodz-es",
+              "displayName": "MethodZ"
+            },
+            {
+              "playerId": "jk7",
+              "displayName": "JK7"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "nxg-rapid",
+          "teamName": "NxG.Rapid",
+          "players": [
+            {
+              "playerId": "pow3r",
+              "displayName": "POW3R"
+            },
+            {
+              "playerId": "kolgaa",
+              "displayName": "Ko1gaa"
+            },
+            {
+              "playerId": "pibo",
+              "displayName": "Pibo"
+            },
+            {
+              "playerId": "duke",
+              "displayName": "Duke"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "hypergames",
+          "teamName": "HyperGames",
+          "players": [
+            {
+              "playerId": "maxxie",
+              "displayName": "MAxxie"
+            },
+            {
+              "playerId": "azox",
+              "displayName": "AzoX"
+            },
+            {
+              "playerId": "veziok",
+              "displayName": "Veziok"
+            },
+            {
+              "playerId": "tonyjs",
+              "displayName": "TonyJ's"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "fabe-de",
+          "teamName": "fabE.DE",
+          "players": [
+            {
+              "playerId": "bullet",
+              "displayName": "Bullet"
+            },
+            {
+              "playerId": "gunelite",
+              "displayName": "GunElite"
+            },
+            {
+              "playerId": "kivi",
+              "displayName": "Kivi"
+            },
+            {
+              "playerId": "kraqz",
+              "displayName": "KraQz"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "team-exile5-t1",
+          "teamName": "Team Exile5.T1",
+          "players": [
+            {
+              "playerId": "damage",
+              "displayName": "Damage"
+            },
+            {
+              "playerId": "fate",
+              "displayName": "Fate"
+            },
+            {
+              "playerId": "iskatuu",
+              "displayName": "Iskatuu"
+            },
+            {
+              "playerId": "chilean",
+              "displayName": "Chilean"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "team-menace",
+          "teamName": "Team Menace",
+          "players": [
+            {
+              "playerId": "beakd",
+              "displayName": "beakd"
+            },
+            {
+              "playerId": "eyedi",
+              "displayName": "Eyedi"
+            },
+            {
+              "playerId": "gefkid",
+              "displayName": "GefKid"
+            },
+            {
+              "playerId": "juunaz",
+              "displayName": "Juunaz"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "3sup",
+          "teamName": "3sUP",
+          "players": [
+            {
+              "playerId": "califa",
+              "displayName": "CaLiFa"
+            },
+            {
+              "playerId": "strife",
+              "displayName": "Strife"
+            },
+            {
+              "playerId": "vert",
+              "displayName": "Vert"
+            },
+            {
+              "playerId": "dimi",
+              "displayName": "Dimi"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "tcm-gaming",
+          "teamName": "TCM-Gaming",
+          "players": [
+            {
+              "playerId": "moose",
+              "displayName": "Moose"
+            },
+            {
+              "playerId": "gunshy",
+              "displayName": "GunShy"
+            },
+            {
+              "playerId": "shane",
+              "displayName": "ShAnE"
+            },
+            {
+              "playerId": "jurd",
+              "displayName": "Jurd"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "epsilon-esports",
+          "teamName": "Epsilon Esports",
+          "players": [
+            {
+              "playerId": "joshh",
+              "displayName": "Joshh"
+            },
+            {
+              "playerId": "madcat",
+              "displayName": "MadCat"
+            },
+            {
+              "playerId": "swanny",
+              "displayName": "Swanny"
+            },
+            {
+              "playerId": "tommey",
+              "displayName": "Tommey"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "vitality-x",
+          "teamName": "Vitality.X",
+          "players": [
+            {
+              "playerId": "riskin",
+              "displayName": "RiskiN"
+            },
+            {
+              "playerId": "getsom",
+              "displayName": "Getsom"
+            },
+            {
+              "playerId": "dylux",
+              "displayName": "dyLux"
+            },
+            {
+              "playerId": "oxygen",
+              "displayName": "Oxygen"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "klar1ty-gaming",
+          "teamName": "Klar1ty Gaming",
+          "players": [
+            {
+              "playerId": "dmk0",
+              "displayName": "DMK0"
+            },
+            {
+              "playerId": "skittlez",
+              "displayName": "SkittleZ"
+            },
+            {
+              "playerId": "scotland",
+              "displayName": "Scotland"
+            },
+            {
+              "playerId": "sunnyb",
+              "displayName": "SunnyB"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "fabe-allstars",
+          "teamName": "fabE.AllStars",
+          "players": [
+            {
+              "playerId": "rush",
+              "displayName": "RusH"
+            },
+            {
+              "playerId": "torres",
+              "displayName": "Torres"
+            },
+            {
+              "playerId": "sempa",
+              "displayName": "Sempa"
+            },
+            {
+              "playerId": "lxt",
+              "displayName": "LXT"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "ssof-gaming",
+          "teamName": "SSOF Gaming",
+          "players": [
+            {
+              "playerId": "le",
+              "displayName": "Le"
+            },
+            {
+              "playerId": "h",
+              "displayName": "H"
+            },
+            {
+              "playerId": "caio",
+              "displayName": "Caio"
+            },
+            {
+              "playerId": "carlao",
+              "displayName": "Carlao"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "seasonId": "black-ops-3",
+      "startYear": 2015,
+      "endYear": 2016,
+      "rosterSize": 4,
+      "gameTitle": "Black Ops 3",
+      "teams": [
+        {
+          "historicalTeamId": "envy",
+          "teamName": "Envy",
+          "players": [
+            {
+              "playerId": "jkap",
+              "displayName": "JKap"
+            },
+            {
+              "playerId": "slasher",
+              "displayName": "SlasheR"
+            },
+            {
+              "playerId": "apathy",
+              "displayName": "Apathy"
+            },
+            {
+              "playerId": "john",
+              "displayName": "John"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "splyce",
+          "teamName": "Splyce",
+          "players": [
+            {
+              "playerId": "bance",
+              "displayName": "Bance"
+            },
+            {
+              "playerId": "joshh",
+              "displayName": "Joshh"
+            },
+            {
+              "playerId": "joee",
+              "displayName": "Joee"
+            },
+            {
+              "playerId": "rated",
+              "displayName": "Rated"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "elevate",
+          "teamName": "Elevate",
+          "players": [
+            {
+              "playerId": "aqua",
+              "displayName": "Aqua"
+            },
+            {
+              "playerId": "faccento",
+              "displayName": "Faccento"
+            },
+            {
+              "playerId": "nagafen",
+              "displayName": "Nagafen"
+            },
+            {
+              "playerId": "felo",
+              "displayName": "FeLo"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "fab-games-esports",
+          "teamName": "FAB Games eSports",
+          "players": [
+            {
+              "playerId": "desire",
+              "displayName": "Desire"
+            },
+            {
+              "playerId": "dqvee",
+              "displayName": "Dqvee"
+            },
+            {
+              "playerId": "vortex-uk",
+              "displayName": "Vortex"
+            },
+            {
+              "playerId": "hawqeh",
+              "displayName": "Hawqeh"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "cloud9",
+          "teamName": "Cloud9",
+          "players": [
+            {
+              "playerId": "assault",
+              "displayName": "Assault"
+            },
+            {
+              "playerId": "aches",
+              "displayName": "ACHES"
+            },
+            {
+              "playerId": "lacefield",
+              "displayName": "Lacefield"
+            },
+            {
+              "playerId": "ricky",
+              "displayName": "Ricky"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "rise-nation",
+          "teamName": "Rise Nation",
+          "players": [
+            {
+              "playerId": "slacked",
+              "displayName": "Slacked"
+            },
+            {
+              "playerId": "classic",
+              "displayName": "Classic"
+            },
+            {
+              "playerId": "octane",
+              "displayName": "Octane"
+            },
+            {
+              "playerId": "loony",
+              "displayName": "Loony"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "faze-clan",
+          "teamName": "FaZe Clan",
+          "players": [
+            {
+              "playerId": "enable",
+              "displayName": "Enable"
+            },
+            {
+              "playerId": "zoomaa",
+              "displayName": "ZooMaa"
+            },
+            {
+              "playerId": "clayster",
+              "displayName": "Clayster"
+            },
+            {
+              "playerId": "attach",
+              "displayName": "Attach"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "optic-gaming",
+          "teamName": "OpTic Gaming",
+          "players": [
+            {
+              "playerId": "scump",
+              "displayName": "Scump"
+            },
+            {
+              "playerId": "formal",
+              "displayName": "FormaL"
+            },
+            {
+              "playerId": "crimsix",
+              "displayName": "Crimsix"
+            },
+            {
+              "playerId": "karma",
+              "displayName": "Karma"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "hypergames",
+          "teamName": "HyperGames",
+          "players": [
+            {
+              "playerId": "zed",
+              "displayName": "Zed"
+            },
+            {
+              "playerId": "qwiker",
+              "displayName": "QwiKeR"
+            },
+            {
+              "playerId": "nolson",
+              "displayName": "Nolson"
+            },
+            {
+              "playerId": "braaain",
+              "displayName": "Braaain"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "luminosity-gaming",
+          "teamName": "Luminosity Gaming",
+          "players": [
+            {
+              "playerId": "spacely",
+              "displayName": "Spacely"
+            },
+            {
+              "playerId": "saints",
+              "displayName": "Saints"
+            },
+            {
+              "playerId": "studyy",
+              "displayName": "StuDyy"
+            },
+            {
+              "playerId": "nameless",
+              "displayName": "NAMELESS"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "millenium",
+          "teamName": "Millenium",
+          "players": [
+            {
+              "playerId": "tommey",
+              "displayName": "Tommey"
+            },
+            {
+              "playerId": "madcat",
+              "displayName": "MadCat"
+            },
+            {
+              "playerId": "jurd",
+              "displayName": "Jurd"
+            },
+            {
+              "playerId": "mirx",
+              "displayName": "MiRx"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "team-kaliber",
+          "teamName": "Team Kaliber",
+          "players": [
+            {
+              "playerId": "theory",
+              "displayName": "Theory"
+            },
+            {
+              "playerId": "colechan",
+              "displayName": "ColeChan"
+            },
+            {
+              "playerId": "happy",
+              "displayName": "Happy"
+            },
+            {
+              "playerId": "goonjar",
+              "displayName": "Goonjar"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "complexity",
+          "teamName": "compLexity",
+          "players": [
+            {
+              "playerId": "parasite",
+              "displayName": "Parasite"
+            },
+            {
+              "playerId": "llamagod",
+              "displayName": "LlamaGod"
+            },
+            {
+              "playerId": "swarley",
+              "displayName": "Swarley"
+            },
+            {
+              "playerId": "havok",
+              "displayName": "Havok"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "epsilon-esports",
+          "teamName": "Epsilon Esports",
+          "players": [
+            {
+              "playerId": "moose",
+              "displayName": "Moose"
+            },
+            {
+              "playerId": "reedy",
+              "displayName": "Reedy"
+            },
+            {
+              "playerId": "sunnyb",
+              "displayName": "SunnyB"
+            },
+            {
+              "playerId": "skrapz",
+              "displayName": "Skrapz"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "team-allegiance",
+          "teamName": "Team Allegiance",
+          "players": [
+            {
+              "playerId": "mochila",
+              "displayName": "Mochila"
+            },
+            {
+              "playerId": "royalty",
+              "displayName": "Royalty"
+            },
+            {
+              "playerId": "remy",
+              "displayName": "Remy"
+            },
+            {
+              "playerId": "xotic",
+              "displayName": "Xotic"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "team-infused",
+          "teamName": "Team Infused",
+          "players": [
+            {
+              "playerId": "markyb",
+              "displayName": "MarkyB"
+            },
+            {
+              "playerId": "peatie",
+              "displayName": "Peatie"
+            },
+            {
+              "playerId": "urban",
+              "displayName": "Urban"
+            },
+            {
+              "playerId": "zer0",
+              "displayName": "Zer0"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "apotheon-esports",
+          "teamName": "Apotheon Esports",
+          "players": [
+            {
+              "playerId": "stumpfy",
+              "displayName": "Stumpfy"
+            },
+            {
+              "playerId": "arcitys",
+              "displayName": "Arcitys"
+            },
+            {
+              "playerId": "prestinni",
+              "displayName": "Prestinni"
+            },
+            {
+              "playerId": "mayhem",
+              "displayName": "Mayhem"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "eunited",
+          "teamName": "eUnited",
+          "players": [
+            {
+              "playerId": "pacman",
+              "displayName": "Pacman"
+            },
+            {
+              "playerId": "whea7s",
+              "displayName": "Whea7s"
+            },
+            {
+              "playerId": "ivy",
+              "displayName": "Ivy"
+            },
+            {
+              "playerId": "accuracy",
+              "displayName": "Accuracy"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "lethal-gaming",
+          "teamName": "Lethal Gaming",
+          "players": [
+            {
+              "playerId": "hate",
+              "displayName": "Hate"
+            },
+            {
+              "playerId": "spoof",
+              "displayName": "Spoof"
+            },
+            {
+              "playerId": "beehzy",
+              "displayName": "Beehzy"
+            },
+            {
+              "playerId": "juju",
+              "displayName": "JuJu"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "mindfreak",
+          "teamName": "Mindfreak",
+          "players": [
+            {
+              "playerId": "buzzo",
+              "displayName": "BuZZO"
+            },
+            {
+              "playerId": "shockz",
+              "displayName": "Shockz"
+            },
+            {
+              "playerId": "fighta",
+              "displayName": "Fighta"
+            },
+            {
+              "playerId": "denz",
+              "displayName": "Denz"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "most-wanted",
+          "teamName": "Most Wanted",
+          "players": [
+            {
+              "playerId": "methodz-na",
+              "displayName": "Methodz"
+            },
+            {
+              "playerId": "blfire",
+              "displayName": "Blfire"
+            },
+            {
+              "playerId": "tcm",
+              "displayName": "TcM"
+            },
+            {
+              "playerId": "twizz",
+              "displayName": "TwiZz"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "pnda-gaming",
+          "teamName": "Pnda Gaming",
+          "players": [
+            {
+              "playerId": "nelson",
+              "displayName": "Nelson"
+            },
+            {
+              "playerId": "priestahh",
+              "displayName": "Priestahh"
+            },
+            {
+              "playerId": "fa5tballa",
+              "displayName": "FA5TBALLA"
+            },
+            {
+              "playerId": "tuquick",
+              "displayName": "TuQuick"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "pulse-gaming",
+          "teamName": "PuLse Gaming",
+          "players": [
+            {
+              "playerId": "cappeh",
+              "displayName": "Cappeh"
+            },
+            {
+              "playerId": "denza",
+              "displayName": "Denza"
+            },
+            {
+              "playerId": "gefkid",
+              "displayName": "GefKid"
+            },
+            {
+              "playerId": "realize",
+              "displayName": "Realize"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "team-orbit",
+          "teamName": "Team Orbit",
+          "players": [
+            {
+              "playerId": "swiftaz0r",
+              "displayName": "Swiftaz0r"
+            },
+            {
+              "playerId": "nimble",
+              "displayName": "Nimble"
+            },
+            {
+              "playerId": "bacabec",
+              "displayName": "Bacabec"
+            },
+            {
+              "playerId": "zeuss",
+              "displayName": "Zeuss"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "black-forest-games",
+          "teamName": "Black Forest Games",
+          "players": [
+            {
+              "playerId": "revolt",
+              "displayName": "Revolt"
+            },
+            {
+              "playerId": "kraqz",
+              "displayName": "KraQz"
+            },
+            {
+              "playerId": "louicm",
+              "displayName": "LouiCM"
+            },
+            {
+              "playerId": "ryangray",
+              "displayName": "RyanGray"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "chiefs-esports-club",
+          "teamName": "Chiefs Esports Club",
+          "players": [
+            {
+              "playerId": "hopey",
+              "displayName": "Hopey"
+            },
+            {
+              "playerId": "dean",
+              "displayName": "Dean"
+            },
+            {
+              "playerId": "rival",
+              "displayName": "Rival"
+            },
+            {
+              "playerId": "macka",
+              "displayName": "Macka"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "giants-gaming",
+          "teamName": "Giants Gaming",
+          "players": [
+            {
+              "playerId": "tojor",
+              "displayName": "TojoR"
+            },
+            {
+              "playerId": "lgend",
+              "displayName": "Lgend"
+            },
+            {
+              "playerId": "methodz-es",
+              "displayName": "MethodZ"
+            },
+            {
+              "playerId": "sammy",
+              "displayName": "Sammy"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "renegades",
+          "teamName": "Renegades",
+          "players": [
+            {
+              "playerId": "diabolic",
+              "displayName": "Diabolic"
+            },
+            {
+              "playerId": "sender",
+              "displayName": "Sender"
+            },
+            {
+              "playerId": "chino",
+              "displayName": "Chino"
+            },
+            {
+              "playerId": "killa",
+              "displayName": "KiLLa"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "supremacy",
+          "teamName": "Supremacy",
+          "players": [
+            {
+              "playerId": "malls",
+              "displayName": "Malls"
+            },
+            {
+              "playerId": "vortex-fr",
+              "displayName": "Vortex"
+            },
+            {
+              "playerId": "maxxie",
+              "displayName": "MAxxie"
+            },
+            {
+              "playerId": "zayrox",
+              "displayName": "Zayrox"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "seasonId": "infinite-warfare",
+      "startYear": 2016,
+      "endYear": 2017,
+      "rosterSize": 4,
+      "gameTitle": "Infinite Warfare",
+      "teams": [
+        {
+          "historicalTeamId": "optic-gaming",
+          "teamName": "OpTic Gaming",
+          "players": [
+            {
+              "playerId": "scump",
+              "displayName": "Scump"
+            },
+            {
+              "playerId": "formal",
+              "displayName": "FormaL"
+            },
+            {
+              "playerId": "crimsix",
+              "displayName": "Crimsix"
+            },
+            {
+              "playerId": "karma",
+              "displayName": "Karma"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "envy",
+          "teamName": "Envy",
+          "players": [
+            {
+              "playerId": "jkap",
+              "displayName": "JKap"
+            },
+            {
+              "playerId": "slasher",
+              "displayName": "SlasheR"
+            },
+            {
+              "playerId": "apathy",
+              "displayName": "Apathy"
+            },
+            {
+              "playerId": "john",
+              "displayName": "John"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "luminosity-gaming",
+          "teamName": "Luminosity Gaming",
+          "players": [
+            {
+              "playerId": "saints",
+              "displayName": "Saints"
+            },
+            {
+              "playerId": "slacked",
+              "displayName": "Slacked"
+            },
+            {
+              "playerId": "classic",
+              "displayName": "Classic"
+            },
+            {
+              "playerId": "octane",
+              "displayName": "Octane"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "rise-nation",
+          "teamName": "Rise Nation",
+          "players": [
+            {
+              "playerId": "loony",
+              "displayName": "Loony"
+            },
+            {
+              "playerId": "aqua",
+              "displayName": "Aqua"
+            },
+            {
+              "playerId": "faccento",
+              "displayName": "Faccento"
+            },
+            {
+              "playerId": "felo",
+              "displayName": "FeLo"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "faze-clan",
+          "teamName": "FaZe Clan",
+          "players": [
+            {
+              "playerId": "enable",
+              "displayName": "Enable"
+            },
+            {
+              "playerId": "zoomaa",
+              "displayName": "ZooMaa"
+            },
+            {
+              "playerId": "attach",
+              "displayName": "Attach"
+            },
+            {
+              "playerId": "gunless",
+              "displayName": "Gunless"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "eunited",
+          "teamName": "eUnited",
+          "players": [
+            {
+              "playerId": "silly",
+              "displayName": "SiLLY"
+            },
+            {
+              "playerId": "arcitys",
+              "displayName": "Arcitys"
+            },
+            {
+              "playerId": "prestinni",
+              "displayName": "Prestinni"
+            },
+            {
+              "playerId": "clayster",
+              "displayName": "Clayster"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "ghost-gaming",
+          "teamName": "Ghost Gaming",
+          "players": [
+            {
+              "playerId": "spacely",
+              "displayName": "Spacely"
+            },
+            {
+              "playerId": "llamagod",
+              "displayName": "LlamaGod"
+            },
+            {
+              "playerId": "maux",
+              "displayName": "Maux"
+            },
+            {
+              "playerId": "lacefield",
+              "displayName": "Lacefield"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "splyce",
+          "teamName": "Splyce",
+          "players": [
+            {
+              "playerId": "bance",
+              "displayName": "Bance"
+            },
+            {
+              "playerId": "jurd",
+              "displayName": "Jurd"
+            },
+            {
+              "playerId": "madcat",
+              "displayName": "MadCat"
+            },
+            {
+              "playerId": "zer0",
+              "displayName": "Zer0"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "enigma6-group",
+          "teamName": "Enigma6 Group",
+          "players": [
+            {
+              "playerId": "general",
+              "displayName": "General"
+            },
+            {
+              "playerId": "kade",
+              "displayName": "Kade"
+            },
+            {
+              "playerId": "proto",
+              "displayName": "Proto"
+            },
+            {
+              "playerId": "royalty",
+              "displayName": "Royalty"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "team-allegiance",
+          "teamName": "Team Allegiance",
+          "players": [
+            {
+              "playerId": "spoof",
+              "displayName": "Spoof"
+            },
+            {
+              "playerId": "believe",
+              "displayName": "Believe"
+            },
+            {
+              "playerId": "nova",
+              "displayName": "Nova"
+            },
+            {
+              "playerId": "mayhem",
+              "displayName": "Mayhem"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "team-infused",
+          "teamName": "Team Infused",
+          "players": [
+            {
+              "playerId": "niall",
+              "displayName": "Niall"
+            },
+            {
+              "playerId": "nolson",
+              "displayName": "Nolson"
+            },
+            {
+              "playerId": "deleo",
+              "displayName": "Deleo"
+            },
+            {
+              "playerId": "alexx",
+              "displayName": "Alexx"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "epsilon-esports",
+          "teamName": "Epsilon Esports",
+          "players": [
+            {
+              "playerId": "dqvee",
+              "displayName": "Dqvee"
+            },
+            {
+              "playerId": "vortex-uk",
+              "displayName": "Vortex"
+            },
+            {
+              "playerId": "hawqeh",
+              "displayName": "Hawqeh"
+            },
+            {
+              "playerId": "joshh",
+              "displayName": "Joshh"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "mindfreak-black",
+          "teamName": "Mindfreak.Black",
+          "players": [
+            {
+              "playerId": "zepa",
+              "displayName": "Zepa"
+            },
+            {
+              "playerId": "hopey",
+              "displayName": "Hopey"
+            },
+            {
+              "playerId": "setzyy",
+              "displayName": "Setzyy"
+            },
+            {
+              "playerId": "swiftaz0r",
+              "displayName": "Swiftaz0r"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "str8-rippin",
+          "teamName": "Str8 Rippin",
+          "players": [
+            {
+              "playerId": "studyy",
+              "displayName": "StuDyy"
+            },
+            {
+              "playerId": "ricky",
+              "displayName": "Ricky"
+            },
+            {
+              "playerId": "dashy",
+              "displayName": "Dashy"
+            },
+            {
+              "playerId": "temp",
+              "displayName": "Temp"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "fnatic",
+          "teamName": "Fnatic",
+          "players": [
+            {
+              "playerId": "tommey",
+              "displayName": "Tommey"
+            },
+            {
+              "playerId": "skrapz",
+              "displayName": "Skrapz"
+            },
+            {
+              "playerId": "sunnyb",
+              "displayName": "SunnyB"
+            },
+            {
+              "playerId": "wuskin",
+              "displayName": "wuskin"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "cloud9",
+          "teamName": "Cloud9",
+          "players": [
+            {
+              "playerId": "assault",
+              "displayName": "Assault"
+            },
+            {
+              "playerId": "aches",
+              "displayName": "ACHES"
+            },
+            {
+              "playerId": "xotic",
+              "displayName": "Xotic"
+            },
+            {
+              "playerId": "priestahh",
+              "displayName": "Priestahh"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "echo-fox",
+          "teamName": "Echo Fox",
+          "players": [
+            {
+              "playerId": "methodz-na",
+              "displayName": "Methodz"
+            },
+            {
+              "playerId": "mosh",
+              "displayName": "Mosh"
+            },
+            {
+              "playerId": "mruiz",
+              "displayName": "MRuiz"
+            },
+            {
+              "playerId": "replays",
+              "displayName": "Replays"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "elevate",
+          "teamName": "Elevate",
+          "players": [
+            {
+              "playerId": "reedy",
+              "displayName": "Reedy"
+            },
+            {
+              "playerId": "watson",
+              "displayName": "Watson"
+            },
+            {
+              "playerId": "zed",
+              "displayName": "Zed"
+            },
+            {
+              "playerId": "desire",
+              "displayName": "Desire"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "mindfreak",
+          "teamName": "Mindfreak",
+          "players": [
+            {
+              "playerId": "buzzo",
+              "displayName": "BuZZO"
+            },
+            {
+              "playerId": "shockz",
+              "displayName": "Shockz"
+            },
+            {
+              "playerId": "fighta",
+              "displayName": "Fighta"
+            },
+            {
+              "playerId": "denz",
+              "displayName": "Denz"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "supremacy",
+          "teamName": "Supremacy",
+          "players": [
+            {
+              "playerId": "vortex-fr",
+              "displayName": "Vortex"
+            },
+            {
+              "playerId": "eazy",
+              "displayName": "Eazy"
+            },
+            {
+              "playerId": "malls",
+              "displayName": "Malls"
+            },
+            {
+              "playerId": "tonyjs",
+              "displayName": "TonyJs"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "red-reserve",
+          "teamName": "Red Reserve",
+          "players": [
+            {
+              "playerId": "joee",
+              "displayName": "Joee"
+            },
+            {
+              "playerId": "urban",
+              "displayName": "Urban"
+            },
+            {
+              "playerId": "seany",
+              "displayName": "Seany"
+            },
+            {
+              "playerId": "rated",
+              "displayName": "Rated"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "tainted-minds",
+          "teamName": "Tainted Minds",
+          "players": [
+            {
+              "playerId": "damage",
+              "displayName": "Damage"
+            },
+            {
+              "playerId": "nimble",
+              "displayName": "Nimble"
+            },
+            {
+              "playerId": "swifty",
+              "displayName": "Swifty"
+            },
+            {
+              "playerId": "excite",
+              "displayName": "Excite"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "millenium",
+          "teamName": "Millenium",
+          "players": [
+            {
+              "playerId": "markyb",
+              "displayName": "MarkyB"
+            },
+            {
+              "playerId": "peatie",
+              "displayName": "Peatie"
+            },
+            {
+              "playerId": "moose",
+              "displayName": "Moose"
+            },
+            {
+              "playerId": "qwiker",
+              "displayName": "QwiKeR"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "rogue",
+          "teamName": "Rogue",
+          "players": [
+            {
+              "playerId": "johnny",
+              "displayName": "Johnny"
+            },
+            {
+              "playerId": "pandur",
+              "displayName": "Pandur"
+            },
+            {
+              "playerId": "godrx",
+              "displayName": "GodRx"
+            },
+            {
+              "playerId": "stamino",
+              "displayName": "Stamino"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "3sup",
+          "teamName": "3sUP",
+          "players": [
+            {
+              "playerId": "colechan",
+              "displayName": "ColeChan"
+            },
+            {
+              "playerId": "drama",
+              "displayName": "DraMa"
+            },
+            {
+              "playerId": "mochila",
+              "displayName": "Mochila"
+            },
+            {
+              "playerId": "swarley",
+              "displayName": "Swarley"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "projekt-evil",
+          "teamName": "Projekt Evil",
+          "players": [
+            {
+              "playerId": "prophet",
+              "displayName": "Prophet"
+            },
+            {
+              "playerId": "fa5tballa",
+              "displayName": "FA5TBALLA"
+            },
+            {
+              "playerId": "profeezy",
+              "displayName": "ProFeeZy"
+            },
+            {
+              "playerId": "glory",
+              "displayName": "Glory"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "lethal-gaming",
+          "teamName": "Lethal Gaming",
+          "players": [
+            {
+              "playerId": "juju",
+              "displayName": "JuJu"
+            },
+            {
+              "playerId": "hate",
+              "displayName": "Hate"
+            },
+            {
+              "playerId": "humanjesus",
+              "displayName": "HumanJesus"
+            },
+            {
+              "playerId": "klink",
+              "displayName": "KlinK"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "team-vitality",
+          "teamName": "Team Vitality",
+          "players": [
+            {
+              "playerId": "wailers",
+              "displayName": "Wailers"
+            },
+            {
+              "playerId": "shane",
+              "displayName": "ShAnE"
+            },
+            {
+              "playerId": "weeman",
+              "displayName": "Weeman"
+            },
+            {
+              "playerId": "braaain",
+              "displayName": "Braaain"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "seasonId": "wwii",
+      "startYear": 2017,
+      "endYear": 2018,
+      "rosterSize": 4,
+      "gameTitle": "WWII",
+      "teams": [
+        {
+          "historicalTeamId": "evil-geniuses",
+          "teamName": "Evil Geniuses",
+          "players": [
+            {
+              "playerId": "aches",
+              "displayName": "ACHES"
+            },
+            {
+              "playerId": "apathy",
+              "displayName": "Apathy"
+            },
+            {
+              "playerId": "assault",
+              "displayName": "Assault"
+            },
+            {
+              "playerId": "silly",
+              "displayName": "SiLLY"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "team-kaliber",
+          "teamName": "Team Kaliber",
+          "players": [
+            {
+              "playerId": "accuracy",
+              "displayName": "Accuracy"
+            },
+            {
+              "playerId": "kenny",
+              "displayName": "Kenny"
+            },
+            {
+              "playerId": "fero",
+              "displayName": "Fero"
+            },
+            {
+              "playerId": "enable",
+              "displayName": "Enable"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "faze-clan",
+          "teamName": "FaZe Clan",
+          "players": [
+            {
+              "playerId": "zoomaa",
+              "displayName": "ZooMaa"
+            },
+            {
+              "playerId": "attach",
+              "displayName": "Attach"
+            },
+            {
+              "playerId": "replays",
+              "displayName": "Replays"
+            },
+            {
+              "playerId": "priestahh",
+              "displayName": "Priestahh"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "eunited",
+          "teamName": "eUnited",
+          "players": [
+            {
+              "playerId": "arcitys",
+              "displayName": "Arcitys"
+            },
+            {
+              "playerId": "prestinni",
+              "displayName": "Prestinni"
+            },
+            {
+              "playerId": "clayster",
+              "displayName": "Clayster"
+            },
+            {
+              "playerId": "felo",
+              "displayName": "FeLo"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "envy",
+          "teamName": "Envy",
+          "players": [
+            {
+              "playerId": "huke",
+              "displayName": "Huke"
+            },
+            {
+              "playerId": "classic",
+              "displayName": "Classic"
+            },
+            {
+              "playerId": "chino",
+              "displayName": "Chino"
+            },
+            {
+              "playerId": "decemate",
+              "displayName": "Decemate"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "luminosity-gaming",
+          "teamName": "Luminosity Gaming",
+          "players": [
+            {
+              "playerId": "slacked",
+              "displayName": "Slacked"
+            },
+            {
+              "playerId": "jkap",
+              "displayName": "JKap"
+            },
+            {
+              "playerId": "john",
+              "displayName": "John"
+            },
+            {
+              "playerId": "formal",
+              "displayName": "FormaL"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "elevate",
+          "teamName": "Elevate",
+          "players": [
+            {
+              "playerId": "spacely",
+              "displayName": "Spacely"
+            },
+            {
+              "playerId": "majormaniak",
+              "displayName": "MajorManiak"
+            },
+            {
+              "playerId": "maux",
+              "displayName": "Maux"
+            },
+            {
+              "playerId": "proto",
+              "displayName": "Proto"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "red-reserve",
+          "teamName": "Red Reserve",
+          "players": [
+            {
+              "playerId": "joee",
+              "displayName": "Joee"
+            },
+            {
+              "playerId": "rated",
+              "displayName": "Rated"
+            },
+            {
+              "playerId": "zer0",
+              "displayName": "Zer0"
+            },
+            {
+              "playerId": "skrapz",
+              "displayName": "Skrapz"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "team-vitality",
+          "teamName": "Team Vitality",
+          "players": [
+            {
+              "playerId": "chain",
+              "displayName": "Chain"
+            },
+            {
+              "playerId": "maple",
+              "displayName": "Maple"
+            },
+            {
+              "playerId": "tommey",
+              "displayName": "Tommey"
+            },
+            {
+              "playerId": "denza",
+              "displayName": "Denza"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "unilad-esports",
+          "teamName": "UNILAD Esports",
+          "players": [
+            {
+              "playerId": "wuskin",
+              "displayName": "wuskin"
+            },
+            {
+              "playerId": "seany",
+              "displayName": "Seany"
+            },
+            {
+              "playerId": "alexx",
+              "displayName": "Alexx"
+            },
+            {
+              "playerId": "zed",
+              "displayName": "Zed"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "ghost-gaming",
+          "teamName": "Ghost Gaming",
+          "players": [
+            {
+              "playerId": "lacefield",
+              "displayName": "Lacefield"
+            },
+            {
+              "playerId": "godrx",
+              "displayName": "GodRx"
+            },
+            {
+              "playerId": "pandur",
+              "displayName": "Pandur"
+            },
+            {
+              "playerId": "parasite",
+              "displayName": "Parasite"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "lightning-pandas",
+          "teamName": "Lightning Pandas",
+          "players": [
+            {
+              "playerId": "goonjar",
+              "displayName": "Goonjar"
+            },
+            {
+              "playerId": "royalty",
+              "displayName": "Royalty"
+            },
+            {
+              "playerId": "xotic",
+              "displayName": "Xotic"
+            },
+            {
+              "playerId": "theory",
+              "displayName": "Theory"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "lethal-gaming",
+          "teamName": "Lethal Gaming",
+          "players": [
+            {
+              "playerId": "teddyrecks",
+              "displayName": "TeddyRecKs"
+            },
+            {
+              "playerId": "ramby",
+              "displayName": "Ramby"
+            },
+            {
+              "playerId": "super",
+              "displayName": "Super"
+            },
+            {
+              "playerId": "zaptius",
+              "displayName": "Zaptius"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "team-sween",
+          "teamName": "Team Sween",
+          "players": [
+            {
+              "playerId": "qwiker",
+              "displayName": "QwiKeR"
+            },
+            {
+              "playerId": "peatie",
+              "displayName": "Peatie"
+            },
+            {
+              "playerId": "moose",
+              "displayName": "Moose"
+            },
+            {
+              "playerId": "weeman",
+              "displayName": "Weeman"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "complexity",
+          "teamName": "compLexity",
+          "players": [
+            {
+              "playerId": "dashy",
+              "displayName": "Dashy"
+            },
+            {
+              "playerId": "censor",
+              "displayName": "Censor"
+            },
+            {
+              "playerId": "ricky",
+              "displayName": "Ricky"
+            },
+            {
+              "playerId": "blazt",
+              "displayName": "Blazt"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "rise-nation",
+          "teamName": "Rise Nation",
+          "players": [
+            {
+              "playerId": "loony",
+              "displayName": "Loony"
+            },
+            {
+              "playerId": "tjhaly",
+              "displayName": "TJHaLy"
+            },
+            {
+              "playerId": "gunless",
+              "displayName": "Gunless"
+            },
+            {
+              "playerId": "slasher",
+              "displayName": "SlasheR"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "team-heretics",
+          "teamName": "Team Heretics",
+          "players": [
+            {
+              "playerId": "lucky",
+              "displayName": "Lucky"
+            },
+            {
+              "playerId": "methodz-es",
+              "displayName": "MethodZ"
+            },
+            {
+              "playerId": "sukry",
+              "displayName": "Sukry"
+            },
+            {
+              "playerId": "jurnii",
+              "displayName": "JurNii"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "brash-esports",
+          "teamName": "Brash eSports",
+          "players": [
+            {
+              "playerId": "benji",
+              "displayName": "Benji"
+            },
+            {
+              "playerId": "dreal",
+              "displayName": "DREAL"
+            },
+            {
+              "playerId": "nevo",
+              "displayName": "Nevo"
+            },
+            {
+              "playerId": "dylan",
+              "displayName": "Dylan"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "mindfreak",
+          "teamName": "Mindfreak",
+          "players": [
+            {
+              "playerId": "buzzo",
+              "displayName": "BuZZO"
+            },
+            {
+              "playerId": "shockz",
+              "displayName": "Shockz"
+            },
+            {
+              "playerId": "fighta",
+              "displayName": "Fighta"
+            },
+            {
+              "playerId": "denz",
+              "displayName": "Denz"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "splyce",
+          "teamName": "Splyce",
+          "players": [
+            {
+              "playerId": "bance",
+              "displayName": "Bance"
+            },
+            {
+              "playerId": "jurd",
+              "displayName": "Jurd"
+            },
+            {
+              "playerId": "madcat",
+              "displayName": "MadCat"
+            },
+            {
+              "playerId": "joshh",
+              "displayName": "Joshh"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "enigma6-group",
+          "teamName": "Enigma6 Group",
+          "players": [
+            {
+              "playerId": "general",
+              "displayName": "General"
+            },
+            {
+              "playerId": "sender",
+              "displayName": "Sender"
+            },
+            {
+              "playerId": "diabolic",
+              "displayName": "Diabolic"
+            },
+            {
+              "playerId": "abezy",
+              "displayName": "aBeZy"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "mentality-esports",
+          "teamName": "Mentality Esports",
+          "players": [
+            {
+              "playerId": "demise",
+              "displayName": "Demise"
+            },
+            {
+              "playerId": "hate",
+              "displayName": "Hate"
+            },
+            {
+              "playerId": "tisch",
+              "displayName": "Tisch"
+            },
+            {
+              "playerId": "grvty",
+              "displayName": "GRVTY"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "echo-fox",
+          "teamName": "Echo Fox",
+          "players": [
+            {
+              "playerId": "faccento",
+              "displayName": "Faccento"
+            },
+            {
+              "playerId": "saints",
+              "displayName": "Saints"
+            },
+            {
+              "playerId": "aqua",
+              "displayName": "Aqua"
+            },
+            {
+              "playerId": "temp",
+              "displayName": "Temp"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "optic-gaming",
+          "teamName": "OpTic Gaming",
+          "players": [
+            {
+              "playerId": "scump",
+              "displayName": "Scump"
+            },
+            {
+              "playerId": "crimsix",
+              "displayName": "Crimsix"
+            },
+            {
+              "playerId": "octane",
+              "displayName": "Octane"
+            },
+            {
+              "playerId": "methodz-na",
+              "displayName": "Methodz"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "epsilon-esports",
+          "teamName": "Epsilon Esports",
+          "players": [
+            {
+              "playerId": "dqvee",
+              "displayName": "Dqvee"
+            },
+            {
+              "playerId": "vortex-uk",
+              "displayName": "Vortex"
+            },
+            {
+              "playerId": "hawqeh",
+              "displayName": "Hawqeh"
+            },
+            {
+              "playerId": "reedy",
+              "displayName": "Reedy"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "tainted-minds",
+          "teamName": "Tainted Minds",
+          "players": [
+            {
+              "playerId": "damage",
+              "displayName": "Damage"
+            },
+            {
+              "playerId": "nimble",
+              "displayName": "Nimble"
+            },
+            {
+              "playerId": "swifty",
+              "displayName": "Swifty"
+            },
+            {
+              "playerId": "swiftaz0r",
+              "displayName": "Swiftazor"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "zone",
+          "teamName": "Zone",
+          "players": [
+            {
+              "playerId": "bidz",
+              "displayName": "Bidz"
+            },
+            {
+              "playerId": "cammy",
+              "displayName": "Cammy"
+            },
+            {
+              "playerId": "defrag",
+              "displayName": "Defrag"
+            },
+            {
+              "playerId": "enduraaaa",
+              "displayName": "enduraAAA"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "ezg-esports",
+          "teamName": "EZG eSports",
+          "players": [
+            {
+              "playerId": "parzelion",
+              "displayName": "Parzelion"
+            },
+            {
+              "playerId": "atura",
+              "displayName": "Atura"
+            },
+            {
+              "playerId": "apox",
+              "displayName": "Apox"
+            },
+            {
+              "playerId": "robbieb3319",
+              "displayName": "RobbieB3319"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "morituri-esports",
+          "teamName": "Morituri eSports",
+          "players": [
+            {
+              "playerId": "nova",
+              "displayName": "Nova"
+            },
+            {
+              "playerId": "mayhem",
+              "displayName": "Mayhem"
+            },
+            {
+              "playerId": "phantomz",
+              "displayName": "Phantomz"
+            },
+            {
+              "playerId": "spoof",
+              "displayName": "Spoof"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "seasonId": "black-ops-4",
+      "startYear": 2018,
+      "endYear": 2019,
+      "rosterSize": 5,
+      "gameTitle": "Black Ops 4",
+      "teams": [
+        {
+          "historicalTeamId": "eunited",
+          "teamName": "eUnited",
+          "players": [
+            {
+              "playerId": "arcitys",
+              "displayName": "Arcitys"
+            },
+            {
+              "playerId": "prestinni",
+              "displayName": "Prestinni"
+            },
+            {
+              "playerId": "clayster",
+              "displayName": "Clayster"
+            },
+            {
+              "playerId": "abezy",
+              "displayName": "aBeZy"
+            },
+            {
+              "playerId": "simp",
+              "displayName": "Simp"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "100-thieves",
+          "teamName": "100 Thieves",
+          "players": [
+            {
+              "playerId": "kenny",
+              "displayName": "Kenny"
+            },
+            {
+              "playerId": "octane",
+              "displayName": "Octane"
+            },
+            {
+              "playerId": "slasher",
+              "displayName": "SlasheR"
+            },
+            {
+              "playerId": "enable",
+              "displayName": "Enable"
+            },
+            {
+              "playerId": "priestahh",
+              "displayName": "Priestahh"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "optic-gaming",
+          "teamName": "OpTic Gaming",
+          "players": [
+            {
+              "playerId": "scump",
+              "displayName": "Scump"
+            },
+            {
+              "playerId": "crimsix",
+              "displayName": "Crimsix"
+            },
+            {
+              "playerId": "karma",
+              "displayName": "Karma"
+            },
+            {
+              "playerId": "dashy",
+              "displayName": "Dashy"
+            },
+            {
+              "playerId": "tjhaly",
+              "displayName": "TJHaLy"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "enigma6-group",
+          "teamName": "Enigma6 Group",
+          "players": [
+            {
+              "playerId": "general",
+              "displayName": "General"
+            },
+            {
+              "playerId": "kismet",
+              "displayName": "KiSMET"
+            },
+            {
+              "playerId": "godrx",
+              "displayName": "GodRx"
+            },
+            {
+              "playerId": "breszy",
+              "displayName": "Breszy"
+            },
+            {
+              "playerId": "mayhem",
+              "displayName": "Mayhem"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "units",
+          "teamName": "Units",
+          "players": [
+            {
+              "playerId": "joee",
+              "displayName": "Joee"
+            },
+            {
+              "playerId": "rated",
+              "displayName": "Rated"
+            },
+            {
+              "playerId": "nolson",
+              "displayName": "Nolson"
+            },
+            {
+              "playerId": "weeman",
+              "displayName": "Weeman"
+            },
+            {
+              "playerId": "cammy",
+              "displayName": "Cammy"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "team-reciprocity",
+          "teamName": "Team Reciprocity",
+          "players": [
+            {
+              "playerId": "wuskin",
+              "displayName": "wuskin"
+            },
+            {
+              "playerId": "zed",
+              "displayName": "Zed"
+            },
+            {
+              "playerId": "denz",
+              "displayName": "Denz"
+            },
+            {
+              "playerId": "dylan",
+              "displayName": "Dylan"
+            },
+            {
+              "playerId": "alexx",
+              "displayName": "Alexx"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "luminosity-gaming",
+          "teamName": "Luminosity Gaming",
+          "players": [
+            {
+              "playerId": "slacked",
+              "displayName": "Slacked"
+            },
+            {
+              "playerId": "john",
+              "displayName": "John"
+            },
+            {
+              "playerId": "formal",
+              "displayName": "FormaL"
+            },
+            {
+              "playerId": "brack",
+              "displayName": "Brack"
+            },
+            {
+              "playerId": "skyz",
+              "displayName": "Skyz"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "evil-geniuses",
+          "teamName": "Evil Geniuses",
+          "players": [
+            {
+              "playerId": "xotic",
+              "displayName": "Xotic"
+            },
+            {
+              "playerId": "attach",
+              "displayName": "Attach"
+            },
+            {
+              "playerId": "apathy",
+              "displayName": "Apathy"
+            },
+            {
+              "playerId": "jkap",
+              "displayName": "JKap"
+            },
+            {
+              "playerId": "accuracy",
+              "displayName": "Accuracy"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "team-war",
+          "teamName": "Team WaR",
+          "players": [
+            {
+              "playerId": "joshh",
+              "displayName": "Joshh"
+            },
+            {
+              "playerId": "dqvee",
+              "displayName": "Dqvee"
+            },
+            {
+              "playerId": "defrag",
+              "displayName": "Defrag"
+            },
+            {
+              "playerId": "peatie",
+              "displayName": "Peatie"
+            },
+            {
+              "playerId": "vortex",
+              "displayName": "Vortex"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "team-singularity",
+          "teamName": "Team Singularity",
+          "players": [
+            {
+              "playerId": "detain",
+              "displayName": "Detain"
+            },
+            {
+              "playerId": "insight",
+              "displayName": "Insight"
+            },
+            {
+              "playerId": "bidz",
+              "displayName": "Bidz"
+            },
+            {
+              "playerId": "keza",
+              "displayName": "Keza"
+            },
+            {
+              "playerId": "cleanx",
+              "displayName": "CleanX"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "sicario-gaming",
+          "teamName": "Sicario Gaming",
+          "players": [
+            {
+              "playerId": "tommey",
+              "displayName": "Tommey"
+            },
+            {
+              "playerId": "chino",
+              "displayName": "Chino"
+            },
+            {
+              "playerId": "proto",
+              "displayName": "Proto"
+            },
+            {
+              "playerId": "exceed",
+              "displayName": "Exceed"
+            },
+            {
+              "playerId": "linney",
+              "displayName": "Linney"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "elevate",
+          "teamName": "Elevate",
+          "players": [
+            {
+              "playerId": "profeezy",
+              "displayName": "ProFeeZy"
+            },
+            {
+              "playerId": "wailers",
+              "displayName": "Wailers"
+            },
+            {
+              "playerId": "mruiz",
+              "displayName": "MRuiz"
+            },
+            {
+              "playerId": "believe",
+              "displayName": "Believe"
+            },
+            {
+              "playerId": "lacefield",
+              "displayName": "Lacefield"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "splyce",
+          "teamName": "Splyce",
+          "players": [
+            {
+              "playerId": "jurd",
+              "displayName": "Jurd"
+            },
+            {
+              "playerId": "loony",
+              "displayName": "Loony"
+            },
+            {
+              "playerId": "aqua",
+              "displayName": "Aqua"
+            },
+            {
+              "playerId": "temp",
+              "displayName": "Temp"
+            },
+            {
+              "playerId": "huke",
+              "displayName": "Huke"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "envy",
+          "teamName": "Envy",
+          "players": [
+            {
+              "playerId": "aches",
+              "displayName": "ACHES"
+            },
+            {
+              "playerId": "silly",
+              "displayName": "SiLLY"
+            },
+            {
+              "playerId": "decemate",
+              "displayName": "Decemate"
+            },
+            {
+              "playerId": "gunless",
+              "displayName": "Gunless"
+            },
+            {
+              "playerId": "assault",
+              "displayName": "Assault"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "faze-clan",
+          "teamName": "FaZe Clan",
+          "players": [
+            {
+              "playerId": "zoomaa",
+              "displayName": "ZooMaa"
+            },
+            {
+              "playerId": "cellium",
+              "displayName": "Cellium"
+            },
+            {
+              "playerId": "asim",
+              "displayName": "Asim"
+            },
+            {
+              "playerId": "skrapz",
+              "displayName": "Skrapz"
+            },
+            {
+              "playerId": "zer0",
+              "displayName": "Zer0"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "team-heretics",
+          "teamName": "Team Heretics",
+          "players": [
+            {
+              "playerId": "lucky",
+              "displayName": "Lucky"
+            },
+            {
+              "playerId": "jurnii",
+              "displayName": "JurNii"
+            },
+            {
+              "playerId": "methodz-es",
+              "displayName": "MethodZ"
+            },
+            {
+              "playerId": "mettalzz",
+              "displayName": "MeTTalZz"
+            },
+            {
+              "playerId": "wartex",
+              "displayName": "Wartex"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "rebel-esports",
+          "teamName": "Rebel Esports",
+          "players": [
+            {
+              "playerId": "glory",
+              "displayName": "Glory"
+            },
+            {
+              "playerId": "gunsii",
+              "displayName": "Gunsii"
+            },
+            {
+              "playerId": "2real",
+              "displayName": "2ReaL"
+            },
+            {
+              "playerId": "klink",
+              "displayName": "KlinK"
+            },
+            {
+              "playerId": "humanjesus",
+              "displayName": "HumanJesus"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "fuego-gaming",
+          "teamName": "Fuego Gaming",
+          "players": [
+            {
+              "playerId": "bbconor",
+              "displayName": "BBConor"
+            },
+            {
+              "playerId": "chaaxter",
+              "displayName": "Chaaxter"
+            },
+            {
+              "playerId": "hawqeh",
+              "displayName": "Hawqeh"
+            },
+            {
+              "playerId": "madcat",
+              "displayName": "MadCat"
+            },
+            {
+              "playerId": "harry",
+              "displayName": "Harry"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "mazer-gaming",
+          "teamName": "Mazer Gaming",
+          "players": [
+            {
+              "playerId": "mosh",
+              "displayName": "Mosh"
+            },
+            {
+              "playerId": "apox",
+              "displayName": "Apox"
+            },
+            {
+              "playerId": "spacely",
+              "displayName": "Spacely"
+            },
+            {
+              "playerId": "parzelion",
+              "displayName": "Parzelion"
+            },
+            {
+              "playerId": "jetli",
+              "displayName": "JetLi"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "sage-esports",
+          "teamName": "Sage eSports",
+          "players": [
+            {
+              "playerId": "cells",
+              "displayName": "Cells"
+            },
+            {
+              "playerId": "grvty",
+              "displayName": "GRVTY"
+            },
+            {
+              "playerId": "hollow",
+              "displayName": "Hollow"
+            },
+            {
+              "playerId": "vivid",
+              "displayName": "Vivid"
+            },
+            {
+              "playerId": "wrecks",
+              "displayName": "Wrecks"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "uyu",
+          "teamName": "UYU",
+          "players": [
+            {
+              "playerId": "methodz-na",
+              "displayName": "Methodz"
+            },
+            {
+              "playerId": "blazt",
+              "displayName": "Blazt"
+            },
+            {
+              "playerId": "classic",
+              "displayName": "Classic"
+            },
+            {
+              "playerId": "phantomz",
+              "displayName": "Phantomz"
+            },
+            {
+              "playerId": "saints",
+              "displayName": "Saints"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "midnight-esports",
+          "teamName": "Midnight Esports",
+          "players": [
+            {
+              "playerId": "llamagod",
+              "displayName": "LlamaGod"
+            },
+            {
+              "playerId": "parasite",
+              "displayName": "Parasite"
+            },
+            {
+              "playerId": "frosty",
+              "displayName": "Frosty"
+            },
+            {
+              "playerId": "royalty",
+              "displayName": "Royalty"
+            },
+            {
+              "playerId": "zaptius",
+              "displayName": "Zaptius"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "trainhard-esport",
+          "teamName": "TrainHard Esport",
+          "players": [
+            {
+              "playerId": "creza",
+              "displayName": "Creza"
+            },
+            {
+              "playerId": "natshay",
+              "displayName": "Natshay"
+            },
+            {
+              "playerId": "rizk",
+              "displayName": "rizK"
+            },
+            {
+              "playerId": "yako",
+              "displayName": "YaKo"
+            },
+            {
+              "playerId": "zeek",
+              "displayName": "ZeeK"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "aspire-esports",
+          "teamName": "Aspire Esports",
+          "players": [
+            {
+              "playerId": "fa5tballa",
+              "displayName": "FA5TBALLA"
+            },
+            {
+              "playerId": "robbieb3319",
+              "displayName": "RobbieB3319"
+            },
+            {
+              "playerId": "turnup2ez",
+              "displayName": "TurnUp2eZ"
+            },
+            {
+              "playerId": "tisch",
+              "displayName": "Tisch"
+            },
+            {
+              "playerId": "super",
+              "displayName": "Super"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "celtic-fc-esports",
+          "teamName": "Celtic FC Esports",
+          "players": [
+            {
+              "playerId": "qwiker",
+              "displayName": "QwiKeR"
+            },
+            {
+              "playerId": "seany",
+              "displayName": "Seany"
+            },
+            {
+              "playerId": "bance",
+              "displayName": "Bance"
+            },
+            {
+              "playerId": "nastie",
+              "displayName": "Nastie"
+            },
+            {
+              "playerId": "chain",
+              "displayName": "Chain"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "gen-g",
+          "teamName": "Gen.G",
+          "players": [
+            {
+              "playerId": "majormaniak",
+              "displayName": "MajorManiak"
+            },
+            {
+              "playerId": "nagafen",
+              "displayName": "Nagafen"
+            },
+            {
+              "playerId": "havok",
+              "displayName": "Havok"
+            },
+            {
+              "playerId": "maux",
+              "displayName": "Maux"
+            },
+            {
+              "playerId": "envoy",
+              "displayName": "Envoy"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "animosity-esports",
+          "teamName": "Animosity eSports",
+          "players": [
+            {
+              "playerId": "cookie",
+              "displayName": "Cookie"
+            },
+            {
+              "playerId": "phantom",
+              "displayName": "Phantom"
+            },
+            {
+              "playerId": "piero",
+              "displayName": "Piero"
+            },
+            {
+              "playerId": "sharko",
+              "displayName": "Sharko"
+            },
+            {
+              "playerId": "pazy",
+              "displayName": "Pazy"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "lgnd-status",
+          "teamName": "LGND Status",
+          "players": [
+            {
+              "playerId": "foncho",
+              "displayName": "Foncho"
+            },
+            {
+              "playerId": "ryza",
+              "displayName": "Ryza"
+            },
+            {
+              "playerId": "phenom",
+              "displayName": "Phenom"
+            },
+            {
+              "playerId": "pure",
+              "displayName": "Pure"
+            },
+            {
+              "playerId": "efatal",
+              "displayName": "EFatal"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "seasonId": "modern-warfare-2019",
+      "startYear": 2019,
+      "endYear": 2020,
+      "rosterSize": 5,
+      "gameTitle": "MW",
+      "teams": [
+        {
+          "historicalTeamId": "dal-empire",
+          "teamName": "DAL Empire",
+          "players": [
+            {
+              "playerId": "clayster",
+              "displayName": "Clayster"
+            },
+            {
+              "playerId": "shotzzy",
+              "displayName": "Shotzzy"
+            },
+            {
+              "playerId": "huke",
+              "displayName": "Huke"
+            },
+            {
+              "playerId": "illey",
+              "displayName": "iLLEy"
+            },
+            {
+              "playerId": "crimsix",
+              "displayName": "C6"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "atl-faze",
+          "teamName": "ATL FaZe",
+          "players": [
+            {
+              "playerId": "abezy",
+              "displayName": "aBeZy"
+            },
+            {
+              "playerId": "simp",
+              "displayName": "Simp"
+            },
+            {
+              "playerId": "cellium",
+              "displayName": "Cellium"
+            },
+            {
+              "playerId": "majormaniak",
+              "displayName": "MajorManiak"
+            },
+            {
+              "playerId": "priestahh",
+              "displayName": "Priestahh"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "chi-huntsmen",
+          "teamName": "CHI Huntsmen",
+          "players": [
+            {
+              "playerId": "scump",
+              "displayName": "Scump"
+            },
+            {
+              "playerId": "formal",
+              "displayName": "FormaL"
+            },
+            {
+              "playerId": "arcitys",
+              "displayName": "Arcitys"
+            },
+            {
+              "playerId": "envoy",
+              "displayName": "Envoy"
+            },
+            {
+              "playerId": "prestinni",
+              "displayName": "Prestinni"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "ldn-royal-ravens",
+          "teamName": "LDN Royal Ravens",
+          "players": [
+            {
+              "playerId": "wuskin",
+              "displayName": "wuskin"
+            },
+            {
+              "playerId": "skrapz",
+              "displayName": "Skrapz"
+            },
+            {
+              "playerId": "dylan",
+              "displayName": "Dylan"
+            },
+            {
+              "playerId": "seany",
+              "displayName": "Seany"
+            },
+            {
+              "playerId": "zer0",
+              "displayName": "Zer0"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "optic-gaming-la",
+          "teamName": "OpTic Gaming LA",
+          "players": [
+            {
+              "playerId": "tjhaly",
+              "displayName": "TJHaLy"
+            },
+            {
+              "playerId": "kenny",
+              "displayName": "Kuavo"
+            },
+            {
+              "playerId": "slasher",
+              "displayName": "SlasheR"
+            },
+            {
+              "playerId": "hollow",
+              "displayName": "Hollow"
+            },
+            {
+              "playerId": "drazah",
+              "displayName": "Drazah"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "tor-ultra",
+          "teamName": "TOR Ultra",
+          "players": [
+            {
+              "playerId": "methodz-na",
+              "displayName": "Methodz"
+            },
+            {
+              "playerId": "cammy",
+              "displayName": "Cammy"
+            },
+            {
+              "playerId": "bance",
+              "displayName": "Bance"
+            },
+            {
+              "playerId": "cleanx",
+              "displayName": "CleanX"
+            },
+            {
+              "playerId": "classic",
+              "displayName": "Classic"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "fla-mutineers",
+          "teamName": "FLA Mutineers",
+          "players": [
+            {
+              "playerId": "havok",
+              "displayName": "Havok"
+            },
+            {
+              "playerId": "skyz",
+              "displayName": "Skyz"
+            },
+            {
+              "playerId": "frosty",
+              "displayName": "Frosty"
+            },
+            {
+              "playerId": "fero",
+              "displayName": "Fero"
+            },
+            {
+              "playerId": "owakening",
+              "displayName": "Owakening"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "ny-subliners",
+          "teamName": "NY Subliners",
+          "players": [
+            {
+              "playerId": "zoomaa",
+              "displayName": "ZooMaa"
+            },
+            {
+              "playerId": "temp",
+              "displayName": "Temp"
+            },
+            {
+              "playerId": "accuracy",
+              "displayName": "Accuracy"
+            },
+            {
+              "playerId": "attach",
+              "displayName": "Attach"
+            },
+            {
+              "playerId": "mack",
+              "displayName": "Mack"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "min-rokkr",
+          "teamName": "MIN RØKKR",
+          "players": [
+            {
+              "playerId": "silly",
+              "displayName": "SiLLY"
+            },
+            {
+              "playerId": "assault",
+              "displayName": "Assault"
+            },
+            {
+              "playerId": "alexx",
+              "displayName": "Alexx"
+            },
+            {
+              "playerId": "asim",
+              "displayName": "Asim"
+            },
+            {
+              "playerId": "exceed",
+              "displayName": "Exceed"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "par-legion",
+          "teamName": "PAR Legion",
+          "players": [
+            {
+              "playerId": "louqa",
+              "displayName": "Louqa"
+            },
+            {
+              "playerId": "shockz",
+              "displayName": "Shockz"
+            },
+            {
+              "playerId": "denz",
+              "displayName": "Denz"
+            },
+            {
+              "playerId": "kismet",
+              "displayName": "KiSMET"
+            },
+            {
+              "playerId": "zed",
+              "displayName": "Zed"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "la-guerrillas",
+          "teamName": "LA Guerrillas",
+          "players": [
+            {
+              "playerId": "aqua",
+              "displayName": "AquA"
+            },
+            {
+              "playerId": "decemate",
+              "displayName": "Decemate"
+            },
+            {
+              "playerId": "vivid",
+              "displayName": "Vivid"
+            },
+            {
+              "playerId": "blazt",
+              "displayName": "Blazt"
+            },
+            {
+              "playerId": "saints",
+              "displayName": "Saints"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "sea-surge",
+          "teamName": "SEA Surge",
+          "players": [
+            {
+              "playerId": "octane",
+              "displayName": "Octane"
+            },
+            {
+              "playerId": "slacked",
+              "displayName": "Slacked"
+            },
+            {
+              "playerId": "apathy",
+              "displayName": "Apathy"
+            },
+            {
+              "playerId": "pandur",
+              "displayName": "Pandur"
+            },
+            {
+              "playerId": "proto",
+              "displayName": "Proto"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "triumph",
+          "teamName": "Triumph",
+          "players": [
+            {
+              "playerId": "nagafen",
+              "displayName": "Nagafen"
+            },
+            {
+              "playerId": "royalty",
+              "displayName": "Royalty"
+            },
+            {
+              "playerId": "felo",
+              "displayName": "FeLo"
+            },
+            {
+              "playerId": "standy",
+              "displayName": "Standy"
+            },
+            {
+              "playerId": "diamondcon",
+              "displayName": "Diamondcon"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "carnage-gaming",
+          "teamName": "Carnage Gaming",
+          "players": [
+            {
+              "playerId": "pure",
+              "displayName": "Pure"
+            },
+            {
+              "playerId": "ryza",
+              "displayName": "Ryza"
+            },
+            {
+              "playerId": "nightmare",
+              "displayName": "Nightmare"
+            },
+            {
+              "playerId": "gunsiii",
+              "displayName": "Gunsiii"
+            },
+            {
+              "playerId": "hunt",
+              "displayName": "Hunt"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "five-star",
+          "teamName": "Five Star",
+          "players": [
+            {
+              "playerId": "parasite",
+              "displayName": "Parasite"
+            },
+            {
+              "playerId": "noysii",
+              "displayName": "Noysii"
+            },
+            {
+              "playerId": "fire",
+              "displayName": "Fire"
+            },
+            {
+              "playerId": "xotic",
+              "displayName": "Xotic"
+            },
+            {
+              "playerId": "goonjar",
+              "displayName": "Goonjar"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "af-academy",
+          "teamName": "AF Academy",
+          "players": [
+            {
+              "playerId": "jurnii",
+              "displayName": "JurNii"
+            },
+            {
+              "playerId": "grvty",
+              "displayName": "GRVTY"
+            },
+            {
+              "playerId": "jimbo",
+              "displayName": "Jimbo"
+            },
+            {
+              "playerId": "venom",
+              "displayName": "Venom"
+            },
+            {
+              "playerId": "sibilants",
+              "displayName": "Sibilants"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "orlando-reapers",
+          "teamName": "Orlando Reapers",
+          "players": [
+            {
+              "playerId": "zinx",
+              "displayName": "Zinx"
+            },
+            {
+              "playerId": "pentagrxm",
+              "displayName": "Pentagrxm"
+            },
+            {
+              "playerId": "willett",
+              "displayName": "Willett"
+            },
+            {
+              "playerId": "stamino",
+              "displayName": "Stamino"
+            },
+            {
+              "playerId": "deelo",
+              "displayName": "Deelo"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "westr",
+          "teamName": "WestR",
+          "players": [
+            {
+              "playerId": "spoof",
+              "displayName": "Spoof"
+            },
+            {
+              "playerId": "fame",
+              "displayName": "Fame"
+            },
+            {
+              "playerId": "glofrosty",
+              "displayName": "GloFrosty"
+            },
+            {
+              "playerId": "paulehx",
+              "displayName": "PaulEhx"
+            },
+            {
+              "playerId": "zaptius",
+              "displayName": "Zaptius"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "uyu",
+          "teamName": "UYU",
+          "players": [
+            {
+              "playerId": "cells",
+              "displayName": "Cells"
+            },
+            {
+              "playerId": "charullz",
+              "displayName": "Charullz"
+            },
+            {
+              "playerId": "jintroid",
+              "displayName": "Jintroid"
+            },
+            {
+              "playerId": "davpadie",
+              "displayName": "Davpadie"
+            },
+            {
+              "playerId": "wrecks",
+              "displayName": "Wrecks"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "forever-unlucky",
+          "teamName": "Forever Unlucky",
+          "players": [
+            {
+              "playerId": "super",
+              "displayName": "Super"
+            },
+            {
+              "playerId": "zyyral",
+              "displayName": "Zyyral"
+            },
+            {
+              "playerId": "infamous",
+              "displayName": "Infamous"
+            },
+            {
+              "playerId": "prolute",
+              "displayName": "Prolute"
+            },
+            {
+              "playerId": "spart",
+              "displayName": "Spart"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "team-war",
+          "teamName": "Team War",
+          "players": [
+            {
+              "playerId": "dqvee",
+              "displayName": "Dqvee"
+            },
+            {
+              "playerId": "vortex",
+              "displayName": "Vortex"
+            },
+            {
+              "playerId": "denza",
+              "displayName": "Denza"
+            },
+            {
+              "playerId": "harry",
+              "displayName": "Harry"
+            },
+            {
+              "playerId": "afro",
+              "displayName": "Afro"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "team-singularity",
+          "teamName": "Team Singularity",
+          "players": [
+            {
+              "playerId": "detain",
+              "displayName": "Detain"
+            },
+            {
+              "playerId": "insight",
+              "displayName": "Insight"
+            },
+            {
+              "playerId": "bidz",
+              "displayName": "Bidz"
+            },
+            {
+              "playerId": "gismo",
+              "displayName": "Gismo"
+            },
+            {
+              "playerId": "chain",
+              "displayName": "Chain"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "connect-5",
+          "teamName": "Connect 5",
+          "players": [
+            {
+              "playerId": "madcat",
+              "displayName": "MadCat"
+            },
+            {
+              "playerId": "weeman",
+              "displayName": "Weeman"
+            },
+            {
+              "playerId": "nolson",
+              "displayName": "Nolson"
+            },
+            {
+              "playerId": "nastie",
+              "displayName": "Nastie"
+            },
+            {
+              "playerId": "linney",
+              "displayName": "Linney"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "team-moon",
+          "teamName": "Team Moon",
+          "players": [
+            {
+              "playerId": "moose",
+              "displayName": "Moose"
+            },
+            {
+              "playerId": "felon",
+              "displayName": "Felon"
+            },
+            {
+              "playerId": "genesis",
+              "displayName": "Genesis"
+            },
+            {
+              "playerId": "henry",
+              "displayName": "Henry"
+            },
+            {
+              "playerId": "keza",
+              "displayName": "Keza"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "team-bds",
+          "teamName": "Team BDS",
+          "players": [
+            {
+              "playerId": "natshay",
+              "displayName": "Natshay"
+            },
+            {
+              "playerId": "zaaq",
+              "displayName": "ZaaQ"
+            },
+            {
+              "playerId": "zeek",
+              "displayName": "ZeeK"
+            },
+            {
+              "playerId": "yuuzl",
+              "displayName": "YuuzL"
+            },
+            {
+              "playerId": "depaa",
+              "displayName": "Depaa"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "hyperboom",
+          "teamName": "HyperBoom",
+          "players": [
+            {
+              "playerId": "disarray",
+              "displayName": "Disarray"
+            },
+            {
+              "playerId": "bbconor",
+              "displayName": "BBConor"
+            },
+            {
+              "playerId": "hicksy",
+              "displayName": "Hicksy"
+            },
+            {
+              "playerId": "cxllum",
+              "displayName": "Cxllum"
+            },
+            {
+              "playerId": "maple",
+              "displayName": "Maple"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "trainhard-esport",
+          "teamName": "TrainHard Esport",
+          "players": [
+            {
+              "playerId": "wailers",
+              "displayName": "Wailers"
+            },
+            {
+              "playerId": "hydra",
+              "displayName": "HyDra"
+            },
+            {
+              "playerId": "breszy",
+              "displayName": "Breszy"
+            },
+            {
+              "playerId": "peatie",
+              "displayName": "Peatie"
+            },
+            {
+              "playerId": "defrag",
+              "displayName": "Defrag"
+            }
+          ]
+        },
+        {
+          "historicalTeamId": "cowana-gaming",
+          "teamName": "cowana Gaming",
+          "players": [
+            {
+              "playerId": "fusionz",
+              "displayName": "Fusionz"
+            },
+            {
+              "playerId": "grad",
+              "displayName": "Grad"
+            },
+            {
+              "playerId": "hawqeh",
+              "displayName": "Hawqeh"
+            },
+            {
+              "playerId": "iviano",
+              "displayName": "Iviano"
+            },
+            {
+              "playerId": "lewtee",
+              "displayName": "LewTee"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "validationWarnings": [
+    {
+      "type": "DUPLICATE_PLAYER_IN_SEASON_TEMPLATE",
+      "seasonId": "ghosts",
+      "playerId": "blackk",
+      "claims": [
+        {
+          "displayName": "Blackk",
+          "teamName": "KILLERFISH eSport"
+        },
+        {
+          "displayName": "Blackk",
+          "teamName": "Real AllStars"
+        }
+      ],
+      "recommendedAction": "Confirm whether this is one player appearing on multiple roster snapshots or separate players sharing a gamertag. Give separate playerIds if they are different."
+    }
+  ],
+  "identityCorrections": [
+    {
+      "gamertag": "Vortex",
+      "resolution": [
+        {
+          "playerId": "vortex-uk",
+          "country": "England",
+          "teams": [
+            "FAB Games eSports",
+            "Epsilon Esports"
+          ]
+        },
+        {
+          "playerId": "vortex-fr",
+          "country": "France",
+          "teams": [
+            "Supremacy"
+          ]
+        }
+      ]
+    }
+  ]
+}
