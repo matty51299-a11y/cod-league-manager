@@ -55,6 +55,45 @@ Tests: `npm run test:dynasty` (unit), `npm run test:dynasty-sim` (13-season
 long-run), `npm run test:full-season` (modern regression). All run through
 `scripts/register-assets.mjs` (node asset loader for image imports).
 
+## Historical Open-Circuit Ecosystem (Ghosts-era)
+
+Ghosts-era historical seasons use a data-driven OPEN CIRCUIT instead of the
+modern four-Major + Challengers structure. The ecosystem is chosen per COD title
+by a competition profile, so modern Major/CDL logic stays available for genuinely
+modern seasons but is disabled for the open era.
+
+Key modules:
+- `src/data/cod_dynasty_rosters.corrected.json` — corrected historical roster DB
+  (stable `playerId` identity; two distinct "Vortex" and two "MethodZ" players;
+  preserved Blackk duplicate warning). Accessed via `src/data/historicalRosterDb.js`.
+- `src/utils/stableIdentity.js` — identity is the permanent playerId, never the
+  gamertag; lets same-name players coexist.
+- `src/engine/seasonRosterEngine.js` — historical roster reconciliation. Protects
+  the user's roster (never reset/released); full user roster → historical signing
+  goes to free agency; AI teams blocked by user-owned players sign replacements;
+  5v5→4v4 flags non-compliance instead of auto-cutting. Idempotent
+  (`processedSeasonIds`). Adapted from the supplied `.ts` reference (kept in
+  `src/engine/reference/`).
+- `src/data/competitionProfiles.js` — `SeasonCompetitionProfile` per era, Pro
+  Point tables, the full Ghosts event catalogue (28 events) and 2K/5K cup config.
+- `src/engine/proPoints.js` — player-level seasonal Pro Points
+  (`playerSeasonProPoints[seasonId][playerId]`); points move with transfers;
+  awarded once per tournament; team rank = sum of the locked eligible roster.
+- `src/engine/openCircuit/{brackets,pools,championship,calendar}.js` — double/
+  single elimination with byes, round-robin pools with tiebreakers, dynamic
+  championship groups (28→7 groups→16-team DE), deterministic calendar + cups.
+- `src/engine/openCircuitEngine.js` — builds the circuit world from the DB + the
+  user's protected roster, runs the whole season (open bracket → pools → DE
+  playoffs, championship groups, leagues, cups), awarding points/prize once.
+- `src/engine/openCircuitCareer.js` — wires it into the career flow (new game,
+  load, season transition); idempotent via an era+season build key; gates
+  Challengers off; emits roster-change inbox stories.
+- UI: `src/components/Circuit.jsx` (Pro Points table + tournament hub). The
+  Sidebar hides Challengers and shows a Circuit tab for open-circuit seasons.
+
+Tests: `npm run test:open-circuit` (22 checks covering all 20 required
+validations + identity cases).
+
 ## Contracts System
 - Players have `contractYears`
 - Decrements once per offseason

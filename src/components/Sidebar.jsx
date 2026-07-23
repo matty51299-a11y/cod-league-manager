@@ -5,6 +5,7 @@ import { useGame } from "../store/gameStore.jsx";
 import { getTeamUiTheme } from "../utils/teamTheme.js";
 import { getAcceptedOutgoingTermsOffers } from "../engine/transferEngine.js";
 import { resolveUserTeamMeta, isChallengerMode } from "../utils/userTeam.js";
+import { stateUsesOpenCircuit } from "../engine/openCircuitCareer.js";
 import { getActionRequiredMoraleEvents } from "../engine/moraleEngine.js";
 import { getActionRequiredCount, getUnreadCount } from "../engine/eventCentreEngine.js";
 
@@ -20,7 +21,8 @@ const NAV_ITEMS = [
   { id: "fa",        icon: "$",  label: "Free Agency", offseasonOnly: true },
   { id: "scouting",  icon: "◎",  label: "Scouting" },
   { id: "transfers", icon: "⇄",  label: "Transfers" },
-  { id: "prospects", icon: "◉",  label: "Challengers" },
+  { id: "circuit",   icon: "◆",  label: "Circuit", openCircuitOnly: true },
+  { id: "prospects", icon: "◉",  label: "Challengers", hideInOpenCircuit: true },
   { id: "devreport", icon: "⬡",  label: "Dev Report" },
   { id: "staff",     icon: "✦",  label: "Staff" },
   { id: "log",       icon: "▤",  label: "Match Log" },
@@ -54,6 +56,7 @@ export default function Sidebar({ screen, setScreen, onOpenFeed }) {
   })();
 
   const pillText = (() => {
+    if (stateUsesOpenCircuit(state) && (phase === "stage" || phase === "major" || phase === "challengerQualifier")) return "Open Circuit";
     if (phase === "stage")      return `${stageName}${remaining != null ? ` · ${remaining} left` : ""}`;
     if (phase === "challengerQualifier") return `${majorName} Qualifier`;
     if (phase === "major")      return `${majorName} — LIVE`;
@@ -76,7 +79,13 @@ export default function Sidebar({ screen, setScreen, onOpenFeed }) {
   const moraleActionCount = moraleActions.length;
   const moraleHasHighPriority = moraleActions.some(ev => ev.severity === "high" || ev.severity === "critical");
   const showFreeAgency = phase === "offseason" || phase === "contracts" || !!state.offseason?.freeAgencyOpen;
-  const visibleNavItems = NAV_ITEMS.filter(item => !item.offseasonOnly || showFreeAgency);
+  const openCircuit = stateUsesOpenCircuit(state);
+  const visibleNavItems = NAV_ITEMS.filter(item => {
+    if (item.offseasonOnly && !showFreeAgency) return false;
+    if (item.openCircuitOnly && !openCircuit) return false;
+    if (item.hideInOpenCircuit && openCircuit) return false;
+    return true;
+  });
 
   return (
     <aside className="sidebar">

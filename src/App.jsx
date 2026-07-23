@@ -26,6 +26,7 @@ import BoardObjectives   from "./components/BoardObjectives.jsx";
 import ChallengerBoard   from "./components/ChallengerBoard.jsx";
 import FreeAgency        from "./components/FreeAgency.jsx";
 import Prospects         from "./components/Prospects.jsx";
+import Circuit           from "./components/Circuit.jsx";
 import Scouting          from "./components/Scouting.jsx";
 import TransferCentre    from "./components/TransferCentre.jsx";
 import MatchLog          from "./components/MatchLog.jsx";
@@ -205,6 +206,7 @@ export default function App() {
           {screen === "board"     && (challengerMode ? <ChallengerBoard /> : <BoardObjectives />)}
           {screen === "fa"        && <FreeAgency />}
           {screen === "prospects" && <Prospects />}
+          {screen === "circuit"   && <Circuit />}
           {screen === "scouting"  && <Scouting />}
           {screen === "transfers" && <TransferCentre />}
           {screen === "devreport" && <OffseasonReport />}
