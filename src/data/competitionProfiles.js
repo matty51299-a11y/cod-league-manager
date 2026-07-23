@@ -102,10 +102,11 @@ export const GHOSTS_EVENT_CATALOGUE = [
 // save reloads never move them. A 2K/5K cup awards its point table to each
 // player on the winning locked roster.
 export const GHOSTS_ONLINE_CUP_SCHEDULE = {
-  // 2K cups roughly every other week across the active window.
-  online2k: { proPointTableId: "ONLINE_2K", intervalDays: 14, fieldSize: 16, regionEligibility: ["NA"], label: "Online 2K" },
-  // 5K cups less frequent, timed before big LAN qualification windows.
-  online5k: { proPointTableId: "ONLINE_5K", intervalDays: 35, fieldSize: 16, regionEligibility: ["NA"], label: "Online 5K" },
+  // MLG/GameBattles ran online 2Ks roughly weekly through the Ghosts year, so the
+  // ladder gives a steady stream of seeding points (~50 across the window).
+  online2k: { proPointTableId: "ONLINE_2K", intervalDays: 7, fieldSize: 32, regionEligibility: ["NA"], label: "Online 2K" },
+  // 5Ks about every three weeks — bigger prize/point cups between the 2Ks.
+  online5k: { proPointTableId: "ONLINE_5K", intervalDays: 21, fieldSize: 32, regionEligibility: ["NA"], label: "Online 5K" },
   windowStart: "2013-11-01",
   windowEnd: "2014-10-20",
 };

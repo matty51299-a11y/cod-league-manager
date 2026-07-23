@@ -10,7 +10,7 @@ import { CDL_TEAMS } from "../data/teams.js";
 import { isUserRosterPlayable } from "../utils/rosterValidation.js";
 import { isChallengerMode } from "../utils/userTeam.js";
 
-export default function NextMatchControl({ onOpen }) {
+export default function NextMatchControl({ onOpen, onPlayCircuitEvent }) {
   const { state, dispatch } = useGame();
   if (!state) return null;
 
@@ -33,7 +33,7 @@ export default function NextMatchControl({ onOpen }) {
       );
     }
     return (
-      <button className="nmc-btn" onClick={() => dispatch({ type: "SIM_NEXT_CIRCUIT_EVENT" })} title={nextEvent ? `Play ${nextEvent.name}` : "Play the next event"}>
+      <button className="nmc-btn" onClick={() => (onPlayCircuitEvent ? onPlayCircuitEvent() : dispatch({ type: "SIM_NEXT_CIRCUIT_EVENT" }))} title={nextEvent ? `Play ${nextEvent.name}` : "Play the next event"}>
         <span className="nmc-play-label">Play Next Event</span>
         {nextEvent && <><span className="nmc-divider">·</span><span className="nmc-opp">{nextEvent.name.length > 22 ? nextEvent.name.slice(0, 22) + "…" : nextEvent.name}</span></>}
         <span className="nmc-arrow">▶</span>

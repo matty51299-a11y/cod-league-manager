@@ -138,13 +138,14 @@ function makeSeriesPlayer(world, rosterSize, seedBase, record) {
     const oa = teamOvr(world, a, rosterSize);
     const ob = teamOvr(world, b, rosterSize);
     const rng = rngFrom(seedBase ^ hashString(`${a}|${b}|${meta?.phase || ""}|${meta?.round ?? ""}|${meta?.matchIndex ?? ""}|${meta?.groupIdx ?? ""}|${meta?.poolIdx ?? ""}`));
-    // Best of 5: play maps until one reaches 3.
+    // Best of 5: play maps until one reaches 3, recording each map's winner.
     let am = 0, bm = 0;
+    const mapWinners = [];
     const pA = 0.5 + Math.max(-0.35, Math.min(0.35, (oa - ob) / 40));
     while (am < 3 && bm < 3) {
-      if (rng() < pA) am++; else bm++;
+      if (rng() < pA) { am++; mapWinners.push(a); } else { bm++; mapWinners.push(b); }
     }
-    const result = { winner: am > bm ? a : b, aMaps: am, bMaps: bm };
+    const result = { winner: am > bm ? a : b, aMaps: am, bMaps: bm, mapWinners, rng };
     if (record) record(a, b, result, meta);
     return result;
   };
@@ -184,13 +185,26 @@ function simulateEvent(world, proStore, seasonId, template, eligibleSeeds, roste
     : meta?.poolIdx != null || meta?.phase === "pool" ? "Pool Play"
     : meta?.groupIdx != null ? "Group Stage"
     : meta?.round != null ? `Round ${meta.round + 1}` : "Match";
+  // Best-of-5 map modes in Ghosts-era rotation; scores are deterministic flavour.
+  const MODES = ["Hardpoint", "Search & Destroy", "Domination"];
+  const mapScore = (mode, userWon, r) => {
+    const spread = (lo, hi) => lo + Math.floor(r() * (hi - lo + 1));
+    if (mode === "Search & Destroy") { const l = spread(1, 4); return userWon ? `6-${l}` : `${l}-6`; }
+    if (mode === "Domination") { const l = spread(80, 170); return userWon ? `200-${l}` : `${l}-200`; }
+    const l = spread(150, 242); return userWon ? `250-${l}` : `${l}-250`;
+  };
   const record = userTeamId ? (a, b, res, meta) => {
     if (a !== userTeamId && b !== userTeamId) return;
-    const isA = a === userTeamId;
-    const opp = isA ? b : a;
-    const my = isA ? res.aMaps : res.bMaps;
-    const th = isA ? res.bMaps : res.aMaps;
-    userMatches.push({ phase: phaseName(meta), opponent: opp, won: res.winner === userTeamId, score: `${my}-${th}` });
+    const opp = a === userTeamId ? b : a;
+    const my = a === userTeamId ? res.aMaps : res.bMaps;
+    const th = a === userTeamId ? res.bMaps : res.aMaps;
+    const r = rngFrom(seedBase ^ hashString(`maps|${a}|${b}|${meta?.phase || ""}|${meta?.round ?? ""}|${meta?.matchIndex ?? ""}`));
+    const maps = (res.mapWinners || []).map((w, i) => {
+      const mode = MODES[i % MODES.length];
+      const userWon = w === userTeamId;
+      return { mode, won: userWon, score: mapScore(mode, userWon, r) };
+    });
+    userMatches.push({ phase: phaseName(meta), opponent: opp, won: res.winner === userTeamId, score: `${my}-${th}`, maps });
   } : null;
   const playSeries = makeSeriesPlayer(world, rosterSize, seedBase, record);
   const playMatch = (a, b, meta) => playSeries(a, b, meta).winner;

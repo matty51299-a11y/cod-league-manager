@@ -11,6 +11,7 @@ import { PlayerProfileProvider }  from "./store/playerProfileContext.jsx";
 import { MatchCenterProvider }    from "./store/matchCenterContext.jsx";
 import ErrorBoundary              from "./components/ErrorBoundary.jsx";
 import MatchCenterOverlay         from "./components/MatchCenterOverlay.jsx";
+import CircuitMatchOverlay        from "./components/CircuitMatchOverlay.jsx";
 import TeamSelect        from "./components/TeamSelect.jsx";
 import Sidebar           from "./components/Sidebar.jsx";
 import NextMatchControl  from "./components/NextMatchControl.jsx";
@@ -53,6 +54,7 @@ export default function App() {
   const [screen, setScreen]           = useState("home");
   const [confirmNew, setConfirmNew]   = useState(false);
   const [showMatchOverlay, setShowMatchOverlay] = useState(false);
+  const [showCircuitReveal, setShowCircuitReveal] = useState(false);
   const [showFeed, setShowFeed]       = useState(false);
   const [activeMoraleMeeting, setActiveMoraleMeeting] = useState(null);
   const [suppressedMoralePrompts, setSuppressedMoralePrompts] = useState([]);
@@ -83,7 +85,7 @@ export default function App() {
   if (!isValidGameState(state)) {
     return (
       <ErrorBoundary>
-        <div className="app">
+        <div className="app app-teamselect">
           <TeamSelect />
         </div>
       </ErrorBoundary>
@@ -99,6 +101,12 @@ export default function App() {
   const appMoralePrompt = !activeMoraleMeeting && screen !== "dynamics"
     ? popupMoraleEvents.find(ev => !suppressedMoralePrompts.includes(ev.id))
     : null;
+
+  // Play the next open-circuit event, then reveal the user's matches map-by-map.
+  function playNextCircuitEvent() {
+    dispatch({ type: "SIM_NEXT_CIRCUIT_EVENT" });
+    setShowCircuitReveal(true);
+  }
 
   function handleNewGame() {
     deleteSave();
@@ -131,7 +139,7 @@ export default function App() {
         </div>
         <div className="topbar-right">
           {/* Next Match launcher — opens NextMatchOverlay (no direct sim) */}
-          <NextMatchControl onOpen={() => setShowMatchOverlay(true)} />
+          <NextMatchControl onOpen={() => setShowMatchOverlay(true)} onPlayCircuitEvent={playNextCircuitEvent} />
 
           {!confirmNew ? (
             <button className="btn-new-game" onClick={() => setConfirmNew(true)}>
@@ -162,6 +170,7 @@ export default function App() {
           onClose={() => setShowMatchOverlay(false)}
         />
         <MatchCenterOverlay />
+        <CircuitMatchOverlay isOpen={showCircuitReveal} onClose={() => setShowCircuitReveal(false)} />
         <ChallengerQualifierOverlay />
         <MajorEntryOverlay />
         <MajorTournamentOverlay />
@@ -198,7 +207,7 @@ export default function App() {
 
         {/* Screen content */}
         <main className="main-content">
-          {screen === "home"      && (historicalMode ? <HistoricalDashboard setScreen={setScreen} /> : challengerMode ? <ChallengerDashboard setScreen={setScreen} /> : <Dashboard setScreen={setScreen} />)}
+          {screen === "home"      && (historicalMode ? <HistoricalDashboard setScreen={setScreen} onPlayEvent={playNextCircuitEvent} /> : challengerMode ? <ChallengerDashboard setScreen={setScreen} /> : <Dashboard setScreen={setScreen} />)}
           {screen === "inbox"    && <Inbox setScreen={setScreen} />}
           {screen === "standings" && <Standings />}
           {screen === "schedule"  && <Schedule />}

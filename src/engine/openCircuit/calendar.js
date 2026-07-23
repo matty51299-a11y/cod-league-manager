@@ -47,8 +47,14 @@ export function findOverlappingPairs(events) {
 // skipping any date that collides with a major LAN.
 export function generateOnlineCups(schedule, lanEvents = []) {
   if (!schedule) return [];
+  // Only actual single-weekend LANs block an online-cup date. League seasons and
+  // long invitationals run in PARALLEL across months (and are non-blocking in the
+  // sim), so counting their whole span as "LAN dates" would wipe out almost every
+  // weekly cup. Restrict collisions to short (≤6 day) non-league events.
+  const spanDays = (ev) => Math.round((parseDate(ev.endDate || ev.startDate) - parseDate(ev.startDate)) / 86400000);
+  const blockingLans = lanEvents.filter((ev) => ev.eventType !== "LEAGUE_SEASON" && spanDays(ev) <= 6);
   const lanDates = new Set();
-  for (const ev of lanEvents) {
+  for (const ev of blockingLans) {
     let d = parseDate(ev.startDate);
     const end = parseDate(ev.endDate || ev.startDate);
     for (; d <= end; d += 86400000) lanDates.add(toISO(d));

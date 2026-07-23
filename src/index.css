@@ -141,8 +141,16 @@ body { margin: 0; }
 .team-select {
   max-width: 800px;
   margin: 60px auto;
-  padding: 0 20px;
+  padding: 0 20px 60px;
   text-align: center;
+}
+
+/* Pre-game team-select renders directly inside .app (which is height:100vh;
+   overflow:hidden for the in-game shell). The historical field has ~28 orgs, so
+   the picker must be able to scroll the whole viewport. Higher specificity than
+   `.app` so it wins regardless of source order. */
+.app.app-teamselect {
+  overflow-y: auto;
 }
 
 .title {
