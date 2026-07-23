@@ -8,7 +8,7 @@
 // (vortex-uk / vortex-fr) and two displayed as MethodZ/Methodz
 // (methodz-es / methodz-na). Those must be able to coexist.
 
-import DB from "./cod_dynasty_rosters.corrected.json";
+import DB from "./cod_dynasty_rosters.corrected.json" with { type: "json" };
 
 // Season ids in the DB use hyphens (advanced-warfare); the era ids in codEras.js
 // use underscores (advanced_warfare). This maps between the two conventions.
