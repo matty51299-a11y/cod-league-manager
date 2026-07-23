@@ -35,7 +35,7 @@ export default function Page() {
         <div className="flex min-h-0 flex-1">
           <Sidebar />
           <main className="min-w-0 flex-1 overflow-y-auto">
-            <div className="mx-auto max-w-[1400px] space-y-3 p-3">
+            <div className="w-full min-w-0 space-y-3 p-3">
               <TeamHeader />
 
               {/* FM-style dense panel grid */}
