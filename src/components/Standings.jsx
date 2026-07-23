@@ -21,6 +21,11 @@ export default function Standings() {
   if (!state) return null;
 
   const { schedule, userTeamId, players } = state;
+  if (state.competitionProfile?.usesProPoints) {
+    const rows = state.openCircuit?.ranking || [];
+    return <div className="standings-page"><div className="standings-header-row"><div><h2>Ghosts Pro Points — Season {state.season}</h2><p className="muted">All teams begin at zero. First-event seeding uses team overall, then stable organisation ID.</p></div></div>
+      <table className="standings-table"><thead><tr><th>#</th><th>Team</th><th>Pro Points</th></tr></thead><tbody>{rows.map((row) => <tr key={row.teamId} className={row.teamId === userTeamId ? "user-row" : ""}><td>{row.rank}</td><td>{row.name}</td><td>{row.points}</td></tr>)}</tbody></table></div>;
+  }
   const phase = schedule.phase;
   const challengerMode = isChallengerMode(state);
 

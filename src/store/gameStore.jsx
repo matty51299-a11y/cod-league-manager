@@ -51,9 +51,9 @@ import {
   makeAssistantGmRecommendation, makeRivalSigningEvent, makeEraTransitionEvents,
   generateMatchInboxEvents,
 } from "../engine/eventCentreEngine.js";
-import { createHistoricalStateFields, migrateHistoricalDynastyState, introduceHistoricalRookieClass } from "../engine/historicalDynasty.js";
+import { createHistoricalStateFields, createHistoricalCareer, migrateHistoricalDynastyState, introduceHistoricalRookieClass } from "../engine/historicalDynasty.js";
 import { ensureOpenCircuitSeason, stateUsesOpenCircuit } from "../engine/openCircuitCareer.js";
-import { buildHistoricalStartingRoster, applyEraTeamBranding } from "../data/historicalTeams.js";
+import { applyEraTeamBranding } from "../data/historicalTeams.js";
 import { HISTORICAL_START_ERA_ID, MODERN_ERA_ID } from "../data/codEras.js";
 
 const SAVE_KEY  = "cdl_manager_save";
@@ -303,15 +303,32 @@ function cleanupDuplicateActiveAssignments(state) {
 // Challenger team — a "Road to CDL" career). For challenger mode userTeamId is
 // a Challenger team id and is validated against the freshly-built rosters.
 function createInitialGameState(userTeamId, userTeamType = "cdl", seedOverride = null, careerMode = "modern", dynastyOptions = {}) {
+  // Historical careers do not pass through the CDL/Challengers bootstrap.  The
+  // roster DB is the world source of truth on day one; reconciliation is only
+  // used by the later-era transition pipeline.
+  if (careerMode === "historical") {
+    const historical = createHistoricalCareer(HISTORICAL_START_ERA_ID, { userTeamId });
+    const state = {
+      userTeamId: `historical:${userTeamId}`, userTeamType: "historical", season: 1,
+      notifications: [], feed: [], saveExists: true, enteredMajorIdx: null,
+      playerSeasonStats: {}, playerOvrHistory: {}, challengersLog: [], challengerTransactions: [],
+      seasonHistory: [], playerCareerHistory: [], teamCareerHistory: [], awards: [], pendingSeasonAwards: null, seenAwardsSeasons: [],
+      staff: [], boardState: migrateBoardState(null), pendingBoardReview: null,
+      userScouting: migrateUserScouting(null), transferMarket: migrateTransferMarket(null), challengerOffers: [], challengerFunds: 0,
+      eventCentre: migrateEventCentre(null), contractNegotiations: {},
+      ...createHistoricalStateFields(careerMode, dynastyOptions), ...historical,
+    };
+    state.playerMorale = migratePlayerMorale(state);
+    return ensureMoraleConversationState(state);
+  }
   const challengerMode = userTeamType === "challenger";
   if (!challengerMode && !isValidTeamId(userTeamId)) return null;
   // Historical Dynasty starts with the era's real teams + players; the modern
   // career keeps the 2026 CDL rosters. Team branding is applied to the stable
   // slots below (via migrateHistoricalDynastyState / createHistoricalStateFields).
   const startEraId = careerMode === "historical" ? HISTORICAL_START_ERA_ID : MODERN_ERA_ID;
-  const historicalRoster = careerMode === "historical" ? buildHistoricalStartingRoster(startEraId) : null;
   applyEraTeamBranding(startEraId, careerMode);
-  const players  = (historicalRoster ?? buildInitialRoster()).map(applyChallengerRatingOverride);
+  const players  = buildInitialRoster().map(applyChallengerRatingOverride);
   // When a seed is supplied (Challenger team-select preview), use it for the
   // prospect pool too so the previewed roster OVRs match the started save.
   const prospectSeed = seedOverride != null

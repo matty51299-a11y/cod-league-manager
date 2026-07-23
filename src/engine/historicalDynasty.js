@@ -4,12 +4,70 @@ import {
 } from "../data/codEras.js";
 import { HISTORICAL_ROOKIE_CLASSES } from "../data/historicalRookieClasses.js";
 import { applyEraTeamBranding } from "../data/historicalTeams.js";
+import { buildHistoricalSeasonTemplate } from "../data/historicalRosterDb.js";
+import { buildCompetitionProfile } from "../data/competitionProfiles.js";
+import { buildSeasonCalendar } from "./openCircuit/calendar.js";
+import { createProPointsStore, ensureSeason, rankTeamsByProPoints } from "./proPoints.js";
 
 function clamp(v, min = 40, max = 99) { return Math.max(min, Math.min(max, Math.round(v))); }
 function hashString(str) { let h = 2166136261; for (const ch of String(str || "")) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
 function attr(base, salt) { return clamp(base + ((salt % 13) - 6)); }
 
 export const HISTORICAL_STRICTNESS = { LOOSE: "loose", BALANCED: "balanced", STRICT: "strict" };
+
+// Initial creation is deliberately separate from seasonRosterEngine's
+// reconciliation.  Reconciliation protects an established user roster and is
+// therefore only appropriate when advancing to a later historical season.
+export function createHistoricalCareer(eraId = HISTORICAL_START_ERA_ID, options = {}) {
+  const template = buildHistoricalSeasonTemplate(eraId);
+  if (!template) throw new Error(`No historical roster database exists for ${eraId}`);
+  const profile = buildCompetitionProfile(eraId);
+  const teams = template.teams.map((row) => ({
+    id: `historical:${row.historicalTeamId}`,
+    historicalTeamId: row.historicalTeamId,
+    name: row.teamName,
+    region: "NA",
+    playerIds: row.players.map((p) => p.playerId),
+    activeStarterIds: row.players.slice(0, template.rosterSize).map((p) => p.playerId),
+    isUserControlled: row.historicalTeamId === options.userTeamId,
+  }));
+  if (!teams.some((t) => t.isUserControlled)) {
+    throw new Error(`Historical user team ${options.userTeamId} is not in ${eraId}`);
+  }
+  const playerById = new Map();
+  for (const team of teams) for (const playerId of team.playerIds) {
+    const source = template.teams.find((t) => t.historicalTeamId === team.historicalTeamId)
+      ?.players.find((p) => p.playerId === playerId);
+    if (!playerById.has(playerId)) playerById.set(playerId, {
+      id: playerId, playerId, name: source?.displayName || playerId, gamertag: source?.displayName || playerId,
+      teamId: team.id, primary: "Flex", secondary: "Flex", region: team.region,
+      overall: 70, potential: 78, age: 20, contractYears: 1, isProspect: false, dataStatus: "historical",
+    });
+  }
+  const proPoints = createProPointsStore();
+  ensureSeason(proPoints, eraId);
+  for (const playerId of playerById.keys()) proPoints.playerSeasonProPoints[eraId][playerId] = 0;
+  const calendar = buildSeasonCalendar(profile);
+  const ranking = rankTeamsByProPoints(proPoints, eraId, teams.map((t) => ({ id: t.id, name: t.name, roster: t.activeStarterIds })), template.rosterSize);
+  return {
+    teams,
+    players: [...playerById.values()],
+    prospects: [],
+    challengerTeams: [],
+    competitionProfile: profile,
+    historicalInitialisationSeasonId: eraId,
+    proPoints,
+    openCircuit: {
+      buildKey: `${eraId}:1`, seasonId: eraId, userTeamId: `historical:${options.userTeamId}`,
+      ecosystemType: profile.ecosystemType, usesChallengers: false, usesProPoints: true,
+      calendar: { events: calendar.events, cups: calendar.cups, all: calendar.all, overlaps: calendar.overlaps },
+      results: {}, ranking, teamsById: Object.fromEntries(teams.map((t) => [t.id, { name: t.name, region: t.region, roster: t.activeStarterIds, isUserControlled: t.isUserControlled }])),
+      playersById: Object.fromEntries([...playerById.values()].map((p) => [p.id, { name: p.name, gamertag: p.gamertag, overall: p.overall, teamId: p.teamId }])),
+      conflicts: [], warnings: [], proPoints: proPoints.playerSeasonProPoints[eraId],
+    },
+    schedule: { season: 1, phase: "openCircuit", stages: [], majors: [], standings: {}, stageStandings: {}, matchLog: [] },
+  };
+}
 
 export function migrateHistoricalDynastyState(state) {
   const careerMode = state?.careerMode === "historical" ? "historical" : "modern";
