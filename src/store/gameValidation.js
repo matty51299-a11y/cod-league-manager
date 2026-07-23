@@ -7,14 +7,26 @@ export function isValidTeamId(teamId) {
   return CDL_TEAMS.some(t => t.id === teamId);
 }
 
-// The user team may be a CDL team (default) or a Challenger team. A Challenger
-// user is valid when userTeamType === "challenger" and the id resolves against
-// the save's challengerTeams list.
+// The user team may be a CDL team (default), a Challenger team, or — for a
+// Historical Dynasty save — a historical organisation. A Challenger user is
+// valid when userTeamType === "challenger" and the id resolves against the
+// save's challengerTeams list.
 export function isChallengerUser(state) {
   return state?.userTeamType === "challenger";
 }
 
+// Historical Dynasty careers are built directly from the era roster database:
+// the user team id is a `historical:<orgId>` id that resolves against the
+// save's teams[] list, not the modern CDL_TEAMS collection.
+export function isHistoricalUser(state) {
+  return state?.userTeamType === "historical" || state?.careerMode === "historical";
+}
+
 export function isValidUserTeam(state) {
+  if (isHistoricalUser(state)) {
+    return Array.isArray(state?.teams)
+      && state.teams.some(t => t.id === state.userTeamId && t.isUserControlled);
+  }
   if (isChallengerUser(state)) {
     return Array.isArray(state?.challengerTeams)
       && state.challengerTeams.some(t => t.id === state.userTeamId);
@@ -23,11 +35,16 @@ export function isValidUserTeam(state) {
 }
 
 export function isValidGameState(state) {
+  if (!state) return false;
+  // Historical Dynasty saves run the open-circuit engine, not the modern
+  // stage/major schedule, so their schedule.phase is "openCircuit".
+  const phaseOk = isHistoricalUser(state)
+    ? state.schedule?.phase === "openCircuit"
+    : VALID_PHASES.has(state.schedule?.phase);
   return Boolean(
-    state &&
     isValidUserTeam(state) &&
     state.schedule &&
-    VALID_PHASES.has(state.schedule.phase) &&
+    phaseOk &&
     Array.isArray(state.schedule.stages) &&
     Array.isArray(state.schedule.majors) &&
     Number.isFinite(state.season)
@@ -50,6 +67,11 @@ export function findPhaseInvariantViolations(state) {
   if (!isValidUserTeam(state)) {
     problems.push(`Invalid userTeamId: ${String(userTeamId)}`);
   }
+
+  // Historical Dynasty saves use the open-circuit engine and the era roster
+  // database rather than the modern CDL_TEAMS collection and stage/major
+  // schedule, so the CDL-specific invariants below do not apply to them.
+  if (isHistoricalUser(state)) return problems;
 
   if (!VALID_PHASES.has(phase)) {
     problems.push(`Invalid phase: ${String(phase)}`);

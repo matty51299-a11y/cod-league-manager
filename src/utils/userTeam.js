@@ -27,6 +27,16 @@ export function getUserChallengerTeam(state) {
 // mode. Returns null if the user team cannot be resolved.
 export function resolveUserTeamMeta(state) {
   if (!state) return null;
+  // Historical Dynasty: the user team is a historical organisation stored in
+  // state.teams (id === `historical:<orgId>`), not a modern CDL franchise.
+  if (state.userTeamType === "historical") {
+    const t = (state.teams || []).find(x => x.id === state.userTeamId);
+    if (t) {
+      const tag = String(t.name || "").replace(/[^A-Za-z0-9]/g, "").slice(0, 3).toUpperCase() || "GHT";
+      return { id: t.id, name: t.name, tag, color: "#fbbf24", logo: null, region: t.region || null };
+    }
+    return { id: state.userTeamId, name: String(state.userTeamId ?? "Historical Team"), tag: "GHT", color: "#fbbf24", logo: null, region: null };
+  }
   if (isChallengerMode(state)) {
     const t = getUserChallengerTeam(state);
     if (t) return { id: t.id, name: t.name, tag: t.tag, color: t.color, logo: t.logo, region: t.region };
