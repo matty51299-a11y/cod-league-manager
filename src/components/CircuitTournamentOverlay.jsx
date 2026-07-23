@@ -156,22 +156,39 @@ function RoundColumns({ rounds, bracket, uid, sch, curRound, expandedKey, setExp
   );
 }
 
+function PlaceRow({ row, uid, sch }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 8px", borderRadius: 6, fontSize: 13, background: row.teamId === uid ? "rgba(120,140,255,0.16)" : "rgba(255,255,255,0.02)", fontWeight: row.teamId === uid ? 700 : 400 }}>
+      <span style={{ width: 34, opacity: 0.7 }}>{ordinal(row.place)}</span>
+      <TeamLogo team={disp(row.teamId, sch)} variant="bracket" size={16} />
+      <span style={{ color: tCol(row.teamId, sch), overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{disp(row.teamId, sch)?.name ?? tTag(row.teamId, sch)}</span>
+    </div>
+  );
+}
+
 function PlacementsPanel({ bracket, uid, sch, complete, compact }) {
   if (!complete) return <div style={{ padding: 24, opacity: 0.6 }}>Placements are set once the bracket finishes.</div>;
   const pl = computeLivePlacements(bracket);
-  const rows = Object.entries(pl).map(([teamId, place]) => ({ teamId, place })).sort((a, b) => a.place - b.place).slice(0, compact ? 8 : 32);
-  return (
-    <div className={compact ? "mto-aside-card" : ""} style={compact ? undefined : { padding: 12 }}>
-      {compact && <div className="mto-aside-title">Placements &amp; Points</div>}
-      <div style={{ display: "grid", gap: 4 }}>
-        {rows.map(row => (
-          <div key={row.teamId} style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 8px", borderRadius: 6, fontSize: 13, background: row.teamId === uid ? "rgba(120,140,255,0.14)" : "rgba(255,255,255,0.02)", fontWeight: row.teamId === uid ? 700 : 400 }}>
-            <span style={{ width: 34, opacity: 0.7 }}>{ordinal(row.place)}</span>
-            <TeamLogo team={disp(row.teamId, sch)} variant="bracket" size={16} />
-            <span style={{ color: tCol(row.teamId, sch) }}>{disp(row.teamId, sch)?.name ?? tTag(row.teamId, sch)}</span>
-          </div>
-        ))}
+  const rows = Object.entries(pl).map(([teamId, place]) => ({ teamId, place })).sort((a, b) => a.place - b.place);
+
+  // Compact (aside) → single short list. Full → two side-by-side columns so the
+  // whole 28-team field fits without a tall, screen-trapping scroll.
+  if (compact) {
+    return (
+      <div className="mto-aside-card">
+        <div className="mto-aside-title">Placements &amp; Points</div>
+        <div style={{ display: "grid", gap: 4 }}>
+          {rows.slice(0, 8).map(row => <PlaceRow key={row.teamId} row={row} uid={uid} sch={sch} />)}
+        </div>
       </div>
+    );
+  }
+  const half = Math.ceil(rows.length / 2);
+  const left = rows.slice(0, half), right = rows.slice(half);
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+      <div style={{ display: "grid", gap: 4, alignContent: "start" }}>{left.map(row => <PlaceRow key={row.teamId} row={row} uid={uid} sch={sch} />)}</div>
+      <div style={{ display: "grid", gap: 4, alignContent: "start" }}>{right.map(row => <PlaceRow key={row.teamId} row={row} uid={uid} sch={sch} />)}</div>
     </div>
   );
 }
@@ -212,20 +229,27 @@ export default function CircuitTournamentOverlay() {
 
   // ── Champion screen ──
   if (complete) {
+    const close = () => dispatch({ type: "CLOSE_CIRCUIT_TOURNAMENT" });
     return (
-      <div className="mto-backdrop mto-backdrop-champ">
-        <div className="mto-champion-screen">
-          <div className="mto-champ-trophy">🏆</div>
-          <div className="mto-champ-title" style={{ color: tCol(champId, sch) }}>
-            {disp(champId, sch)?.name ?? champId}{isChamp && <span className="you-badge" style={{ marginLeft: 10 }}>YOUR TEAM</span>}
+      <div className="mto-backdrop mto-backdrop-champ" style={{ overflowY: "auto", alignItems: "flex-start", padding: "3vh 2vw" }} onClick={close}>
+        <div className="mto-champion-screen" style={{ maxHeight: "none", width: "100%", maxWidth: 940 }} onClick={(e) => e.stopPropagation()}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
+            <div>
+              <div className="mto-champ-trophy" style={{ fontSize: 30 }}>🏆</div>
+              <div className="mto-champ-title" style={{ color: tCol(champId, sch) }}>
+                {disp(champId, sch)?.name ?? champId}{isChamp && <span className="you-badge" style={{ marginLeft: 10 }}>YOUR TEAM</span>}
+              </div>
+              <div className="mto-champ-subtitle">{t.name} — Champion</div>
+              <div style={{ margin: "8px 0", fontSize: 14 }}>
+                You finished <strong style={{ color: isChamp ? "#fbbf24" : "inherit" }}>{userRank ? ordinal(userRank) : "—"}</strong>
+                {finalResult?.userPoints > 0 && <span style={{ color: "#34d399", marginLeft: 10 }}>+{finalResult.userPoints.toLocaleString()} Pro Points/player</span>}
+              </div>
+            </div>
+            {/* Always-visible exit, so a long placement list can never trap the screen. */}
+            <button className="mto-return-btn" style={{ margin: 0, whiteSpace: "nowrap" }} onClick={close}>Return to Circuit →</button>
           </div>
-          <div className="mto-champ-subtitle">{t.name} — Champion</div>
-          <div style={{ margin: "10px 0", fontSize: 14 }}>
-            You finished <strong style={{ color: isChamp ? "#fbbf24" : "inherit" }}>{userRank ? ordinal(userRank) : "—"}</strong>
-            {finalResult?.userPoints > 0 && <span style={{ color: "#34d399", marginLeft: 10 }}>+{finalResult.userPoints.toLocaleString()} Pro Points/player</span>}
-          </div>
-          <div className="mto-champ-placements"><PlacementsPanel bracket={bracket} uid={uid} sch={sch} complete /></div>
-          <button className="mto-return-btn" onClick={() => dispatch({ type: "CLOSE_CIRCUIT_TOURNAMENT" })}>Return to Circuit →</button>
+          <div className="mto-champ-placements" style={{ marginTop: 12 }}><PlacementsPanel bracket={bracket} uid={uid} sch={sch} complete /></div>
+          <button className="mto-return-btn" onClick={close}>Return to Circuit →</button>
         </div>
       </div>
     );
