@@ -7,6 +7,8 @@
 
 import { useMemo, useState } from "react";
 import { CDL_TEAMS } from "../data/teams.js";
+import { brandSetForEra } from "../data/historicalTeams.js";
+import { HISTORICAL_START_ERA_ID } from "../data/codEras.js";
 import { useGame, buildChallengerPreview } from "../store/gameStore.jsx";
 
 export default function TeamSelect() {
@@ -15,6 +17,15 @@ export default function TeamSelect() {
   const [careerMode, setCareerMode] = useState("modern");
   const [strictness, setStrictness] = useState("balanced"); // loose | balanced | strict
   const [seedInput, setSeedInput] = useState("");
+
+  // Preview the era's real organisations in the picker without mutating global
+  // state: overlay the Ghosts (MLG-era) brand on each stable slot for display.
+  // The actual re-skin is applied by the store on NEW_GAME.
+  const previewBrands = careerMode === "historical" ? brandSetForEra(HISTORICAL_START_ERA_ID) : null;
+  const brandedTeams = CDL_TEAMS.map(team => {
+    const b = previewBrands?.[team.id];
+    return b ? { ...team, name: b.name, tag: b.tag, color: b.color, logo: null } : team;
+  });
   // One stable seed for this picker session → preview matches the started save.
   // Lazy state initializer runs once; keeps render pure on subsequent renders.
   const [seed] = useState(() => ((Date.now() % 999983) * 31 + 7) | 0 || 1);
@@ -125,7 +136,7 @@ export default function TeamSelect() {
 
       {mode === "cdl" ? (
         <div className="team-grid">
-          {CDL_TEAMS.map(team => (
+          {brandedTeams.map(team => (
             <button
               key={team.id}
               className="team-card"

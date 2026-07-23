@@ -41,3 +41,40 @@ export const CDL_TEAMS = [
   { id: "toronto",   name: "Toronto KOI",            tag: "TOR",  color: "#9B1CDB", budgetTier: 4, logo: torontoKoiLogo,             owner: { name: "OverActive Media", ambition: 70, patience: 50 } },
   { id: "vancouver", name: "Vancouver Surge",        tag: "VAN",  color: "#00AEEF", budgetTier: 2, logo: vancouverSurgeLogo,         owner: { name: "Surge Ownership Group", ambition: 50, patience: 65 } },
 ];
+
+// ── Runtime team branding (Historical Dynasty) ────────────────────────────────
+// The engine keys everything to the stable ids above. A historical dynasty
+// re-skins the DISPLAY fields (name/tag/color/logo) of these same slots to the
+// real organisations of the active era, without changing ids, budgets, owners or
+// any simulation behaviour. Because every consumer reads these fields live from
+// the shared CDL_TEAMS objects, applying branding in place propagates everywhere.
+const DEFAULT_TEAM_BRANDS = Object.fromEntries(
+  CDL_TEAMS.map(t => [t.id, { name: t.name, tag: t.tag, color: t.color, logo: t.logo }])
+);
+
+// Apply a brand map { [id]: { name, tag, color, org? } }. Slots missing from the
+// map are reset to their default (modern CDL franchise) identity. Historical
+// brands have no bundled logo, so they fall back to a coloured tag box.
+export function applyTeamBranding(brandMap) {
+  for (const team of CDL_TEAMS) {
+    const def = DEFAULT_TEAM_BRANDS[team.id];
+    const b = brandMap?.[team.id];
+    if (b) {
+      team.name = b.name ?? def.name;
+      team.tag = b.tag ?? def.tag;
+      team.color = b.color ?? def.color;
+      team.logo = b.logo ?? null;
+      team.orgName = b.org ?? b.name ?? def.name;
+    } else {
+      team.name = def.name;
+      team.tag = def.tag;
+      team.color = def.color;
+      team.logo = def.logo;
+      team.orgName = def.name;
+    }
+  }
+}
+
+export function resetTeamBranding() {
+  applyTeamBranding(null);
+}

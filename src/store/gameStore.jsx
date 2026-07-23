@@ -16,7 +16,7 @@ import { generateChallengerBuyoutOffers, applyChallengerBuyout, buildBuyoutTrans
 import { canAffordStarterResign } from "../utils/contractBudget.js";
 import { getRosterIncompleteMessage, getTeamRosterStatus, getRequiredStarters } from "../utils/rosterValidation.js";
 import { autoPickStarterIds, getStarters, resolveSigningSlot } from "../utils/rosterSlots.js";
-import { CDL_TEAMS } from "../data/teams.js";
+import { CDL_TEAMS, resetTeamBranding } from "../data/teams.js";
 import { isValidGameState, isValidTeamId, findPhaseInvariantViolations } from "./gameValidation.js";
 import { migrateStaff, hireStaff, fireStaff, ensureTeamStaff, roleLabel } from "../engine/staffEngine.js";
 import { migrateBoardState, buildBoardObjectives, objectivesNeedRegen, BOARD_OBJ_VERSION, nudgeConfidenceAfterMajor, runBoardReview } from "../engine/boardEngine.js";
@@ -52,6 +52,8 @@ import {
   generateMatchInboxEvents,
 } from "../engine/eventCentreEngine.js";
 import { createHistoricalStateFields, migrateHistoricalDynastyState, introduceHistoricalRookieClass } from "../engine/historicalDynasty.js";
+import { buildHistoricalStartingRoster, applyEraTeamBranding } from "../data/historicalTeams.js";
+import { HISTORICAL_START_ERA_ID, MODERN_ERA_ID } from "../data/codEras.js";
 
 const SAVE_KEY  = "cdl_manager_save";
 const FEED_CAP  = 200;
@@ -302,7 +304,13 @@ function cleanupDuplicateActiveAssignments(state) {
 function createInitialGameState(userTeamId, userTeamType = "cdl", seedOverride = null, careerMode = "modern", dynastyOptions = {}) {
   const challengerMode = userTeamType === "challenger";
   if (!challengerMode && !isValidTeamId(userTeamId)) return null;
-  const players  = buildInitialRoster().map(applyChallengerRatingOverride);
+  // Historical Dynasty starts with the era's real teams + players; the modern
+  // career keeps the 2026 CDL rosters. Team branding is applied to the stable
+  // slots below (via migrateHistoricalDynastyState / createHistoricalStateFields).
+  const startEraId = careerMode === "historical" ? HISTORICAL_START_ERA_ID : MODERN_ERA_ID;
+  const historicalRoster = careerMode === "historical" ? buildHistoricalStartingRoster(startEraId) : null;
+  applyEraTeamBranding(startEraId, careerMode);
+  const players  = (historicalRoster ?? buildInitialRoster()).map(applyChallengerRatingOverride);
   // When a seed is supplied (Challenger team-select preview), use it for the
   // prospect pool too so the previewed roster OVRs match the started save.
   const prospectSeed = seedOverride != null
@@ -486,6 +494,9 @@ export function __diagnoseReducer(state, action) {
   switch (action.type) {
 
     case "RESET_TO_TEAM_SELECT":
+      // Clear any historical era branding so the team-select / next save starts
+      // from the default modern franchises.
+      resetTeamBranding();
       return null;
 
     case "NEW_GAME":
