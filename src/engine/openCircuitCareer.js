@@ -66,18 +66,38 @@ function assembleOpenCircuit(run, buildKey) {
   const seasonId = run.season.seasonId;
   const rawResults = run.season.results;
   const proStore = migrateProPointsStore(run.season.proStore);
+  const userTeamId = world.userTeamId;
   const named = (teamId) => world.teams[teamId]?.name || teamId;
 
   const results = {};
   for (const [id, r] of Object.entries(rawResults)) {
     if (!r.completed) continue;
+    // The user's own finish (kept explicitly — the placements list below is
+    // truncated to the top 8, so a >8th finish must not read as "not in field").
+    const userPl = (r.placements || []).find((p) => p.teamId === userTeamId);
+    const userAward = userPl && (r.awards || []).find((a) => a.placement === userPl.placement);
     results[id] = {
       completed: true, skipped: !!r.skipped,
       name: r.name, eventType: r.eventType, tier: r.tier, startDate: r.startDate, fieldSize: r.fieldSize || 0,
+      userInField: !!userPl,
+      userPlacement: userPl ? userPl.placement : null,
+      userPoints: userAward ? userAward.pointsPerPlayer : 0,
+      userPrize: userAward ? userAward.teamPrize : 0,
       phases: (r.phases || []).map((p) => p.phase),
       placements: (r.placements || []).slice(0, 8).map((p) => ({ rank: p.placement, teamId: p.teamId, name: named(p.teamId) })),
       awards: (r.awards || []).slice(0, 3).map((a) => ({ placement: a.placement, teamId: a.teamId, name: named(a.teamId), pointsPerPlayer: a.pointsPerPlayer, teamPrize: a.teamPrize })),
       userMatches: (r.userMatches || []).map((m) => ({ phase: m.phase, opponent: named(m.opponent), won: m.won, score: m.score, maps: m.maps || [] })),
+      bracket: r.bracket ? {
+        type: r.bracket.type, title: r.bracket.title, champion: r.bracket.champion ? named(r.bracket.champion) : null,
+        rounds: (r.bracket.rounds || []).map((rd) => ({
+          name: rd.name,
+          matches: (rd.matches || []).map((m) => ({
+            a: m.a ? named(m.a) : null, b: m.b ? named(m.b) : null,
+            winner: m.winner ? named(m.winner) : null,
+            aIsUser: m.a === userTeamId, bIsUser: m.b === userTeamId,
+          })),
+        })),
+      } : null,
     };
   }
 

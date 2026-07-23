@@ -13,6 +13,7 @@ import { useGame } from "../store/gameStore.jsx";
 import { resolveUserTeamMeta } from "../utils/userTeam.js";
 import { getEra } from "../data/codEras.js";
 import { PageHeader, SectionCard, StatCard, Pill, EmptyState } from "./ui.jsx";
+import CircuitBracket from "./CircuitBracket.jsx";
 
 function money(n) { return n ? `$${Number(n).toLocaleString("en-US")}` : "—"; }
 function ordinal(n) {
@@ -60,12 +61,9 @@ export default function HistoricalDashboard({ setScreen, onPlayEvent }) {
   // The user's own event finishes across the season so far, most recent first.
   const userEvents = Object.entries(results)
     .map(([id, r]) => {
-      if (!r || r.skipped) return null;
-      const placement = (r.placements || []).find(p => p.teamId === userTeamId);
-      if (!placement) return null;
-      const award = (r.awards || []).find(a => a.rank === placement.rank || a.placement === placement.rank);
-      return { id, name: r.name, startDate: r.startDate, rank: placement.rank, eventType: r.eventType,
-        points: award?.pointsPerPlayer || 0, prize: award?.teamPrize || 0, userMatches: r.userMatches || [] };
+      if (!r || r.skipped || !r.userInField) return null;
+      return { id, name: r.name, startDate: r.startDate, rank: r.userPlacement, eventType: r.eventType,
+        points: r.userPoints || 0, prize: r.userPrize || 0, userMatches: r.userMatches || [], bracket: r.bracket };
     })
     .filter(Boolean)
     .sort((a, b) => String(b.startDate).localeCompare(String(a.startDate)));
@@ -73,7 +71,7 @@ export default function HistoricalDashboard({ setScreen, onPlayEvent }) {
   const wins = userEvents.filter(e => e.rank === 1).length;
   const podiums = userEvents.filter(e => e.rank <= 3).length;
   const lastResult = oc.lastPlayedEventId ? results[oc.lastPlayedEventId] : null;
-  const lastUserPlace = lastResult && (lastResult.placements || []).find(p => p.teamId === userTeamId);
+  const lastRank = lastResult?.userPlacement ?? null;
 
   return (
     <div className="page">
@@ -140,14 +138,14 @@ export default function HistoricalDashboard({ setScreen, onPlayEvent }) {
         </SectionCard>
       )}
 
-      {/* Last result banner + its match log. */}
-      {lastResult && lastUserPlace && (
+      {/* Last result banner + its match log + bracket. */}
+      {lastResult && lastRank != null && (
         <SectionCard title={`Latest result — ${lastResult.name}`}
-          subtitle={`You finished ${ordinal(lastUserPlace.rank)}.`}>
+          subtitle={`You finished ${ordinal(lastRank)}${lastResult.userPoints ? ` · +${lastResult.userPoints.toLocaleString()} Pro Points/player` : ""}.`}>
           {(lastResult.userMatches || []).length === 0 ? (
-            <div style={{ opacity: 0.75, fontSize: 13 }}>Your team was not drawn into a played match at this event.</div>
+            <div style={{ opacity: 0.75, fontSize: 13, marginBottom: 8 }}>Your team advanced without a played series (byes / group format).</div>
           ) : (
-            <div className="table-scroll" style={{ overflowX: "auto" }}>
+            <div className="table-scroll" style={{ overflowX: "auto", marginBottom: 10 }}>
               <table className="data-table">
                 <thead><tr><th>Round</th><th>Opponent</th><th>Result</th><th>Maps</th></tr></thead>
                 <tbody>
@@ -163,6 +161,12 @@ export default function HistoricalDashboard({ setScreen, onPlayEvent }) {
               </table>
             </div>
           )}
+          {lastResult.bracket && (
+            <>
+              <div style={{ fontSize: 12, textTransform: "uppercase", letterSpacing: 0.4, opacity: 0.65, fontWeight: 700, margin: "4px 0 6px" }}>{lastResult.bracket.title || "Bracket"}</div>
+              <CircuitBracket bracket={lastResult.bracket} />
+            </>
+          )}
         </SectionCard>
       )}
 
@@ -174,43 +178,54 @@ export default function HistoricalDashboard({ setScreen, onPlayEvent }) {
       </div>
 
       <SectionCard title={`${team?.name || "Your"} results this season`}
-        subtitle="Every event your organisation reached the money rounds in, most recent first. Click a row for the match log.">
+        subtitle="Every event your organisation played, most recent first. Click a row for the match log and bracket.">
         {userEvents.length === 0 ? (
           <EmptyState title="No results yet"
-            detail={oc.playedCount ? "Your squad hasn't reached a top-8 finish yet. Keep playing events or strengthen the roster." : "Play your first event to see results here."} />
+            detail={oc.playedCount ? "Your team hasn't been in a played event yet." : "Play your first event to see results here."} />
         ) : (
           <div className="table-scroll" style={{ overflowX: "auto" }}>
             <table className="data-table">
-              <thead><tr><th>Date</th><th>Event</th><th>Finish</th><th>Pro Points</th><th>Prize</th><th>Matches</th></tr></thead>
+              <thead><tr><th>Date</th><th>Event</th><th>Finish</th><th>Pro Points</th><th>Prize</th><th>Detail</th></tr></thead>
               <tbody>
-                {userEvents.map(e => (
+                {userEvents.map(e => {
+                  const hasDetail = e.userMatches.length || e.bracket;
+                  return (
                   <Fragment key={e.id}>
-                    <tr onClick={() => setExpanded(expanded === e.id ? null : e.id)} style={{ cursor: e.userMatches.length ? "pointer" : "default" }}>
+                    <tr onClick={() => hasDetail && setExpanded(expanded === e.id ? null : e.id)} style={{ cursor: hasDetail ? "pointer" : "default" }}>
                       <td style={{ whiteSpace: "nowrap", opacity: 0.8 }}>{e.startDate}</td>
                       <td>{e.name}</td>
                       <td><Pill tone={e.rank === 1 ? "gold" : e.rank <= 3 ? "positive" : "neutral"}>{ordinal(e.rank)}</Pill></td>
                       <td>{e.points ? e.points.toLocaleString() : "—"}</td>
                       <td style={{ opacity: 0.85 }}>{money(e.prize)}</td>
-                      <td style={{ opacity: 0.7 }}>{e.userMatches.length ? `${e.userMatches.length} ▾` : "—"}</td>
+                      <td style={{ opacity: 0.7 }}>{hasDetail ? (expanded === e.id ? "▴" : "▾") : "—"}</td>
                     </tr>
-                    {expanded === e.id && e.userMatches.length > 0 && (
+                    {expanded === e.id && hasDetail && (
                       <tr>
                         <td colSpan={6} style={{ background: "rgba(255,255,255,0.03)" }}>
-                          <div style={{ display: "grid", gap: 3, padding: "6px 4px" }}>
-                            {e.userMatches.map((m, i) => (
-                              <div key={i} style={{ display: "flex", gap: 10, fontSize: 13 }}>
-                                <span style={{ width: 90, opacity: 0.7 }}>{m.phase}</span>
-                                <span style={{ width: 70, fontWeight: 700, color: m.won ? "var(--green,#34d399)" : "var(--red,#f87171)" }}>{m.won ? "WIN" : "LOSS"}</span>
-                                <span style={{ width: 48 }}>{m.score}</span>
-                                <span style={{ opacity: 0.85 }}>vs {m.opponent}</span>
-                              </div>
-                            ))}
-                          </div>
+                          {e.userMatches.length > 0 && (
+                            <div style={{ display: "grid", gap: 3, padding: "6px 4px 10px" }}>
+                              {e.userMatches.map((m, i) => (
+                                <div key={i} style={{ display: "flex", gap: 10, fontSize: 13 }}>
+                                  <span style={{ width: 90, opacity: 0.7 }}>{m.phase}</span>
+                                  <span style={{ width: 70, fontWeight: 700, color: m.won ? "var(--green,#34d399)" : "var(--red,#f87171)" }}>{m.won ? "WIN" : "LOSS"}</span>
+                                  <span style={{ width: 48 }}>{m.score}</span>
+                                  <span style={{ opacity: 0.85 }}>vs {m.opponent}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {e.bracket && (
+                            <div style={{ padding: "2px 4px 6px" }}>
+                              <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: 0.4, opacity: 0.6, fontWeight: 700, marginBottom: 6 }}>{e.bracket.title || "Bracket"}</div>
+                              <CircuitBracket bracket={e.bracket} />
+                            </div>
+                          )}
                         </td>
                       </tr>
                     )}
                   </Fragment>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

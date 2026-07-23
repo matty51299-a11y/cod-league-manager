@@ -203,24 +203,29 @@ try {
 
   // ── Brackets / pools / championship ──────────────────────────────────────────
   const strongWins = (a, b) => (String(a) < String(b) ? a : b); // deterministic by id
-  await test("Standard LAN progression: open bracket → pools → 16-team double elimination", async () => {
+  await test("LAN runs one full-field double-elimination bracket (all teams in, byes for top seeds)", async () => {
     const teams = Array.from({ length: 28 }, (_, i) => `t${String(i).padStart(2, "0")}`);
     const world = { teams: {}, players: {} };
     teams.forEach((t, i) => { world.teams[t] = { id: t, isActive: true, roster: [`${t}_p`], name: t }; world.players[`${t}_p`] = { id: `${t}_p`, overall: 90 - i }; });
-    const template = { id: "lan", name: "LAN", eventType: "OPEN_LAN", tier: "A", startDate: "2014-01-01", regionEligibility: ["GLOBAL"], proPointTableId: "LAN_A", directPoolInviteCount: 12, poolSize: 4, poolCount: 4, playoffSize: 16, targetFieldSize: 32, bracketType: "DOUBLE_ELIMINATION" };
+    const template = { id: "lan", name: "LAN", eventType: "OPEN_LAN", tier: "A", startDate: "2014-01-01", regionEligibility: ["GLOBAL"], proPointTableId: "LAN_A", playoffSize: 16, targetFieldSize: 16, bracketType: "DOUBLE_ELIMINATION" };
     const store = pro.createProPointsStore(); pro.ensureSeason(store, "ghosts");
     const profile = profiles.buildCompetitionProfile("ghosts");
     const season = oce.simulateOpenCircuitSeason(world, { ...profile, eventTemplates: [template], onlineCupSchedule: null }, { proStore: store });
     const r = season.results["lan"];
     const phaseNames = r.phases.map((p) => p.phase);
-    assert.ok(phaseNames.includes("OPEN_BRACKET"), "has open bracket");
-    assert.ok(phaseNames.includes("POOL_PLAY"), "has pool play");
-    const bracketPhase = r.phases.find((p) => p.phase === "CHAMPIONSHIP_BRACKET");
-    assert.equal(bracketPhase.playoffSize, 16, "16-team playoff");
-    assert.equal(bracketPhase.bracketType, "DOUBLE_ELIMINATION");
-    assert.equal(r.placements.length, 28, "all entrants placed");
-    // No team placed twice.
-    assert.equal(new Set(r.placements.map((p) => p.teamId)).size, 28);
+    assert.ok(phaseNames.includes("REGISTRATION"), "has registration");
+    assert.ok(phaseNames.includes("CHAMPIONSHIP_BRACKET"), "has the bracket phase");
+    // The whole field is in even though targetFieldSize is 16 — no team is cut.
+    assert.equal(r.placements.length, 28, "all 28 entrants placed");
+    assert.equal(new Set(r.placements.map((p) => p.teamId)).size, 28, "no team placed twice");
+    // A viewable bracket with rounds is captured.
+    assert.ok(r.bracket && r.bracket.rounds.length > 0, "a bracket with rounds is captured");
+    assert.ok(r.bracket.champion, "the bracket has a champion");
+    // Every played fixture is between two distinct teams from the field.
+    const teamSet = new Set(teams);
+    for (const rd of r.bracket.rounds) for (const m of rd.matches) {
+      if (m.a && m.b) { assert.notEqual(m.a, m.b); assert.ok(teamSet.has(m.a) && teamSet.has(m.b)); }
+    }
   });
 
   await test("A 28-team championship creates valid groups and a 16-team playoff field", async () => {

@@ -63,14 +63,18 @@ assert.ok(resolveUserTeamMeta(started)?.name, "historical user team meta resolve
 // ── Event-by-event play: each step plays one tournament, awards points once,
 // and records the user's match log; the season eventually completes. ───────────
 let playState = started;
-let steps = 0, userMatchTotal = 0, mapTotal = 0;
+let steps = 0, userMatchTotal = 0, mapTotal = 0, bracketEvents = 0, userInFieldEvents = 0;
 while (!playState.openCircuit.seasonComplete && steps < 120) {
   playState = advanceOpenCircuitEvent(playState);
   const last = playState.openCircuit.results[playState.openCircuit.lastPlayedEventId];
   for (const m of last?.userMatches || []) { userMatchTotal += 1; mapTotal += (m.maps || []).length; }
+  if (last?.bracket?.rounds?.length) bracketEvents += 1;
+  if (last?.userInField) userInFieldEvents += 1;
   steps += 1;
 }
 assert.ok(mapTotal > 0, "user series expose per-map results for the interactive overlay");
+assert.ok(bracketEvents > 0, "played LAN/championship events capture a viewable bracket");
+assert.ok(userInFieldEvents > 5, "the user's team is in the field of many events (not cut from LANs)");
 assert.equal(playState.openCircuit.seasonComplete, true, "the season completes after playing through the calendar");
 assert.ok(playState.openCircuit.playedCount > 5, "multiple events were played");
 assert.ok(Object.values(playState.openCircuit.proPoints).some((v) => v > 0), "playing events awards Pro Points");

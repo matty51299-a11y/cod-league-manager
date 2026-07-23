@@ -18,7 +18,7 @@ import {
 } from "./proPoints.js";
 import { buildSeasonCalendar } from "./openCircuit/calendar.js";
 import { runDoubleElimination, runSingleElimination } from "./openCircuit/brackets.js";
-import { runPools, roundRobinStandings } from "./openCircuit/pools.js";
+import { roundRobinStandings } from "./openCircuit/pools.js";
 import { runChampionship } from "./openCircuit/championship.js";
 
 // ── deterministic RNG ─────────────────────────────────────────────────────────
@@ -214,7 +214,7 @@ function simulateEvent(world, proStore, seasonId, template, eligibleSeeds, roste
     const champ = runChampionship({ seededTeams: eligibleSeeds, playSeries, groupSize: template.poolSize || 4, maxPlayoff: template.playoffSize || 16 });
     phases.push({ phase: "GROUP_STAGE", groups: champ.plan.groups.length, playInCut: champ.plan.playInTeams.length });
     phases.push({ phase: "CHAMPIONSHIP_BRACKET", playoffSize: champ.playoffSeeds.length });
-    return { placements: appendNonPlayoff(champ.placements, eligibleSeeds), phases, detail: { groupStandings: champ.groupStandings, playoffSeeds: champ.playoffSeeds }, userMatches };
+    return { placements: appendNonPlayoff(champ.placements, eligibleSeeds), phases, detail: { groupStandings: champ.groupStandings, playoffSeeds: champ.playoffSeeds }, bracket: bracketView(champ.playoff, template, "Championship Playoff"), userMatches };
   }
 
   if (template.eventType === "LEAGUE_SEASON") {
@@ -226,64 +226,49 @@ function simulateEvent(world, proStore, seasonId, template, eligibleSeeds, roste
     const playoff = runDoubleElimination({ seeds: playoffSeeds, playMatch });
     phases.push({ phase: "PLAYOFFS", playoffSize });
     const placements = mergePlacements(playoff.placements, standings.map((r) => r.teamId));
-    return { placements, phases, detail: { standings }, userMatches };
+    return { placements, phases, detail: { standings }, bracket: bracketView(playoff, template, "Playoffs"), userMatches };
   }
 
-  // Open LAN / invitational / regional: registration → open bracket → pools →
-  // championship bracket. Small fields use a direct bracket.
-  const poolSize = template.poolSize || 4;
-  const poolCount = template.poolCount || (template.playoffSize ? Math.max(1, Math.round((template.playoffSize) / poolSize)) : 4);
-  const poolField = poolCount * poolSize;
-  const playoffSize = Math.min(template.playoffSize || poolField, poolField);
-
+  // Open LAN / invitational / regional: ONE full-field bracket so every eligible
+  // team is in and the top seeds get first-round byes. Seeds are already ordered
+  // by Pro Points — this is the bracket the user sees.
   phases.push({ phase: "REGISTRATION", entrants: eligibleSeeds.length });
+  const run = (template.bracketType === "SINGLE_ELIMINATION")
+    ? runSingleElimination({ seeds: eligibleSeeds, playMatch })
+    : runDoubleElimination({ seeds: eligibleSeeds, playMatch });
+  phases.push({ phase: "CHAMPIONSHIP_BRACKET", bracketType: template.bracketType || "DOUBLE_ELIMINATION" });
+  return {
+    placements: appendNonPlayoff(run.placements, eligibleSeeds),
+    phases,
+    detail: {},
+    bracket: bracketView(run, template),
+    userMatches,
+  };
+}
 
-  // Small event or no pool structure → direct bracket.
-  if (eligibleSeeds.length <= poolSize || !template.playoffSize || template.playoffSize <= 4) {
-    const bracket = (template.bracketType === "DOUBLE_ELIMINATION")
-      ? runDoubleElimination({ seeds: eligibleSeeds.slice(0, Math.max(2, template.playoffSize || eligibleSeeds.length)), playMatch })
-      : runSingleElimination({ seeds: eligibleSeeds.slice(0, Math.max(2, template.playoffSize || eligibleSeeds.length)), playMatch });
-    phases.push({ phase: "CHAMPIONSHIP_BRACKET", bracketType: template.bracketType || "SINGLE_ELIMINATION" });
-    return { placements: appendNonPlayoff(bracket.placements, eligibleSeeds), phases, detail: {}, userMatches };
+// Normalise a bracket run ({ rounds | matches, champion }) into a compact,
+// display-ready shape: { type, title, champion, rounds:[{ name, matches:[{a,b,winner}] }] }.
+function bracketView(run, template, title) {
+  if (!run) return null;
+  let rounds = run.rounds;
+  if (!rounds) {
+    // Single elimination returns flat matches; group them by round index.
+    const byRound = new Map();
+    for (const m of run.matches || []) {
+      const key = m.round ?? 0;
+      if (!byRound.has(key)) byRound.set(key, []);
+      byRound.get(key).push(m);
+    }
+    rounds = [...byRound.entries()].sort((a, b) => a[0] - b[0]).map(([r, fixtures]) => ({ name: `Round ${r + 1}`, fixtures }));
   }
-
-  // Direct-pool invites + open bracket qualifiers.
-  const directCount = eligibleSeeds.length <= poolField
-    ? eligibleSeeds.length
-    : (template.directPoolInviteCount ?? poolField);
-  const directTeams = eligibleSeeds.slice(0, directCount);
-  const openBracketTeams = eligibleSeeds.slice(directCount);
-  let poolTeams = [...directTeams];
-  let openBracketResult = null;
-
-  if (openBracketTeams.length && poolTeams.length < poolField) {
-    const need = poolField - poolTeams.length;
-    openBracketResult = runDoubleElimination({ seeds: openBracketTeams, playMatch });
-    const advancing = openBracketResult.placements.slice(0, need).map((p) => p.teamId);
-    poolTeams = [...poolTeams, ...advancing];
-    phases.push({ phase: "OPEN_BRACKET", entrants: openBracketTeams.length, advancing: advancing.length });
-  }
-
-  // Distribute pool teams into pools (snake by seed).
-  const pools = Array.from({ length: Math.max(1, Math.min(poolCount, Math.ceil(poolTeams.length / poolSize))) }, () => []);
-  poolTeams.forEach((t, i) => pools[i % pools.length].push(t));
-  const poolResult = runPools({ pools, playSeries });
-  phases.push({ phase: "POOL_PLAY", pools: pools.length, poolSize });
-
-  // Championship bracket from pool seeds.
-  const finalPlayoffSize = Math.min(playoffSize, poolResult.seeds.length);
-  const playoff = runDoubleElimination({ seeds: poolResult.seeds.slice(0, finalPlayoffSize), playMatch });
-  phases.push({ phase: "CHAMPIONSHIP_BRACKET", playoffSize: finalPlayoffSize, bracketType: "DOUBLE_ELIMINATION" });
-
-  // Merge placements: playoff order first, then pool non-advancers, then open
-  // bracket eliminated, then anyone not in the field.
-  const order = [
-    ...playoff.placements.map((p) => p.teamId),
-    ...poolResult.seeds.filter((t) => !playoff.placements.some((p) => p.teamId === t)),
-    ...(openBracketResult ? openBracketResult.placements.map((p) => p.teamId).filter((t) => !poolTeams.includes(t)) : []),
-  ];
-  const placements = mergePlacements(order.map((teamId, i) => ({ teamId, placement: i + 1 })), eligibleSeeds);
-  return { placements, phases, detail: { poolStandings: poolResult.poolStandings }, userMatches };
+  return {
+    type: template.bracketType || "DOUBLE_ELIMINATION",
+    title: title || "Bracket",
+    champion: run.champion || null,
+    rounds: (rounds || [])
+      .map((r) => ({ name: r.name, matches: (r.fixtures || []).map((f) => ({ a: f.a, b: f.b, winner: f.winner })) }))
+      .filter((r) => r.matches.length > 0),
+  };
 }
 
 // Append teams not in the playoff to the end of a placement list (dedup).
@@ -367,12 +352,23 @@ export function simulateOpenCircuitSeason(world, profile, options = {}) {
       continue;
     }
 
-    // Seed by Pro Points (locked roster), dynamically reduce to the field size.
+    // Seed by Pro Points (locked roster). Field size by event type:
+    //  - Open LAN / invitational / regional → the WHOLE eligible field, so with
+    //    ~28 teams every eligible team is in and the top seeds get first-round
+    //    byes in the bracket.
+    //  - World Championship → capped at its target (32 fits the field).
+    //  - League seasons → the configured invite-style size.
     const seeded = seedTeams(world, proStore, seasonId, eligible, rosterSize);
-    const maxField = template.eventType === "WORLD_CHAMPIONSHIP"
-      ? Math.min(template.targetFieldSize || 32, seeded.length)
-      : Math.min(template.targetFieldSize || seeded.length, seeded.length);
-    const field = seeded.slice(0, maxField);
+    let maxField;
+    if (template.eventType === "WORLD_CHAMPIONSHIP") maxField = Math.min(template.targetFieldSize || 32, seeded.length);
+    else if (template.eventType === "LEAGUE_SEASON") maxField = Math.min(template.targetFieldSize || seeded.length, seeded.length);
+    else maxField = seeded.length;
+    let field = seeded.slice(0, maxField);
+    // The user's team is always in any event it is region-eligible for (never
+    // seeded out of a capped field) — takes the last seed if it would be cut.
+    if (userTeamId && seeded.includes(userTeamId) && !field.includes(userTeamId)) {
+      field = [...field.slice(0, Math.max(1, maxField - 1)), userTeamId];
+    }
     if (isBlocking) field.forEach((id) => commit(id, template));
 
     const seedBase = (dynastySeed >>> 0) ^ hashString(`${seasonId}|${template.id}`);
@@ -402,6 +398,7 @@ export function simulateOpenCircuitSeason(world, profile, options = {}) {
       awards: award.awards,
       lockedRosters,
       detail: sim.detail,
+      bracket: sim.bracket || null,
       userMatches: sim.userMatches || [],
     };
     newlyCompleted += 1;
