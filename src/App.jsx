@@ -12,6 +12,8 @@ import { MatchCenterProvider }    from "./store/matchCenterContext.jsx";
 import ErrorBoundary              from "./components/ErrorBoundary.jsx";
 import MatchCenterOverlay         from "./components/MatchCenterOverlay.jsx";
 import CircuitMatchOverlay        from "./components/CircuitMatchOverlay.jsx";
+import CircuitTournamentOverlay   from "./components/CircuitTournamentOverlay.jsx";
+import { isInteractiveCircuitEvent } from "./engine/circuitTournament.js";
 import TeamSelect        from "./components/TeamSelect.jsx";
 import Sidebar           from "./components/Sidebar.jsx";
 import NextMatchControl  from "./components/NextMatchControl.jsx";
@@ -102,10 +104,18 @@ export default function App() {
     ? popupMoraleEvents.find(ev => !suppressedMoralePrompts.includes(ev.id))
     : null;
 
-  // Play the next open-circuit event, then reveal the user's matches map-by-map.
+  // Play the next open-circuit event. LAN/championship events open the live
+  // interactive tournament (play your matches in the Match Center); online cups
+  // use the quick reveal.
   function playNextCircuitEvent() {
-    dispatch({ type: "SIM_NEXT_CIRCUIT_EVENT" });
-    setShowCircuitReveal(true);
+    const oc = state?.openCircuit;
+    const nextEv = (oc?.calendar?.all || []).find(e => e.id === oc?.nextEventId);
+    if (nextEv && isInteractiveCircuitEvent(nextEv.eventType)) {
+      dispatch({ type: "START_CIRCUIT_EVENT" });
+    } else {
+      dispatch({ type: "SIM_NEXT_CIRCUIT_EVENT" });
+      setShowCircuitReveal(true);
+    }
   }
 
   function handleNewGame() {
@@ -170,6 +180,7 @@ export default function App() {
           onClose={() => setShowMatchOverlay(false)}
         />
         <MatchCenterOverlay />
+        <CircuitTournamentOverlay />
         <CircuitMatchOverlay isOpen={showCircuitReveal} onClose={() => setShowCircuitReveal(false)} />
         <ChallengerQualifierOverlay />
         <MajorEntryOverlay />
