@@ -280,19 +280,19 @@ try {
     const typeById = Object.fromEntries(run.profile.eventTemplates.map((t) => [t.id, t.eventType]));
     assert.ok(run.season.calendar.overlaps.length > 0, "overlaps detected");
     // League seasons run in parallel by design (Part 8) — exclusivity applies only
-    // to single-weekend LAN/cup events. UMG Dallas & Insomnia52 are one such pair.
-    let checkedPairs = 0;
+    // to single-weekend LAN/cup events. The invariant under test is that no team
+    // enters BOTH events of an overlapping pair. With region locking removed, one
+    // of two same-weekend events may be starved of a field (every team commits to
+    // the other) and skipped — that is expected, not a violation.
     for (const [aId, bId] of run.season.calendar.overlaps) {
       if (typeById[aId] === "LEAGUE_SEASON" || typeById[bId] === "LEAGUE_SEASON") continue;
       const a = run.season.results[aId];
       const b = run.season.results[bId];
       if (!a || !b || a.skipped || b.skipped) continue;
-      checkedPairs++;
       const aTeams = new Set(a.placements.map((p) => p.teamId));
       const shared = b.placements.map((p) => p.teamId).filter((t) => aTeams.has(t));
       assert.equal(shared.length, 0, `overlap ${aId}/${bId} shares teams: ${shared.join(",")}`);
     }
-    assert.ok(checkedPairs > 0, "at least one single-weekend overlap pair was verified");
   });
 
   await test("Reloading does not regenerate fixtures or award points twice", async () => {
@@ -304,16 +304,15 @@ try {
     assert.deepEqual(Object.keys(resumed.results).sort(), Object.keys(run.season.results).sort(), "no new fixtures");
   });
 
-  await test("AI fixtures auto-simulate without becoming the user's playable fixture", async () => {
-    // User is NA; an EU-only regional completes on its own with no user involvement.
+  await test("Every event auto-simulates to completion in a full-season run", async () => {
+    // Region locking is disabled, so every team may enter every event; a full
+    // build+run resolves the whole calendar (played out, or starved/skipped).
     const run = oce.buildAndRunOpenCircuitSeason({ eraId: "ghosts", userTeamId: "optic-gaming", userPlayers: [], dynastySeed: 5 });
-    const userId = run.world.userTeamId;
+    const unresolved = run.season.calendar.all.filter((e) => !run.season.results[e.id]?.completed);
+    assert.equal(unresolved.length, 0, "every calendar event resolved");
+    // A formerly EU-only event still completes; the user's team may now be in it.
     const euEvent = run.season.results["cod_euro_champ_2014"] || run.season.results["insomnia52"];
-    assert.ok(euEvent && euEvent.completed, "EU AI event auto-completed");
-    if (!euEvent.skipped) {
-      const involvesUser = euEvent.placements.some((p) => p.teamId === userId);
-      assert.equal(involvesUser, false, "AI-only event did not pull in the user's team");
-    }
+    assert.ok(euEvent && euEvent.completed, "EU event auto-completed");
   });
 
   await test("Completed tournament placements award money and points exactly once", async () => {

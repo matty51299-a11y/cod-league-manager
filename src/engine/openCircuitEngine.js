@@ -48,9 +48,11 @@ function inferRegion(teamName, warnings) {
   return "NA";
 }
 
-function teamRegionEligible(teamRegion, eligibility) {
-  if (!eligibility || eligibility.includes("GLOBAL")) return true;
-  return eligibility.includes(teamRegion);
+function teamRegionEligible() {
+  // Region locking is intentionally disabled: for gameplay every team may enter
+  // every event (the ~28-team field competes everywhere), so the user's team is
+  // never excluded from an event on region grounds.
+  return true;
 }
 
 // ── build the circuit world from the corrected DB + the user's real roster ─────
