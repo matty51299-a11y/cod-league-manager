@@ -32,6 +32,18 @@ assert.ok(career.players.every((p) => Number.isFinite(p.gunny) && Number.isFinit
 const scump = career.players.find((p) => /scump/i.test(p.name));
 if (scump) assert.ok(scump.overall >= 80, "recognisable stars are rated as stars");
 
+// Curated era tiering: strong historical orgs out-rate the no-name field, and a
+// star (FormaL) is rated on his own merit even on a weaker team.
+const teamAvg = (teamName) => {
+  const t = career.teams.find((x) => x.name === teamName);
+  const ovrs = career.players.filter((p) => p.teamId === t.id).map((p) => p.overall).sort((a, b) => b - a).slice(0, 4);
+  return ovrs.reduce((a, b) => a + b, 0) / ovrs.length;
+};
+assert.ok(teamAvg("compLexity") > teamAvg("New Star Player") + 8, "compLexity clearly out-rate a no-name org");
+assert.ok(teamAvg("compLexity") >= teamAvg("Reign Mix") + 8, "the champions are the strongest tier");
+const formal = career.players.find((p) => /^formal$/i.test(p.name));
+if (formal) assert.ok(formal.overall >= 88, "individual stars keep a high rating on a weaker team");
+
 // ── Full new-game state: the real open circuit is built + simulated ────────────
 let started = {
   userTeamId: `historical:${user.historicalTeamId}`, userTeamType: "historical", season: 1,

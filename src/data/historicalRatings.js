@@ -37,7 +37,50 @@ const ROLE_BIAS = {
   "Flex":               { adaptability: 5, teamwork: 3, awareness: 2, objective: 3, gunny: 1, searchIQ: 1, clutch: 1, composure: 1 },
 };
 
-// Curated star index, keyed by normalised gamertag, from the authored roster.
+// ── Curated Ghosts-era overalls, keyed by normalised gamertag ──────────────────
+// Tiered so team strength reflects the real 2013/14 season: compLexity are the
+// class of the field, OpTic / EnVy / FaZe / Strictly Business are strong, then a
+// band of decent teams. Individual stars are rated on their own merit even on
+// weaker teams (e.g. FormaL 89 on an otherwise mid Team Kaliber). Outliers that
+// over-performed at a single event (VexX Revenge, Trident T1 Dotters) are kept
+// modest. Everyone not listed falls to the low depth-tier default below, so the
+// no-name orgs (New Star Player, Reign Mix, Aztek…) are correctly weak.
+const GHOSTS_OVERALLS = {
+  // compLexity — champions / best team
+  aches: 86, teepee: 85, crimsix: 89, karma: 89,
+  // Team EnVyUs
+  rambo: 82, merk: 86, nameless: 82, studyy: 85,
+  // OpTic Gaming
+  nadeshot: 83, clayster: 85, mboze: 79, scump: 88,
+  // Strictly Business
+  censor: 83, apathy: 82, saints: 80, dedo: 79,
+  // FaZe Clan
+  replays: 80, classic: 82, jkap: 85, proofy: 79,
+  // Rise Nation
+  pacman: 82, whea7s: 80, loony: 82, fears: 78,
+  // Epsilon eSports
+  jurd: 79, swanny: 82, tommey: 84, flux: 78,
+  // TCM-Gaming
+  markyb: 82, moose: 79, gunshy: 79, madcat: 80,
+  // Xfinity Gaming
+  muddawg: 78, crowster: 78, sinful: 79, doubt: 77,
+  // Team Kaliber — FormaL is a star, the rest are mid
+  sharp: 79, theory: 75, goonjar: 77, formal: 89,
+  // Vitality.Rises
+  gotaga: 74, broken: 76, krnage: 75, blue: 75,
+  // Team Immunity
+  buzzo: 76, naked: 76, shockz: 77, rampage: 75,
+  // WiLD Gaming
+  brock: 74, incepts: 74, anticity: 75, nexxx: 74,
+  // Vitality.Returns
+  agonie: 74, azox: 74, getsom: 73, dylux: 73,
+  // Outliers — decent but should not routinely finish near the top
+  iskatuu: 77, chilean: 77, denz: 76, damage: 77,        // Trident T1 Dotters
+  slumber: 76, illskill: 77, mech: 76, demon: 75,        // VexX Revenge
+};
+
+// Curated role/age/potential detail from the authored 12-slot roster (used for
+// flavour where available; overalls above take precedence).
 const CURATED = new Map();
 for (const p of GHOSTS_STARTING_ROSTER) {
   CURATED.set(normName(p.name), {
@@ -46,13 +89,21 @@ for (const p of GHOSTS_STARTING_ROSTER) {
   });
 }
 
+// Resolve a curated overall (explicit tier map first, then authored roster).
+function curatedOverall(playerId, displayName) {
+  const byName = GHOSTS_OVERALLS[normName(displayName)] ?? GHOSTS_OVERALLS[normName(playerId)];
+  if (byName != null) return byName;
+  const c = CURATED.get(normName(displayName)) || CURATED.get(normName(playerId));
+  return c ? c.overall : null;
+}
+
 // Deterministic overall for any player — curated when known, otherwise a stable
-// 66–91 spread from the playerId. Used by both the roster and the circuit engine
-// so ratings agree everywhere.
+// DEPTH-tier value (60–71) so uncurated no-name players never out-rate the real
+// pros. Used by both the roster and the circuit engine so ratings agree.
 export function historicalPlayerOverall(playerId, displayName) {
-  const curated = CURATED.get(normName(displayName)) || CURATED.get(normName(playerId));
-  if (curated) return curated.overall;
-  return 66 + (hashString(playerId) % 26);
+  const curated = curatedOverall(playerId, displayName);
+  if (curated != null) return curated;
+  return 60 + (hashString(playerId) % 12);
 }
 
 // Full, coherent player record for a historical roster entry: real overall,
@@ -61,8 +112,8 @@ export function historicalPlayerOverall(playerId, displayName) {
 export function buildHistoricalPlayerRecord({ playerId, displayName, teamId, region = "NA", eraId }) {
   const curated = CURATED.get(normName(displayName)) || CURATED.get(normName(playerId));
   const h = hashString(`${eraId || "ghosts"}|${playerId}`);
-  const overall = curated?.overall ?? (66 + (hashString(playerId) % 26));
-  const potential = curated?.potential ?? clamp(overall + 6 + (h % 12));
+  const overall = historicalPlayerOverall(playerId, displayName);
+  const potential = clamp(Math.max(curated?.potential ?? 0, overall + 2 + (h % 6)));
   const primary = curated?.primary ?? ROLES[h % ROLES.length];
   const secondary = curated?.secondary ?? "Flex";
   const age = curated?.age ?? (18 + (h % 8));
