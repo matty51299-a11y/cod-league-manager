@@ -12,7 +12,7 @@ for (const name of ["Pred", "Neptune"]) check(`${name} is in Modern free agency`
 const all = [...players, ...pool];
 const names = all.map(p => normalizePlayerName(p.name));
 check("No duplicate player identities exist across active roster and pool", names.length === new Set(names).size);
-for (const [name, teamId] of [["Pred", null], ["Neptune", null], ["Wevy", "cloud9"], ["Mercules", "optic"], ["O4", "faze"], ["Abuzah", "faze"]]) {
+for (const [name, teamId] of [["Pred", null], ["Neptune", null], ["Alluka", "riyadh"], ["Wevy", "cloud9"], ["Mercules", "optic"], ["O4", "faze"], ["Abuzah", "faze"]]) {
   check(`Player Search resolves ${name} to the correct location`, players.some(p => p.name === name && p.teamId === teamId));
 }
 console.log("Modern CDL player-pool diagnostics passed.");

@@ -8,11 +8,11 @@ import { normalizePlayerName } from "../src/utils/playerIdentity.js";
 
 const expected = {
   faze: ["Simp", "Drazah", "O4", "Abuzah"], optic: ["Shotzzy", "Dashy", "Huke", "Mercules"],
-  riyadh: ["Exnid", "Cellium", "KiSMET", "Aliuka"], paris: ["Ghosty", "Sib", "Estreal", "JoeDeceives"],
+  riyadh: ["Exnid", "Cellium", "KiSMET", "Alluka"], paris: ["Ghosty", "Sib", "Estreal", "JoeDeceives"],
   miami: ["MettalZ", "RenKoR", "SupeR", "ReeaL"], g2: ["Kremp", "Skyz", "Envoy", "Nastie"],
   toronto: ["CleanX", "Insight", "Kips", "Abe"], lat: ["Scrap", "HyDra", "aBeZy", "Nium"],
   boston: ["Purj", "Spart", "Afro", "TJHaLy"], carolina: ["Lurqxx", "Exceed", "Fire", "Standy"],
-  cloud9: ["Encourage", "Hide", "Nejra", "Wevy"], vancouver: ["LunnarZ", "Nero", "Craze", "Mamba"],
+  cloud9: ["Encourage", "Hide", "Nejra", "Wevy"], vancouver: ["Lunarz", "Nero", "Craze", "Mamba"],
 };
 const check = (label, value) => { assert.ok(value, label); console.log(`✓ ${label}`); };
 resetTeamBranding();
@@ -27,6 +27,8 @@ for (const [teamId, names] of Object.entries(expected)) {
 }
 const wevy = players.find(p => normalizePlayerName(p.name) === "wevy");
 check("Wevy is an active Cloud9 player with 76 OVR and 90 POT", wevy?.teamId === "cloud9" && wevy.overall === 76 && wevy.potential === 90);
+const alluka = players.find(p => normalizePlayerName(p.name) === "alluka");
+check("Alluka is an active RYD Falcons player with 84 OVR, 91 POT, and age 19", alluka?.teamId === "riyadh" && alluka.overall === 84 && alluka.potential === 91 && alluka.age === 19);
 for (const name of ["Pred", "Neptune"]) check(`${name} is a free agent, not an active CDL player`, players.some(p => p.name === name && p.teamId === null));
 const prospectNames = new Set(syncModernCdlChallengers(generateProspects(90210), players, normalizePlayerName).map(p => normalizePlayerName(p.name)));
 check("No active CDL player is in the Challengers pool", active.every(p => !prospectNames.has(normalizePlayerName(p.name))));

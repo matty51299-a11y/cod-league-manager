@@ -17,6 +17,7 @@ boston_snoopy,Snoopy,BOS Breach,Challengers/free agency,active,free_agent,moved_
 cloud9_okis,Okis,Cloud9 NY,Challengers/free agency,active,free_agent,moved_to_challengers_pool,Existing ratings preserved.
 miami_traix,Traix,MIA Heretics,Challengers/free agency,active,free_agent,moved_to_challengers_pool,Existing ratings preserved.
 vancouver_gwinn,Gwinn,VAN Surge,Challengers/free agency,active,free_agent,moved_to_challengers_pool,Existing ratings preserved.
+riyadh_aliuka,Alluka,Challengers pool,RYD Falcons,challengers,active,assigned_to_cdl_team,Corrected name; age 19; 84 OVR and 91 POT; excluded from Challengers.
 cloud9_wevy,Wevy,,Cloud9 NY,,active,created_new_player,Created at 76 OVR and 90 POT.
 prospect_seed_afro,Afro,Challengers pool,BOS Breach,challengers,active,removed_from_challengers_pool,Reconciled by normalized player identity.
 prospect_seed_spart,Spart,Challengers pool,BOS Breach,challengers,active,removed_from_challengers_pool,Reconciled by normalized player identity.

@@ -18,7 +18,7 @@ const STABLE_PLAYER_IDS = {
   o4: "faze_04", estreal: "g2_estreal", mamba: "g2_mamba",
   reeal: "toronto_reeal", envoy: "paris_envoy", neptune: "paris_neptune",
   pred: "riyadh_pred", joedecieves: "toronto_joedeceives", abe: "vancouver_abe",
-  gwinn: "vancouver_gwinn", lunnarz: "vancouver_lunarz", tjhaly: "vancouver_tjhaly",
+  gwinn: "vancouver_gwinn", lunarz: "vancouver_lunarz", alluka: "riyadh_aliuka", tjhaly: "vancouver_tjhaly",
 };
 
 function playerKey(name) {
@@ -223,8 +223,8 @@ export function buildInitialRoster() {
       { overall:87, potential:89, gunny:83, awareness:86, objective:86, searchIQ:84, clutch:84, teamwork:86, composure:84, adaptability:85 },
       { ego:2, workEthic:4, tiltResistance:4, leadership:3, metaDependence:2 }),        // NA
 
-    mkPlayer("Aliuka",  "riyadh", 18, "Flex",            "Entry SMG",
-      { overall:76, potential:88, gunny:78, awareness:75, objective:76, searchIQ:75, clutch:76, teamwork:77, composure:75, adaptability:82 },
+    mkPlayer("Alluka",  "riyadh", 19, "Flex",            "Entry SMG",
+      { overall:84, potential:91, gunny:86, awareness:83, objective:84, searchIQ:83, clutch:84, teamwork:85, composure:83, adaptability:89 },
       { ego:2, workEthic:4, tiltResistance:3, leadership:2, metaDependence:3 }, "EU"),
 
     // ── TORONTO KOI ───────────────────────────────────────────────────────────
@@ -249,7 +249,7 @@ export function buildInitialRoster() {
     mkPlayer("Abe",     "toronto", 22, "Slayer SMG",    "Entry SMG",
       { overall:76, potential:89, gunny:87, awareness:80, objective:74, searchIQ:80, clutch:84, teamwork:80, composure:80, adaptability:83 },
       { ego:2, workEthic:4, tiltResistance:3, leadership:2, metaDependence:3 }),
-    mkPlayer("LunnarZ", "vancouver", 21, "Entry SMG",     "Flex",
+    mkPlayer("Lunarz", "vancouver", 21, "Entry SMG",     "Flex",
       { overall:82, potential:90, gunny:84, awareness:77, objective:77, searchIQ:76, clutch:80, teamwork:79, composure:75, adaptability:86 },
       { ego:2, workEthic:4, tiltResistance:3, leadership:2, metaDependence:3 }),
     mkPlayer("TJHaLy",  "boston", 24, "Search Specialist","Main AR",
