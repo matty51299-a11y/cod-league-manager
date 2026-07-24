@@ -41,6 +41,22 @@ export function buildOffseasonCalendar(state = {}) {
   return { day, label: `Offseason ${base} Day ${day + 1}`, freeAgencyOpenDay: 5, rosterDeadlineDay: 12, seasonStartDay: 15 };
 }
 
+// A calendar belongs to one offseason only. In particular, do not carry the
+// previous offseason's final day into the next contract-review window: doing so
+// would make the first "Advance Day" immediately open free agency (and could
+// also immediately start the following season).
+export function resetOffseasonCalendar(state = {}) {
+  const previous = state?.calendar || {};
+  const base = Number(state?.season || state?.schedule?.season || 1);
+  return {
+    day: 0,
+    label: `Offseason ${base} Day 1`,
+    freeAgencyOpenDay: Number(previous.freeAgencyOpenDay ?? 5),
+    rosterDeadlineDay: Number(previous.rosterDeadlineDay ?? 12),
+    seasonStartDay: Number(previous.seasonStartDay ?? 15),
+  };
+}
+
 function currentKd(player, state) {
   const season = state?.offseason?.outgoingSeason ?? state?.season;
   const rows = (state?.playerSeasonStats?.[player?.id] || []).filter(r => Number(r.season) === Number(season) && (r.matches || 0) > 0);

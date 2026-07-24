@@ -10,7 +10,7 @@ import { buildCdlRosterNameSet, findDuplicateActivePlayers, isCdlTeamId, isInact
 import { buildSeason, simNextMatch, simMatchday, simUserMatchday, simStage, simMajor, simNextMajorMatch, simMajorRound, advanceOffseason, beginChamps, beginEswc, enterContractPhase, commitUserMatchResult, ensureChallengerTeams, buildChallengerRostersForNewGame, simChallengerQualifier, simNextChallengerQualifierMatch, simChallengerQualifierRound, simUserChallengerQualifierMatch, continueFromChallengerQualifier } from "../engine/seasonEngine.js";
 import { generateMajorFeed, generateChallengerQualFeed, generateRosterMoveFeed, generateOffseasonFeed } from "../engine/feedGenerator.js";
 import { ensureCdlRosterIntegrity, getSigningCost, getTeamCap } from "../engine/rosterAI.js";
-import { buildContractDemand, evaluateContractOffer, evaluateModernCdlPlayerOffer, getContractMemory, CONTRACT_MEMORY, migrateContractState, makePendingContractOffer, buildOffseasonCalendar } from "../engine/contractNegotiation.js";
+import { buildContractDemand, evaluateContractOffer, evaluateModernCdlPlayerOffer, getContractMemory, CONTRACT_MEMORY, migrateContractState, makePendingContractOffer, buildOffseasonCalendar, resetOffseasonCalendar } from "../engine/contractNegotiation.js";
 import { isChallengerMode, getChallengerRosterPlayers, getUserChallengerTeam } from "../utils/userTeam.js";
 import { generateChallengerBuyoutOffers, applyChallengerBuyout, buildBuyoutTransaction, isChallengerMarketOpen, getChallengerWindowKey } from "../engine/challengerMarket.js";
 import { canAffordStarterResign } from "../utils/contractBudget.js";
@@ -830,6 +830,12 @@ export function __diagnoseReducer(state, action) {
     case "ENTER_CONTRACT_PHASE": {
       if (state.pendingSeasonAwards) return state;
       let contractState = enterContractPhase({ ...state });
+      // The previous offseason's calendar is retained in a save after a new
+      // season starts. Start this review at Day 1 rather than inheriting (for
+      // example) Day 15 and skipping the entire review/free-agency window.
+      if (contractState.schedule?.phase === "contracts" && state.schedule?.phase !== "contracts") {
+        contractState = { ...contractState, calendar: resetOffseasonCalendar(contractState) };
+      }
       const expiring = (contractState.players ?? []).filter(p => p.teamId === contractState.userTeamId && p.contractYears === 1 && !p.isSub).length;
       if (expiring > 0) {
         contractState = pushInboxEvents(contractState, [makeContractReviewEvent(expiring, contractState)]);
@@ -943,6 +949,10 @@ export function __diagnoseReducer(state, action) {
       if ((next.schedule?.phase === "contracts" || next.schedule?.phase === "offseason") && !next.offseason?.freeAgencyOpen && next.calendar.day >= (next.calendar.freeAgencyOpenDay ?? 5)) {
         next = advanceOffseason({ ...next, schedule: { ...next.schedule, phase: "contracts" } });
         next = pushInboxEvents(next, [makeFreeAgencyOpenEvent(next)]);
+        // Do not allow a stale calendar in an existing save to open free
+        // agency and roll into a new season in the same click. The player must
+        // get a chance to review the newly opened market first.
+        return addNotif(next, "Free agency is now open. Sign players before advancing again.");
       }
       if (next.offseason?.freeAgencyOpen && next.calendar.day >= (next.calendar.seasonStartDay ?? 15)) {
         return __diagnoseReducer(next, { type: "ADVANCE_OFFSEASON" });
