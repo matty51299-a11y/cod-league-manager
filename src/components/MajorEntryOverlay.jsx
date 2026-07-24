@@ -25,6 +25,14 @@ export default function MajorEntryOverlay() {
   const bracket  = major?.bracket;
   const isEntered = (state.enteredMajorIdx ?? null) === majorIdx;
 
+  // A just-completed event's champion screen takes priority. After Champs the
+  // engine immediately builds the ESWC bracket (phase flips back to "major" for a
+  // NEW major index), which would otherwise pop the ESWC entry gate over the
+  // Champs completion popup. Suppress the entry gate until the completion popup
+  // for the other (finished) event is dismissed via DISMISS_MAJOR.
+  const pendingIdx = state.enteredMajorIdx ?? null;
+  if (pendingIdx != null && pendingIdx !== majorIdx && schedule.majors?.[pendingIdx]?.completed) return null;
+
   // No bracket yet, or already past the entry gate, or seeds are missing —
   // nothing meaningful to render. Skipping the overlay is safer than letting
   // downstream rendering hit `bracket.seeds.map`/`bracket.rounds[0]` on a

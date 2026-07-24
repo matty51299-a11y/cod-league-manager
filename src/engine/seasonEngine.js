@@ -30,6 +30,46 @@ import { archiveCompletedSeason } from "../utils/seasonArchive.js";
 import { calculateSeasonAwards, mergeSeasonAwards } from "../utils/seasonAwards.js";
 import { advanceHistoricalEraIfNeeded } from "./historicalDynasty.js";
 import { getEra } from "../data/codEras.js";
+import { getMajorPlacementMap } from "../utils/historyProfiles.js";
+import { resolveTeamDisplay } from "../utils/teamDisplay.js";
+
+// Build the unified Modern CDL event-completion summary for a finished major /
+// Champs. Consumed by the completion popup / a reopenable "last event" summary,
+// and by diagnostics. Pure derivation from the completed bracket — safe to call
+// while `schedule.currentMajorEventTeams` is still populated (Champs/ESWC names).
+export function buildCdlEventCompletionSummary(schedule, majorIdx, userTeamId) {
+  const major = schedule?.majors?.[majorIdx];
+  const bracket = major?.bracket;
+  if (!bracket) return null;
+  const nameFor = (id) => (id ? (resolveTeamDisplay(id, schedule)?.name ?? id) : null);
+  const placeMap = getMajorPlacementMap(major); // { teamId: placement }
+  const placements = Object.entries(placeMap)
+    .map(([teamId, placement]) => ({ teamId, name: nameFor(teamId), placement }))
+    .sort((a, b) => a.placement - b.placement);
+  const championTeamId = bracket.champion || (placements[0]?.teamId ?? null);
+  const userPlacement = userTeamId ? (placeMap[userTeamId] ?? null) : null;
+  let completedMatches = 0;
+  for (const r of bracket.rounds || []) for (const m of r.matches || []) if (m.played && !m.result?.bye) completedMatches++;
+  const isRegularMajor = majorIdx <= 3;
+  const userProPoints = isRegularMajor && userPlacement != null ? (MAJOR_PLACEMENT_POINTS[userPlacement] ?? 0) : 0;
+  return {
+    eventId: `${schedule.season ?? 0}:${major.eventType || (majorIdx === 4 ? "champs" : "major")}:${majorIdx}`,
+    eventName: major.name,
+    eventType: major.eventType || (majorIdx === 4 ? "champs" : "major"),
+    mode: "modern_cdl",
+    status: "complete",
+    majorIdx,
+    championTeamId,
+    championTeamName: nameFor(championTeamId),
+    placements,
+    userTeamId: userTeamId ?? null,
+    userPlacement,
+    proPointsAwarded: userProPoints,
+    prizeMoney: 0,
+    completedMatches,
+    summaryReady: true,
+  };
+}
 
 const CHALLENGER_QUALIFIER_TEAMS = 4;
 const CHALLENGERS_FINALS_TEAMS = 16;
@@ -2072,6 +2112,12 @@ function _advanceMajorPhase(schedule, gameState) {
 
   // Award Major placement points to CDL teams only (regular majors).
   awardMajorPlacementPoints(schedule, majorIdx);
+
+  // Unified completion summary for the just-finished event. Built BEFORE the
+  // event-team metadata is cleared so Champs/challenger names still resolve. This
+  // is the single completion object the popup and any "last event" reopen read,
+  // and it guarantees a completed CDL event always has a champion + placements.
+  schedule.lastCompletedCdlEvent = buildCdlEventCompletionSummary(schedule, majorIdx, gameState?.userTeamId);
 
   const teamIds = CDL_TEAMS.map(t => t.id);
 

@@ -610,7 +610,14 @@ export default function MajorTournamentOverlay() {
 
   const showLive     = isEntered && isMajorPhase;
   const enteredMajor = schedule.majors?.[enteredIdx];
-  const showChampion = !isMajorPhase && enteredMajor?.completed;
+  // The completion popup shows whenever the entered event is finished and we are
+  // not still playing it live. This must NOT be gated on `!isMajorPhase`: after
+  // Champs (major idx 4) the engine immediately starts ESWC, flipping the phase
+  // back to "major" for idx 5 — the old `!isMajorPhase` test then hid the Champs
+  // champion screen entirely. Gating on `!showLive` instead keeps the popup
+  // priority for Champs (and Major 4, whose phase becomes challengerQualifier)
+  // while never firing during live play (a major is never `completed` mid-play).
+  const showChampion = !!enteredMajor?.completed && !showLive;
 
   if (!showLive && !showChampion) return null;
 

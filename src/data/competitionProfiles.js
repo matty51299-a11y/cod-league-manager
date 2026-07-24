@@ -144,3 +144,22 @@ export function buildCompetitionProfile(eraId) {
 export function profileUsesOpenCircuit(profile) {
   return profile?.ecosystemType === "OPEN_CIRCUIT";
 }
+
+// Event types that are played LIVE in the interactive tournament overlay (the
+// user plays their own matches; a champion / final-placements popup appears on
+// completion). Everything else (online 2K/5K cups, multi-month league seasons)
+// is quick-simulated in a batch reveal. This is the single source of truth for
+// the distinction so the calendar, the batch simulator, the reducer and the UI
+// all agree — the batch path must NEVER complete an interactive event, or its
+// completion popup would silently never appear.
+export const INTERACTIVE_EVENT_TYPES = Object.freeze([
+  "OPEN_LAN",
+  "WORLD_CHAMPIONSHIP",
+  "INVITATIONAL",
+  "REGIONAL_CHAMPIONSHIP",
+]);
+const INTERACTIVE_EVENT_TYPE_SET = new Set(INTERACTIVE_EVENT_TYPES);
+
+export function isInteractiveCircuitEvent(eventType) {
+  return INTERACTIVE_EVENT_TYPE_SET.has(eventType);
+}

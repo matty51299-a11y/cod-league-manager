@@ -53,7 +53,7 @@ import {
 } from "../engine/eventCentreEngine.js";
 import { createHistoricalStateFields, createHistoricalCareer, migrateHistoricalDynastyState, introduceHistoricalRookieClass } from "../engine/historicalDynasty.js";
 import { ensureOpenCircuitSeason, advanceOpenCircuitEvent, simCircuitToNextMajor, stateUsesOpenCircuit } from "../engine/openCircuitCareer.js";
-import { buildCircuitTournament, simCircuitAiUntilUser, applyUserCircuitResult, finalizeCircuitTournament, simUserCircuitMatch, simCircuitToEnd } from "../engine/circuitTournament.js";
+import { buildCircuitTournament, simCircuitAiUntilUser, applyUserCircuitResult, finalizeCircuitTournament, simUserCircuitMatch, simCircuitToEnd, isInteractiveCircuitEvent } from "../engine/circuitTournament.js";
 import { applyEraTeamBranding } from "../data/historicalTeams.js";
 import { HISTORICAL_START_ERA_ID, MODERN_ERA_ID } from "../data/codEras.js";
 
@@ -204,6 +204,45 @@ function blockIfUserRosterInvalid(state) {
 function runIfUserRosterValid(state, runner) {
   const blocked = blockIfUserRosterInvalid(state);
   return blocked ?? runner();
+}
+
+// Open the LIVE interactive open-circuit tournament for `eventId`. This is the
+// single place an interactive event (Open LAN / Championship / Invitational /
+// Regional) begins — it is the ONLY surface that renders the event's completion
+// popup / champion screen, so every play path routes here for interactive events
+// instead of quick-simming them. Returns null when the event is not interactive
+// (caller should fall back to the batch quick-sim).
+function startCircuitLive(state, eventId) {
+  const t = buildCircuitTournament(state, eventId);
+  if (!t) return null;
+  // Register the field so resolveTeamDisplay / the Match Center render the
+  // historical orgs with names, tags and rosters.
+  const eventTeams = Object.fromEntries(Object.entries(t.teamsById).map(([id, m]) => [id, {
+    id, name: m.name, tag: m.tag, color: m.color,
+    players: (state.players || []).filter((p) => p.teamId === id && !p.isSub).sort((a, b) => (b.overall || 0) - (a.overall || 0)).slice(0, 4),
+  }]));
+  const withTeams = { ...state, schedule: { ...state.schedule, currentMajorEventTeams: eventTeams } };
+  const step = simCircuitAiUntilUser(t, withTeams);
+  if (step.done) return { ...finalizeCircuitTournament(withTeams, t), circuitTournament: { ...t, status: "complete" } };
+  return { ...withTeams, circuitTournament: t };
+}
+
+// After a batch quick-sim step, if it stopped before an interactive event
+// (nothing new was actually revealed — only un-fieldable events were skipped),
+// open that event's live tournament so its completion popup appears. This makes
+// the popup independent of which button the user pressed (Play Next / Sim cups
+// to next LAN both land on the live tournament for interactive events).
+function maybeStartCircuitLive(prevState, nextState) {
+  const oc = nextState?.openCircuit;
+  if (!oc || oc.error || oc.seasonComplete || nextState.circuitTournament) return nextState;
+  // If a real (non-skipped) event was just played, show its reveal instead.
+  const playedNew = (oc.playedCount || 0) > (prevState?.openCircuit?.playedCount || 0);
+  if (playedNew) return nextState;
+  const nextEv = (oc.calendar?.all || []).find((e) => e.id === oc.nextEventId);
+  if (nextEv && isInteractiveCircuitEvent(nextEv.eventType)) {
+    return startCircuitLive(nextState, oc.nextEventId) || nextState;
+  }
+  return nextState;
 }
 
 function blockIfUserOffseasonAdvanceInvalid(state) {
@@ -650,30 +689,22 @@ export function __diagnoseReducer(state, action) {
 
     // ── Open circuit: play the next tournament on the calendar ────────────
     case "SIM_NEXT_CIRCUIT_EVENT": {
-      return runIfUserRosterValid(state, () => advanceOpenCircuitEvent(state));
+      // The batch quick-sim never completes an interactive event; if it stops
+      // before one, open the live tournament so its completion popup appears.
+      return runIfUserRosterValid(state, () => maybeStartCircuitLive(state, advanceOpenCircuitEvent(state)));
     }
 
     case "SIM_CIRCUIT_TO_MAJOR": {
-      return runIfUserRosterValid(state, () => simCircuitToNextMajor(state));
+      return runIfUserRosterValid(state, () => maybeStartCircuitLive(state, simCircuitToNextMajor(state)));
     }
 
     // ── Live open-circuit LAN/championship (interactive full-field DE) ───
     case "START_CIRCUIT_EVENT": {
       return runIfUserRosterValid(state, () => {
         const eventId = action.eventId || state.openCircuit?.nextEventId;
-        const t = buildCircuitTournament(state, eventId);
-        // Cups / non-bracket events fall back to the quick event sim.
-        if (!t) return advanceOpenCircuitEvent(state);
-        // Register the field so resolveTeamDisplay / the Match Center render the
-        // historical orgs with names, tags and rosters.
-        const eventTeams = Object.fromEntries(Object.entries(t.teamsById).map(([id, m]) => [id, {
-          id, name: m.name, tag: m.tag, color: m.color,
-          players: (state.players || []).filter((p) => p.teamId === id && !p.isSub).sort((a, b) => (b.overall || 0) - (a.overall || 0)).slice(0, 4),
-        }]));
-        const withTeams = { ...state, schedule: { ...state.schedule, currentMajorEventTeams: eventTeams } };
-        const step = simCircuitAiUntilUser(t, withTeams);
-        if (step.done) return { ...finalizeCircuitTournament(withTeams, t), circuitTournament: { ...t, status: "complete" } };
-        return { ...withTeams, circuitTournament: t };
+        // Cups / non-bracket events fall back to the quick event sim (which, if it
+        // in turn lands on an interactive event, opens that live tournament).
+        return startCircuitLive(state, eventId) || maybeStartCircuitLive(state, advanceOpenCircuitEvent(state));
       });
     }
 
