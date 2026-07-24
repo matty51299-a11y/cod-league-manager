@@ -8,11 +8,11 @@ import { normalizePlayerName } from "../src/utils/playerIdentity.js";
 
 const expected = {
   faze: ["Simp", "Drazah", "O4", "Abuzah"], optic: ["Shotzzy", "Dashy", "Huke", "Mercules"],
-  riyadh: ["Exnid", "Cellium", "KiSMET", "Aliuka"], paris: ["Ghosty", "Sib", "Estreal", "JoeDeceives"],
+  riyadh: ["Exnid", "Cellium", "KiSMET", "Alluka"], paris: ["Ghosty", "Sib", "Estreal", "JoeDeceives"],
   miami: ["MettalZ", "RenKoR", "SupeR", "ReeaL"], g2: ["Kremp", "Skyz", "Envoy", "Nastie"],
   toronto: ["CleanX", "Insight", "Kips", "Abe"], lat: ["Scrap", "HyDra", "aBeZy", "Nium"],
   boston: ["Purj", "Spart", "Afro", "TJHaLy"], carolina: ["Lurqxx", "Exceed", "Fire", "Standy"],
-  cloud9: ["Encourage", "Hide", "Nejra", "Wevy"], vancouver: ["LunnarZ", "Nero", "Craze", "Mamba"],
+  cloud9: ["Encourage", "Hide", "Nejra", "Wevy"], vancouver: ["Lunarz", "Nero", "Craze", "Mamba"],
 };
 const check = (label, value) => { assert.ok(value, label); console.log(`✓ ${label}`); };
 resetTeamBranding();
