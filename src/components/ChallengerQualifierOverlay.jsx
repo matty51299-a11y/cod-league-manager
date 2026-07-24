@@ -156,6 +156,14 @@ export default function ChallengerQualifierOverlay() {
   const { schedule } = state;
   if (schedule?.phase !== "challengerQualifier") return null;
 
+  // The Challengers Finals qualifier is opened by Major 4's completion the moment
+  // Major 4 finishes. Its completion popup (the Major 4 champion screen) must show
+  // FIRST — so while an entered, completed major still has its popup up, yield and
+  // let that popup own the screen. Once dismissed (DISMISS_MAJOR clears
+  // enteredMajorIdx) this overlay renders the qualifier as normal.
+  const pendingIdx = state.enteredMajorIdx ?? null;
+  if (pendingIdx != null && schedule.majors?.[pendingIdx]?.completed) return null;
+
   const qualifier = schedule.currentChallengerQualifier;
   if (!qualifier) return null;
 

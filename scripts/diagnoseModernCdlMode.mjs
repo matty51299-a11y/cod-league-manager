@@ -1,15 +1,20 @@
 // scripts/diagnoseModernCdlMode.mjs
-// Modern CDL mode smoke test — the historical event-completion fix must NOT touch
-// the modern franchised CDL career. Verifies the modern world still builds and a
-// season still simulates through Champs (which continues to use its own major
-// overlay, not the open circuit).
+// Modern CDL mode smoke test — verifies the franchised CDL career still starts,
+// team rosters load, and the whole event calendar progresses (Stage → Qualifier →
+// Major ×4 → Challengers Finals → Champs → ESWC → Season Awards) with no route /
+// phase crash. The historical event-completion work must not regress this.
 //
 // Run: node --loader ./scripts/asset-loader.mjs scripts/diagnoseModernCdlMode.mjs
 
 import { buildInitialRoster } from "../src/data/players.js";
 import { generateProspects } from "../src/data/prospects.js";
+import { applyChallengerRatingOverride } from "../src/data/challengerRatingOverrides.js";
 import { CDL_TEAMS } from "../src/data/teams.js";
-import { buildSeason, simStage, simMajor, beginChamps } from "../src/engine/seasonEngine.js";
+import {
+  buildSeason, beginChamps, ensureChallengerTeams, buildChallengerRostersForNewGame,
+  simStage, simMajor, simChallengerQualifier, continueFromChallengerQualifier,
+} from "../src/engine/seasonEngine.js";
+import { ensureCdlRosterIntegrity } from "../src/engine/rosterAI.js";
 import { ecosystemTypeForEra } from "../src/data/competitionProfiles.js";
 import { getEra, MODERN_ERA_ID } from "../src/data/codEras.js";
 
@@ -18,38 +23,65 @@ const fail = (l, d = "") => { console.log(`❌ ${l}${d ? ` — ${d}` : ""}`); fa
 const ok = (l, d = "") => console.log(`✅ ${l}${d ? ` — ${d}` : ""}`);
 const check = (l, c, d = "") => (c ? ok(l, d) : fail(l, d));
 
-// Modern era is franchised (NOT open circuit) — the historical fix is scoped away.
-check("Modern era is FRANCHISED_CDL (not open-circuit)", ecosystemTypeForEra(getEra(MODERN_ERA_ID)) === "FRANCHISED_CDL", ecosystemTypeForEra(getEra(MODERN_ERA_ID)));
-
-const players = buildInitialRoster();
-const prospects = generateProspects(4242);
-check("Modern CDL roster builds", players.length > 0, `${players.length} players`);
+check("Modern era is FRANCHISED_CDL (not open-circuit)", ecosystemTypeForEra(getEra(MODERN_ERA_ID)) === "FRANCHISED_CDL");
 check("12 CDL franchises present", CDL_TEAMS.length === 12, `${CDL_TEAMS.length}`);
 
-let state = {
-  userTeamId: "optic", season: 1, players, prospects,
-  schedule: buildSeason(1), notifications: [], feed: [],
-  playerSeasonStats: {}, playerOvrHistory: {},
-};
-check("Modern season built (stage phase)", state.schedule.phase === "stage", state.schedule.phase);
-
-// Simulate a modern season through to Champs completion (burst sim).
-let guard = 0;
-try {
-  while (guard++ < 200) {
-    const phase = state.schedule.phase;
-    if (phase === "stage") state = simStage(state);
-    else if (phase === "major") state = simMajor(state);
-    else if (phase === "preChamps") state = beginChamps(state);
-    else break; // reached offseason/awards etc.
-  }
-  ok("Modern season simulated without crashing", `stopped at phase=${state.schedule.phase}`);
-} catch (e) {
-  fail("Modern season simulation", e.message);
+function makeState(seed = 555) {
+  const state = {
+    userTeamId: "optic", season: 1,
+    players: buildInitialRoster().map(applyChallengerRatingOverride),
+    prospects: generateProspects(seed).map(applyChallengerRatingOverride),
+    schedule: buildSeason(1),
+    notifications: [], feed: [], playerSeasonStats: {}, playerOvrHistory: {},
+    retiredPlayers: [], challengersLog: [], challengerTransactions: [], seenAwardsSeasons: [],
+    enteredMajorIdx: null,
+  };
+  buildChallengerRostersForNewGame(state, seed);
+  ensureChallengerTeams(state);
+  return ensureCdlRosterIntegrity(state, { windowType: "diagnose_modern_cdl_mode" });
 }
 
-const matchesPlayed = (state.schedule.matchLog || []).length;
-check("Modern season produced matches", matchesPlayed > 0, `${matchesPlayed} matches`);
+let state;
+try {
+  state = makeState();
+  ok("Modern CDL career state built");
+} catch (e) { fail("Modern CDL career build", e.message); process.exit(1); }
+
+check("Season starts in stage phase", state.schedule.phase === "stage");
+check("User roster loaded (≥4 starters)", state.players.filter(p => p.teamId === "optic" && !p.isSub).length >= 4);
+check("All 12 CDL teams have a bracket-ready roster", CDL_TEAMS.every(t => state.players.filter(p => p.teamId === t.id && !p.isSub).length >= 4));
+
+// Drive the whole competitive calendar; assert phases progress without crashing.
+try {
+  for (let m = 0; m < 4; m++) {
+    state = simStage(state);
+    state = simChallengerQualifier(state);
+    state = continueFromChallengerQualifier(state);
+    check(`Major ${m + 1}: entered major phase`, state.schedule.phase === "major" && state.schedule.majorIdx === m);
+    state = simMajor(state);
+    check(`Major ${m + 1}: completed`, !!state.schedule.majors[m]?.completed);
+  }
+  // Major 4 → Challengers Finals → Pre-Champs.
+  state = simChallengerQualifier(state);
+  state = continueFromChallengerQualifier(state);
+  check("Reached Pre-Champs after Challengers Finals", state.schedule.phase === "preChamps");
+
+  state = beginChamps(state);
+  check("Champs started", state.schedule.phase === "major" && state.schedule.majorIdx === 4);
+  state = simMajor(state);
+  check("Champs completed", !!state.schedule.majors[4]?.completed);
+  check("ESWC begins after Champs (idx 5)", state.schedule.phase === "major" && state.schedule.majorIdx === 5);
+
+  state = simMajor(state); // ESWC
+  check("ESWC completed", !!state.schedule.majors[5]?.completed);
+  check("Season Awards gated after ESWC", !!state.pendingSeasonAwards || state.schedule.phase === "offseason");
+} catch (e) {
+  fail("Modern CDL calendar progression", `${e.message}`);
+}
+
+const matches = state.schedule.matchLog?.length ?? 0;
+check("Matches were simulated across the season", matches > 0, `${matches} matches`);
+check("A completion summary is recorded for the last event", !!state.schedule.lastCompletedCdlEvent?.summaryReady);
 
 console.log("");
 if (failures) { console.error(`Modern CDL mode FAILED: ${failures} issue(s).`); process.exit(1); }
