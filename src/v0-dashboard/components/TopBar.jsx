@@ -1,7 +1,12 @@
-// Ported verbatim from the v0 project's components/manager/top-bar.tsx (TS types stripped only).
+// Adapted from the v0 project's components/manager/top-bar.tsx — markup and
+// classes unchanged. "Continue" now runs the same play action as the hero
+// banner's Play button, the Next Event pill shows the real next event, and
+// Save persists the real save (same localStorage key the main app uses).
+// The back/forward/settings/help icons have no real-app equivalent to wire
+// up yet, so they're left inert rather than given invented behavior.
 import { ChevronLeft, ChevronRight, Save, Settings, HelpCircle, Play } from 'lucide-react'
 
-export function TopBar() {
+export function TopBar({ season, nextEventName, onContinue, continueDisabled, onSave }) {
   return (
     <header className="flex h-11 shrink-0 items-center justify-between border-b border-border bg-arena px-3">
       <div className="flex items-center gap-3">
@@ -17,21 +22,32 @@ export function TopBar() {
           Dynasty Manager
         </span>
         <span className="rounded-sm bg-brand/15 px-1.5 py-0.5 font-condensed text-[11px] font-bold text-brand">
-          S1
+          S{season ?? 1}
         </span>
       </div>
 
       <div className="flex items-center gap-2">
         <div className="hidden items-center gap-2 rounded-sm border border-border bg-panel px-3 py-1 md:flex">
           <span className="text-[11px] uppercase tracking-wide text-muted-foreground">Next Event</span>
-          <span className="text-[13px] font-medium text-foreground">Astro CoD: Ghosts Cup</span>
+          <span className="text-[13px] font-medium text-foreground">{nextEventName ?? 'Season complete'}</span>
         </div>
-        <button className="flex items-center gap-1.5 rounded-sm bg-gold px-3 py-1.5 font-condensed text-[13px] font-bold uppercase tracking-wide text-gold-foreground transition-colors hover:brightness-105">
+        <button
+          className="flex items-center gap-1.5 rounded-sm bg-gold px-3 py-1.5 font-condensed text-[13px] font-bold uppercase tracking-wide text-gold-foreground transition-colors hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+          onClick={onContinue}
+          disabled={continueDisabled}
+        >
           <Play className="size-3.5 fill-current" />
           Continue
         </button>
         <div className="ml-1 flex items-center gap-0.5">
-          {[Save, Settings, HelpCircle].map((Icon, i) => (
+          <button
+            onClick={onSave}
+            title="Save game"
+            className="flex size-7 items-center justify-center rounded-sm text-muted-foreground hover:bg-white/5 hover:text-foreground"
+          >
+            <Save className="size-4" />
+          </button>
+          {[Settings, HelpCircle].map((Icon, i) => (
             <button
               key={i}
               className="flex size-7 items-center justify-center rounded-sm text-muted-foreground hover:bg-white/5 hover:text-foreground"

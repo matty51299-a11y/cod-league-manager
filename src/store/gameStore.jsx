@@ -538,9 +538,13 @@ export function __diagnoseReducer(state, action) {
       // Backfill `feed` for saves that predate this feature
       const loaded = {
         ...action.state,
-        // Existing saves are CDL manager saves — default to "cdl", never migrate
-        // a CDL save into Challenger mode.
-        userTeamType: action.state?.userTeamType === "challenger" ? "challenger" : "cdl",
+        // Preserve the save's actual career type. Saves with no userTeamType
+        // predate this field entirely and are always CDL manager saves —
+        // default those (and anything unrecognized) to "cdl", but never
+        // collapse an existing Challenger or Historical Dynasty save into it.
+        userTeamType: action.state?.userTeamType === "challenger" ? "challenger"
+          : action.state?.userTeamType === "historical" ? "historical"
+          : "cdl",
         feed: action.state?.feed ?? [],
         seasonHistory: action.state?.seasonHistory ?? [],
         playerCareerHistory: action.state?.playerCareerHistory ?? [],

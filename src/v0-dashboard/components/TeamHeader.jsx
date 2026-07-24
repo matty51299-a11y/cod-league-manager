@@ -1,6 +1,7 @@
-// Ported verbatim from the v0 project's components/manager/team-header.tsx (TS types stripped only).
+// Adapted from the v0 project's components/manager/team-header.tsx — markup,
+// classes and structure are unchanged; the hardcoded "OPT"/"OpTic Gaming"/
+// stats placeholders are now props sourced from real game state (Phase 3).
 import { Play } from 'lucide-react'
-import { stats } from '../data.js'
 import { cn } from '../utils.js'
 
 const toneMap = {
@@ -10,7 +11,7 @@ const toneMap = {
   neutral: 'text-foreground',
 }
 
-export function TeamHeader() {
+export function TeamHeader({ team, eyebrow, description, stats, onPlayNext, playLabel, playDisabled }) {
   return (
     <div className="overflow-hidden rounded-sm border border-border">
       {/* Banner */}
@@ -30,23 +31,26 @@ export function TeamHeader() {
         />
         <div className="relative flex items-center gap-4 px-5 py-4">
           <div className="flex size-16 shrink-0 items-center justify-center rounded-full border-2 border-brand bg-arena/80 font-condensed text-xl font-bold tracking-wider text-brand">
-            OPT
+            {team?.tag ?? '—'}
           </div>
           <div className="min-w-0 flex-1">
             <div className="font-condensed text-[11px] font-semibold uppercase tracking-[0.22em] text-gold">
-              Historical Dynasty · Open Circuit
+              {eyebrow}
             </div>
             <h1 className="font-condensed text-3xl font-bold uppercase leading-tight tracking-wide text-foreground">
-              OpTic Gaming
+              {team?.name ?? 'Your Organisation'}
             </h1>
             <p className="max-w-xl text-pretty text-[12px] leading-relaxed text-foreground/70">
-              Call of Duty: Ghosts · 2013/14 — play through online 2K/5K cups, open LANs, league play
-              and the Championship. Pro Points decide seeding.
+              {description}
             </p>
           </div>
-          <button className="hidden shrink-0 items-center gap-2 rounded-sm bg-gold px-4 py-2.5 font-condensed text-sm font-bold uppercase tracking-wide text-gold-foreground transition-colors hover:brightness-105 sm:flex">
+          <button
+            className="hidden shrink-0 items-center gap-2 rounded-sm bg-gold px-4 py-2.5 font-condensed text-sm font-bold uppercase tracking-wide text-gold-foreground transition-colors hover:brightness-105 sm:flex disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={onPlayNext}
+            disabled={playDisabled}
+          >
             <Play className="size-4 fill-current" />
-            Play Next Event
+            {playLabel}
           </button>
         </div>
       </div>
