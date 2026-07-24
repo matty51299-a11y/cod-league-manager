@@ -8,6 +8,7 @@
 import { useEffect, useState } from "react";
 import { useGame } from "../store/gameStore.jsx";
 import CircuitBracket from "./CircuitBracket.jsx";
+import { isInteractiveCircuitEvent } from "../engine/circuitTournament.js";
 
 function ordinal(n) {
   const v = Number(n); if (!v) return "—";
@@ -32,6 +33,13 @@ export default function CircuitMatchOverlay({ isOpen, onClose }) {
   useEffect(() => { if (isOpen) { setSeriesIdx(0); setRevealed(0); } }, [isOpen, eventId]);
 
   if (!isOpen || !state) return null;
+  // The batch reveal is only for quick-simmed cups / league seasons. Interactive
+  // events (Open LAN / Championship / Invitational / Regional) are played and
+  // resolved in the live tournament overlay, which owns their completion popup —
+  // never show a second summary for them, and never show while a live tournament
+  // is active (its champion screen is the popup).
+  if (state.circuitTournament) return null;
+  if (result && isInteractiveCircuitEvent(result.eventType)) return null;
 
   const userTeamName = oc?.teamsById?.[state.userTeamId]?.name || "Your team";
   const userMatches = result?.userMatches || [];

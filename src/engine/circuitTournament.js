@@ -16,15 +16,15 @@ import { simMatch } from "./matchSim.js";
 import {
   migrateProPointsStore, ensureSeason, awardTournamentPoints, rankTeamsByProPoints, eligibleLockedRoster,
 } from "./proPoints.js";
-import { buildCompetitionProfile } from "../data/competitionProfiles.js";
-
-const INTERACTIVE_EVENT_TYPES = new Set(["OPEN_LAN", "WORLD_CHAMPIONSHIP", "INVITATIONAL", "REGIONAL_CHAMPIONSHIP"]);
+import { buildCompetitionProfile, isInteractiveCircuitEvent } from "../data/competitionProfiles.js";
 
 function hashString(str) { let h = 2166136261; for (const ch of String(str || "")) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
 export function circuitTeamTag(name) { return String(name || "").replace(/[^A-Za-z0-9]/g, "").slice(0, 3).toUpperCase() || "HST"; }
 export function circuitTeamColor(id) { return `hsl(${hashString(id) % 360} 62% 58%)`; }
 
-export function isInteractiveCircuitEvent(eventType) { return INTERACTIVE_EVENT_TYPES.has(eventType); }
+// Re-exported from competitionProfiles (single source of truth) for callers that
+// import it from the tournament engine.
+export { isInteractiveCircuitEvent };
 
 // Resolve the event template (for the point table + prize) for an era + id.
 function findEventTemplate(state, eventId) {
@@ -247,21 +247,49 @@ export function finalizeCircuitTournament(state, tournament) {
 
   const bracketView = circuitBracketView(tournament);
 
-  // Summary result for the Circuit / Standings / Dashboard.
+  // Full final placements (every team in the field, champion first) — the single
+  // source of truth shared by the completion popup and any Placements tab.
+  const finalPlacements = allPlacements.slice().sort((a, b) => a.placement - b.placement)
+    .map((p) => ({ rank: p.placement, teamId: p.teamId, name: nm(p.teamId) }));
+  const championTeamId = tournament.bracket.champion || (finalPlacements[0] && finalPlacements[0].teamId) || null;
+
+  // Summary result for the Circuit / Standings / Dashboard. This is the unified
+  // event-completion object: every completed event (interactive OR batch) exposes
+  // the same minimum fields so any surface can render a safe completion screen.
   const summary = {
-    completed: true, skipped: false,
-    name: tournament.name, eventType: tournament.eventType, tier: tournament.tier,
+    // identity
+    eventId: tournament.eventId,
+    eventName: tournament.name,
+    name: tournament.name,
+    eraId: state.currentEraId || oc.seasonId || tournament.seasonId,
+    gameTitle: state.currentGameTitle || null,
+    eventType: tournament.eventType,
+    eventTier: tournament.tier,
+    tier: tournament.tier,
+    // status
+    completed: true, skipped: false, status: "complete", summaryReady: true,
+    completedOrder: Object.values(oc.sim?.results || {}).filter((r) => r.completed && !r.skipped).length + 1,
     startDate: (oc.calendar?.all || []).find((e) => e.id === tournament.eventId)?.startDate,
     fieldSize: tournament.fieldSize,
+    // champion
+    championTeamId,
+    championTeamName: championTeamId ? nm(championTeamId) : null,
+    // user
+    userTeamId,
     userInField: true,
     userPlacement: userPl ? userPl.placement : null,
     userPoints: userAward ? userAward.pointsPerPlayer : 0,
+    userProPointsEarned: userAward ? userAward.pointsPerPlayer : 0,
     userPrize: userAward ? userAward.teamPrize : 0,
+    // placements (top-8 kept as `placements` for existing readers; full ladder in
+    // `finalPlacements` — both derive from the same computeLivePlacements source).
     phases: ["Registration", "Championship Bracket"],
-    placements: allPlacements.slice().sort((a, b) => a.placement - b.placement).slice(0, 8)
-      .map((p) => ({ rank: p.placement, teamId: p.teamId, name: nm(p.teamId) })),
+    placements: finalPlacements.slice(0, 8),
+    finalPlacements,
+    proPointsAwarded: !!(award.awards && award.awards.length),
     awards: (award.awards || []).slice(0, 3)
       .map((a) => ({ placement: a.placement, teamId: a.teamId, name: nm(a.teamId), pointsPerPlayer: a.pointsPerPlayer, teamPrize: a.teamPrize })),
+    completedMatches: (tournament.matchLog || []).length,
     userMatches,
     bracket: bracketView,
   };

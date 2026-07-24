@@ -76,15 +76,35 @@ function assembleOpenCircuit(run, buildKey) {
     // truncated to the top 8, so a >8th finish must not read as "not in field").
     const userPl = (r.placements || []).find((p) => p.teamId === userTeamId);
     const userAward = userPl && (r.awards || []).find((a) => a.placement === userPl.placement);
+    // Full final placements + a safe champion fallback so a batch-completed event
+    // is never left without a champion / placements (the completion object is the
+    // same shape as the live tournament's — one source of truth for both surfaces).
+    const orderedPlacements = (r.placements || []).slice().sort((a, b) => a.placement - b.placement);
+    const finalPlacements = orderedPlacements.map((p) => ({ rank: p.placement, teamId: p.teamId, name: named(p.teamId) }));
+    const championTeamId = (r.bracket && r.bracket.champion)
+      || (orderedPlacements[0] && orderedPlacements[0].teamId) || null;
     results[id] = {
-      completed: true, skipped: !!r.skipped,
-      name: r.name, eventType: r.eventType, tier: r.tier, startDate: r.startDate, fieldSize: r.fieldSize || 0,
+      // identity
+      eventId: id, eventName: r.name, name: r.name,
+      eraId: seasonId, gameTitle: profile.gameTitle || null,
+      eventType: r.eventType, eventTier: r.tier, tier: r.tier, startDate: r.startDate, fieldSize: r.fieldSize || 0,
+      // status
+      completed: true, skipped: !!r.skipped, status: r.skipped ? "skipped" : "complete", summaryReady: !r.skipped,
+      // champion
+      championTeamId: r.skipped ? null : championTeamId,
+      championTeamName: r.skipped || !championTeamId ? null : named(championTeamId),
+      // user
+      userTeamId,
       userInField: !!userPl,
       userPlacement: userPl ? userPl.placement : null,
       userPoints: userAward ? userAward.pointsPerPlayer : 0,
+      userProPointsEarned: userAward ? userAward.pointsPerPlayer : 0,
       userPrize: userAward ? userAward.teamPrize : 0,
       phases: (r.phases || []).map((p) => p.phase),
-      placements: (r.placements || []).slice(0, 8).map((p) => ({ rank: p.placement, teamId: p.teamId, name: named(p.teamId) })),
+      placements: finalPlacements.slice(0, 8),
+      finalPlacements,
+      proPointsAwarded: !r.skipped && !!(r.awards && r.awards.length),
+      completedMatches: (r.userMatches || []).length,
       awards: (r.awards || []).slice(0, 3).map((a) => ({ placement: a.placement, teamId: a.teamId, name: named(a.teamId), pointsPerPlayer: a.pointsPerPlayer, teamPrize: a.teamPrize })),
       userMatches: (r.userMatches || []).map((m) => ({ phase: m.phase, opponent: named(m.opponent), won: m.won, score: m.score, maps: m.maps || [] })),
       bracket: r.bracket ? {
@@ -180,7 +200,7 @@ export function advanceOpenCircuitEvent(state) {
   const userPlayers = getUserRosterForCircuit(state);
   const run = buildAndRunOpenCircuitSeason({
     eraId: state.currentEraId, userTeamId: oc.userTeamId, userPlayers, dynastySeed,
-    existing: oc.sim, maxNewEvents: 1,
+    existing: oc.sim, maxNewEvents: 1, stopBeforeInteractive: true,
   });
   if (!run.world) return state;
 

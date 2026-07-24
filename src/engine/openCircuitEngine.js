@@ -9,7 +9,7 @@
 // never regenerates fixtures or awards points twice.
 
 import { buildHistoricalSeasonTemplate, getValidationWarningsForSeason } from "../data/historicalRosterDb.js";
-import { buildCompetitionProfile } from "../data/competitionProfiles.js";
+import { buildCompetitionProfile, isInteractiveCircuitEvent } from "../data/competitionProfiles.js";
 import { historicalPlayerOverall } from "../data/historicalRatings.js";
 import { applyHistoricalSeasonTemplate } from "./seasonRosterEngine.js";
 import {
@@ -305,6 +305,14 @@ export function simulateOpenCircuitSeason(world, profile, options = {}) {
   // schedule without playing anything (season starts unplayed), 1 plays the next
   // real event (rolling past AI-only "no field" skips), Infinity plays it all.
   const maxNewEvents = options.maxNewEvents ?? Infinity;
+  // When set, the batch simulator refuses to auto-complete an INTERACTIVE event
+  // (Open LAN / World Championship / Invitational / Regional). Those must be
+  // played live in the tournament overlay, which is the only place their
+  // completion popup / champion screen appears — so the quick-sim path stops
+  // before them (any un-fieldable events it rolled past are still recorded as
+  // skips first). Without this, the "quick sim to next LAN" / cup-reveal paths
+  // would silently finish Champs and other LAN events with no popup.
+  const stopBeforeInteractive = !!options.stopBeforeInteractive;
   const userTeamId = options.userTeamId || null;
   const proStore = ensureSeason(migrateProPointsStore(options.proStore), seasonId);
   const calendar = options.calendar || buildSeasonCalendar(profile);
@@ -342,6 +350,11 @@ export function simulateOpenCircuitSeason(world, profile, options = {}) {
     // (non-skipped) events. Checked after the resume-bookkeeping above so prior
     // commitments are always re-applied first.
     if (newlyCompleted >= maxNewEvents) break;
+    // Never auto-complete an interactive event from the batch path: leave it
+    // incomplete (it becomes the next event) so the UI opens the live tournament
+    // with its completion popup. Any un-fieldable events earlier in date order
+    // have already been recorded as skips above, so nextEventId lands here.
+    if (stopBeforeInteractive && isInteractiveCircuitEvent(template.eventType)) break;
     // Eligible = active, region-eligible, not busy in an overlapping event.
     const eligible = allTeamIds.filter((id) => {
       const team = world.teams[id];
@@ -418,7 +431,7 @@ export function simulateOpenCircuitSeason(world, profile, options = {}) {
 
 // One-call builder: from an era id + the user's team + protected roster, build
 // the world, reconcile the historical target, and simulate the whole season.
-export function buildAndRunOpenCircuitSeason({ eraId, userTeamId, userPlayers = [], dynastySeed = 0, existing = null, maxNewEvents = Infinity }) {
+export function buildAndRunOpenCircuitSeason({ eraId, userTeamId, userPlayers = [], dynastySeed = 0, existing = null, maxNewEvents = Infinity, stopBeforeInteractive = false }) {
   const dbTemplate = buildHistoricalSeasonTemplate(eraId);
   const profile = buildCompetitionProfile(eraId);
   if (!dbTemplate) {
@@ -437,6 +450,7 @@ export function buildAndRunOpenCircuitSeason({ eraId, userTeamId, userPlayers = 
     proStore: existing?.proStore,
     results: existing?.results,
     maxNewEvents,
+    stopBeforeInteractive,
     userTeamId: reconciledWorld.userTeamId,
   });
   return { profile, world: reconciledWorld, reconciliationConflicts: recon.conflicts, season, warnings };
