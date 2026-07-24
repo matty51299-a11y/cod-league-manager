@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { buildContractDemand, evaluateContractOffer, CONTRACT_ROLES, fmtSalary } from "../engine/contractNegotiation.js";
+import { buildContractDemand, evaluateModernCdlPlayerOffer, CONTRACT_ROLES, fmtSalary } from "../engine/contractNegotiation.js";
 import { getSigningCost } from "../engine/rosterAI.js";
 
 export default function ContractNegotiationModal({ player, state, mode = "resign", slot = "starter", onClose, onSubmit }) {
@@ -12,16 +12,20 @@ export default function ContractNegotiationModal({ player, state, mode = "resign
   const [starterStatus, setStarterStatus] = useState(slot);
   const [transferReviewPromise, setTransferReviewPromise] = useState(false);
   const [developmentPromise, setDevelopmentPromise] = useState(demand.wantedRole === "Prospect");
-  const preview = evaluateContractOffer(player, state, { years, salary, signingBonus, yearlyRise, rolePromise, starterStatus, transferReviewPromise, developmentPromise }, { type: mode === "sign" ? "signing" : "resign", teamId: state.userTeamId, asSub: starterStatus === "sub" });
+  const [feedback, setFeedback] = useState(null);
+  const offer = { years, salary, signingBonus, yearlyRise, rolePromise, starterStatus, transferReviewPromise, developmentPromise };
+  const modernOffer = mode === "sign" ? evaluateModernCdlPlayerOffer(state, player.id, offer) : null;
+  const preview = modernOffer?.evaluation;
   const cur = player.salary ?? getSigningCost(player);
   const interest = demand.interest?.level === "None" ? "No clear outside interest" : `${demand.interest.level} outside interest`;
-  return <div className="modal-backdrop contract-modal-backdrop" onClick={onClose}>
+  return <div className="contract-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="contract-negotiation-title" onClick={onClose}>
     <div className="modal-card contract-negotiation-modal" onClick={e => e.stopPropagation()}>
       <div className="modal-header contract-modal-header">
-        <div><span className="contract-kicker">Agent negotiation</span><h2>{player.name}</h2><p>{demand.message}</p></div>
+        <div><span className="contract-kicker">Agent negotiation</span><h2 id="contract-negotiation-title">{player.name}</h2><p>{demand.message}</p></div>
         <button className="btn-ghost contract-close" onClick={onClose}>✕</button>
       </div>
-      <div className="contract-agent-box"><strong>Agent feedback</strong><span>{preview.qualitative}</span><em>{interest}. No exact acceptance odds are available.</em></div>
+      <div className="contract-agent-box"><strong>Agent feedback</strong><span>{preview?.qualitative || demand.message}</span><em>{interest}. Expected salary: {fmtSalary(demand.salary)} · Preferred role: {demand.wantedRole}.</em></div>
+      {feedback && <div className="ui-warning-banner"><strong>Offer rejected:</strong> {feedback.reason} <br /><span>{feedback.requiredAction}</span></div>}
       <div className="contract-modal-grid">
         <div className="contract-player-card">
           <div><span>Current salary</span><strong>{fmtSalary(cur)}</strong></div>
@@ -40,7 +44,10 @@ export default function ContractNegotiationModal({ player, state, mode = "resign
           <label className="contract-check"><input type="checkbox" checked={developmentPromise} onChange={e => setDevelopmentPromise(e.target.checked)} /> Development promise for prospect</label>
         </div>
       </div>
-      <div className="modal-actions contract-actions"><button className="btn-secondary" onClick={onClose}>Walk away</button><button className="btn-primary" onClick={() => onSubmit({ years, salary, signingBonus, yearlyRise, rolePromise, starterStatus, transferReviewPromise, developmentPromise })}>Submit Offer</button></div>
+      <div className="modal-actions contract-actions"><button className="btn-secondary" onClick={onClose}>Walk away</button><button className="btn-primary" onClick={() => {
+        if (modernOffer && !modernOffer.accepted) { setFeedback(modernOffer); return; }
+        onSubmit(offer);
+      }}>Submit Offer</button></div>
     </div>
   </div>;
 }

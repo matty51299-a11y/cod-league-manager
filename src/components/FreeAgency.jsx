@@ -260,7 +260,7 @@ export default function FreeAgency() {
                         {disabledReason}
                       </span>
                     ) : (
-                      <button className="btn-primary-sm" onClick={() => challengerMode ? handleSign(p.id) : setNegPlayer(p)}>{challengerMode ? "Sign" : "Negotiate"}</button>
+                      <button className="btn-primary-sm" onClick={() => challengerMode ? handleSign(p.id) : setNegPlayer(p)}>{challengerMode ? "Sign" : "Make Offer"}</button>
                     )}
                   </td>
                 </tr>
