@@ -166,3 +166,16 @@ export function generateProspects(seed = 42) {
 
   return [...generated, ...inferred];
 }
+
+// Modern CDL bootstrap reconciliation. Active pros always win identity conflicts;
+// the pool keeps only unsigned Challenger candidates with distinct normalized names.
+export function syncModernCdlChallengers(rawProspects, activePlayers, normalizeName = (name) => String(name).toLowerCase().replace(/[^a-z0-9]/g, "")) {
+  const existingNames = new Set((activePlayers || []).map(p => normalizeName(p.name)));
+  const seen = new Set();
+  return (rawProspects || []).filter((prospect) => {
+    const key = normalizeName(prospect.name);
+    if (!key || existingNames.has(key) || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}

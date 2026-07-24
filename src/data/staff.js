@@ -53,7 +53,7 @@ export const STARTING_STAFF = [
   },
   {
     id: "staff_scump",
-    name: "Scump",
+    name: "JP Krez",
     role: "assistant_gm",
     currentTeamId: "optic",
     age: 32,
@@ -76,7 +76,7 @@ export const STARTING_STAFF = [
   // ── Los Angeles Thieves ──────────────────────────────────────────────────────
   {
     id: "staff_sender",
-    name: "Sender",
+    name: "Shane",
     role: "head_coach",
     currentTeamId: "lat",
     age: 29,
@@ -97,7 +97,7 @@ export const STARTING_STAFF = [
   },
   {
     id: "staff_formal",
-    name: "FormaL",
+    name: "Sender",
     role: "assistant_gm",
     currentTeamId: "lat",
     age: 32,
@@ -141,7 +141,7 @@ export const STARTING_STAFF = [
   },
   {
     id: "staff_attach",
-    name: "Attach",
+    name: "Magxck",
     role: "assistant_gm",
     currentTeamId: "boston",
     age: 30,
@@ -229,7 +229,7 @@ export const STARTING_STAFF = [
   },
   {
     id: "staff_crimsix",
-    name: "Crimsix",
+    name: "RJ",
     role: "assistant_gm",
     currentTeamId: "faze",
     age: 35,
@@ -273,7 +273,7 @@ export const STARTING_STAFF = [
   },
   {
     id: "staff_octane",
-    name: "Octane",
+    name: "Alexdotzip",
     role: "assistant_gm",
     currentTeamId: "g2",
     age: 30,
@@ -317,7 +317,7 @@ export const STARTING_STAFF = [
   },
   {
     id: "staff_enable",
-    name: "Enable",
+    name: "Mutab",
     role: "assistant_gm",
     currentTeamId: "riyadh",
     age: 33,
@@ -384,7 +384,7 @@ export const STARTING_STAFF = [
   // ── Miami Heretics ───────────────────────────────────────────────────────────
   {
     id: "staff_sikotik",
-    name: "Sikotik",
+    name: "MethodZ",
     role: "head_coach",
     currentTeamId: "miami",
     age: 31,
@@ -405,7 +405,7 @@ export const STARTING_STAFF = [
   },
   {
     id: "staff_methodz",
-    name: "Methodz",
+    name: "Lucky",
     role: "assistant_gm",
     currentTeamId: "miami",
     age: 31,
@@ -428,7 +428,7 @@ export const STARTING_STAFF = [
   // ── Paris Gentle Mates ───────────────────────────────────────────────────────
   {
     id: "staff_veohz",
-    name: "Veohz",
+    name: "Mayhem",
     role: "head_coach",
     currentTeamId: "paris",
     age: 32,
@@ -449,7 +449,7 @@ export const STARTING_STAFF = [
   },
   {
     id: "staff_bance",
-    name: "Bance",
+    name: "Cheek",
     role: "assistant_gm",
     currentTeamId: "paris",
     age: 30,
@@ -493,7 +493,7 @@ export const STARTING_STAFF = [
   },
   {
     id: "staff_revan",
-    name: "Revan",
+    name: "Jokrr",
     role: "assistant_gm",
     currentTeamId: "vancouver",
     age: 28,
@@ -516,7 +516,7 @@ export const STARTING_STAFF = [
   // ── Carolina Royal Ravens ────────────────────────────────────────────────────
   {
     id: "staff_briansaint",
-    name: "Brian Saint",
+    name: "Saint",
     role: "head_coach",
     currentTeamId: "carolina",
     age: 35,
@@ -537,7 +537,7 @@ export const STARTING_STAFF = [
   },
   {
     id: "staff_jkap",
-    name: "JKap",
+    name: "Quids",
     role: "assistant_gm",
     currentTeamId: "carolina",
     age: 35,
@@ -816,7 +816,7 @@ export const STARTING_STAFF = [
   },
   {
     id: "staff_nova",
-    name: "Nova",
+    name: "JPerry",
     role: "analyst",
     currentTeamId: "riyadh",
     age: 24,
