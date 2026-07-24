@@ -18,10 +18,10 @@ export default function ContractNegotiationModal({ player, state, mode = "resign
   const preview = modernOffer?.evaluation;
   const cur = player.salary ?? getSigningCost(player);
   const interest = demand.interest?.level === "None" ? "No clear outside interest" : `${demand.interest.level} outside interest`;
-  return <div className="modal-backdrop contract-modal-backdrop" onClick={onClose}>
+  return <div className="contract-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="contract-negotiation-title" onClick={onClose}>
     <div className="modal-card contract-negotiation-modal" onClick={e => e.stopPropagation()}>
       <div className="modal-header contract-modal-header">
-        <div><span className="contract-kicker">Agent negotiation</span><h2>{player.name}</h2><p>{demand.message}</p></div>
+        <div><span className="contract-kicker">Agent negotiation</span><h2 id="contract-negotiation-title">{player.name}</h2><p>{demand.message}</p></div>
         <button className="btn-ghost contract-close" onClick={onClose}>✕</button>
       </div>
       <div className="contract-agent-box"><strong>Agent feedback</strong><span>{preview?.qualitative || demand.message}</span><em>{interest}. Expected salary: {fmtSalary(demand.salary)} · Preferred role: {demand.wantedRole}.</em></div>
