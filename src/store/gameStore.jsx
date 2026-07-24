@@ -10,7 +10,7 @@ import { buildCdlRosterNameSet, findDuplicateActivePlayers, isCdlTeamId, isInact
 import { buildSeason, simNextMatch, simMatchday, simUserMatchday, simStage, simMajor, simNextMajorMatch, simMajorRound, advanceOffseason, beginChamps, beginEswc, enterContractPhase, commitUserMatchResult, ensureChallengerTeams, buildChallengerRostersForNewGame, simChallengerQualifier, simNextChallengerQualifierMatch, simChallengerQualifierRound, simUserChallengerQualifierMatch, continueFromChallengerQualifier } from "../engine/seasonEngine.js";
 import { generateMajorFeed, generateChallengerQualFeed, generateRosterMoveFeed, generateOffseasonFeed } from "../engine/feedGenerator.js";
 import { ensureCdlRosterIntegrity, getSigningCost, getTeamCap } from "../engine/rosterAI.js";
-import { buildContractDemand, evaluateContractOffer, getContractMemory, CONTRACT_MEMORY, migrateContractState, makePendingContractOffer, buildOffseasonCalendar } from "../engine/contractNegotiation.js";
+import { buildContractDemand, evaluateContractOffer, evaluateModernCdlPlayerOffer, getContractMemory, CONTRACT_MEMORY, migrateContractState, makePendingContractOffer, buildOffseasonCalendar } from "../engine/contractNegotiation.js";
 import { isChallengerMode, getChallengerRosterPlayers, getUserChallengerTeam } from "../utils/userTeam.js";
 import { generateChallengerBuyoutOffers, applyChallengerBuyout, buildBuyoutTransaction, isChallengerMarketOpen, getChallengerWindowKey } from "../engine/challengerMarket.js";
 import { canAffordStarterResign } from "../utils/contractBudget.js";
@@ -1001,8 +1001,11 @@ export function __diagnoseReducer(state, action) {
           ? existingHistory
           : [...existingHistory, { season: state.season, teamId: userTeam }];
         const offer = { years: action.years ?? 2, salary: action.salary ?? buildContractDemand(prospect, state, { type: "signing", teamId: userTeam, asSub: actualSlot === "sub" }).salary, rolePromise: action.rolePromise, starterStatus: action.starterStatus ?? actualSlot, transferReviewPromise: action.transferReviewPromise, developmentPromise: action.developmentPromise };
-        const evalResult = evaluateContractOffer(prospect, state, offer, { type: "signing", teamId: userTeam, asSub: actualSlot === "sub" });
-        if (evalResult.outcome !== "accept") return addNotif(applyContractTalkResult(state, prospect, evalResult, offer), evalResult.message);
+        const modernOffer = state.userTeamType === "cdl"
+          ? evaluateModernCdlPlayerOffer(state, prospect.id, offer)
+          : (() => { const evaluation = evaluateContractOffer(prospect, state, offer, { type: "signing", teamId: userTeam, asSub: actualSlot === "sub" }); return { accepted: evaluation.outcome === "accept", reason: evaluation.message, requiredAction: "", evaluation }; })();
+        const evalResult = modernOffer.evaluation;
+        if (!modernOffer.accepted) return addNotif(applyContractTalkResult(state, prospect, evalResult, offer), `${modernOffer.reason} ${modernOffer.requiredAction}`);
         const demand = offer.salary;
         const signed = {
           ...prospect, teamId: userTeam, challengerTeamId: null, status: "cdl", circuit: "cdl", isSub: actualSlot === "sub",
@@ -1033,8 +1036,11 @@ export function __diagnoseReducer(state, action) {
       if (!target) return addNotif(state, "Player not found.");
 
       const offer = { years: action.years ?? 2, salary: action.salary ?? buildContractDemand(target, state, { type: "signing", teamId: userTeam, asSub: actualSlot === "sub" }).salary, rolePromise: action.rolePromise, starterStatus: action.starterStatus ?? actualSlot, transferReviewPromise: action.transferReviewPromise, developmentPromise: action.developmentPromise };
-      const evalResult = evaluateContractOffer(target, state, offer, { type: "signing", teamId: userTeam, asSub: actualSlot === "sub" });
-      if (evalResult.outcome !== "accept") return addNotif(applyContractTalkResult(state, target, evalResult, offer), evalResult.message);
+      const modernOffer = state.userTeamType === "cdl"
+        ? evaluateModernCdlPlayerOffer(state, target.id, offer)
+        : (() => { const evaluation = evaluateContractOffer(target, state, offer, { type: "signing", teamId: userTeam, asSub: actualSlot === "sub" }); return { accepted: evaluation.outcome === "accept", reason: evaluation.message, requiredAction: "", evaluation }; })();
+      const evalResult = modernOffer.evaluation;
+      if (!modernOffer.accepted) return addNotif(applyContractTalkResult(state, target, evalResult, offer), `${modernOffer.reason} ${modernOffer.requiredAction}`);
       const demand = offer.salary;
 
       let baseSignedFaState = applySignedEvent({

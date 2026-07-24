@@ -118,6 +118,41 @@ export function evaluateContractOffer(player, state, offer = {}, opts = {}) {
   return { outcome, reason, chance, demand, message: responseMessage(player, outcome, reason, demand), qualitative: qualitativeOfferFeedback(player, { offer, demand, chance, reason, morale }) };
 }
 
+// This is deliberately the single public evaluation entry point for the modern
+// free-agent / Challengers flow.  UI previews and the reducer both call it, so
+// an agent response can never be a dead-end message that uses different rules
+// from the offer which is eventually submitted.
+export function evaluateModernCdlPlayerOffer(state, playerId, offer = {}) {
+  const player = [...(state?.players || []), ...(state?.prospects || [])].find(p => p.id === playerId);
+  if (!player) return { accepted: false, reason: "Player unavailable", requiredAction: "Choose a player who is still available.", details: {} };
+  if (player.teamId) return { accepted: false, reason: "Player unavailable", requiredAction: "This player is already under contract or rostered.", details: {} };
+  const asSub = offer.starterStatus === "sub";
+  const result = evaluateContractOffer(player, state, offer, { type: "signing", teamId: state?.userTeamId, asSub });
+  const demand = result.demand;
+  const actions = {
+    lowball: `Increase salary to at least ${fmtSalary(demand.salary)}.`,
+    more_salary: `Increase salary to at least ${fmtSalary(demand.salary)}.`,
+    starter_promise: "Offer a starting spot, or approach another player.",
+    longer_term: `Offer a ${demand.years}-year contract or longer.`,
+    shorter_term: `Offer a ${demand.years}-year contract or shorter.`,
+    stronger_interest: `Offer at least ${fmtSalary(demand.salary)} with a starting role. Stronger team interest makes this a difficult deal.`,
+    wait_market: `Match the expected ${fmtSalary(demand.salary)} salary and preferred ${demand.years}-year term.`,
+    low_morale: "Make a stronger financial offer or revisit once the player is more receptive.",
+  };
+  return {
+    accepted: result.outcome === "accept",
+    reason: result.outcome === "accept" ? null : result.message,
+    requiredAction: result.outcome === "accept" ? null : actions[result.reason] || `Meet the expected salary of ${fmtSalary(demand.salary)} and role request.`,
+    details: {
+      offeredSalary: Number(offer.salary || 0), expectedSalary: demand.salary,
+      offeredYears: Number(offer.years || 0), expectedYears: demand.years,
+      wantedRole: demand.wantedRole, interest: demand.interest.level,
+      acceptanceChance: result.chance,
+    },
+    evaluation: result,
+  };
+}
+
 function responseMessage(player, outcome, reason, demand) {
   if (outcome === "accept") return `${player.name} accepts and is encouraged by the role clarity.`;
   return ({ lowball: `${player.name}'s agent calls the offer well below expectations.`, low_morale: `${player.name} is not ready to commit while morale is low.`, stronger_interest: `${player.name} wants to wait because stronger teams are interested.`, longer_term: `${player.name}'s camp asks for a longer commitment.`, shorter_term: `${player.name}'s camp prefers a shorter deal.`, starter_promise: `${player.name} wants a clear starter promise.`, wait_market: `${player.name} wants to test free agency.`, more_salary: `${player.name}'s agent asks for more salary.`, }[reason] || demand.message);

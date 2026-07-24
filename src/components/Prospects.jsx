@@ -17,6 +17,8 @@ import { EmptyState, PageHeader, Pill, SectionCard, StatCard } from "./ui.jsx";
 import { getScoutingSummary, isScoutTarget, getAssignmentsRemaining } from "../engine/scoutingEngine.js";
 import { isChallengerMode } from "../utils/userTeam.js";
 import { getChallengerRosterStatus } from "../utils/rosterValidation.js";
+import { buildContractDemand } from "../engine/contractNegotiation.js";
+import ContractNegotiationModal from "./ContractNegotiationModal.jsx";
 
 function ratingColor(v) {
   if (v >= 90) return "#fbbf24";
@@ -69,6 +71,7 @@ export default function Prospects() {
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("all");
   const [signAs, setSignAs] = useState({});
+  const [negPlayer, setNegPlayer] = useState(null);
 
   if (!state) return null;
   // Shortlist now persists in the save via userScouting (see scoutingEngine).
@@ -308,7 +311,8 @@ export default function Prospects() {
               const ovrColor  = sum.displayOvr.exact ? ratingColor(sum.displayOvr.value) : "#93c5fd";
               const potColor  = sum.displayPot.exact ? ratingColor(sum.displayPot.value) : "#c4b5fd";
               const slot      = signAs[p.id] || (starterCount < 4 ? "starter" : "sub");
-              const cost      = getSigningCost(p);
+              const offerProfile = buildContractDemand(p, state, { type: "signing", teamId: userTeamId, asSub: slot === "sub" });
+              const cost      = challengerMode ? getSigningCost(p) : offerProfile.salary;
               const overBy    = slot === "starter" && starterCount < 4 ? Math.max(0, cost - remaining) : 0;
               const canAfford = challengerMode ? (challengerStatus.count < 4) : (overBy === 0);
               return (
@@ -344,7 +348,7 @@ export default function Prospects() {
                     )}
                     <button className="btn-secondary" style={{ padding: "4px 8px", marginRight: 6 }} onClick={() => toggleShortlist(p.id)}>{shortlist.has(p.id) ? "★" : "☆"}</button>
                     {canAfford ? (
-                      <button className="btn-primary-sm" onClick={() => handleSign(p.id)}>Sign</button>
+                      <button className="btn-primary-sm" onClick={() => challengerMode ? handleSign(p.id) : setNegPlayer(p)}>{challengerMode ? "Sign" : "Approach Player"}</button>
                     ) : (
                       <span style={{ color: "#ef5350", fontSize: "0.78rem", fontWeight: "bold" }}
                         title={`Exceeds cap by $${(overBy / 1000).toFixed(0)}k`}>
@@ -360,6 +364,7 @@ export default function Prospects() {
         </table></div>
       )}
       </SectionCard>
+      {negPlayer && <ContractNegotiationModal player={negPlayer} state={state} mode="sign" slot={signAs[negPlayer.id] || (starterCount < 4 ? "starter" : "sub")} onClose={() => setNegPlayer(null)} onSubmit={(offer) => { dispatch({ type: "SIGN_PLAYER", playerId: negPlayer.id, slotType: offer.starterStatus, ...offer }); setNegPlayer(null); }} />}
       <details style={{ marginTop: 18 }}>
         <summary className="muted">Advanced / Debug: Pool Health</summary>
         <PoolHealth prospects={prospects} challengersLog={challengersLog} />
