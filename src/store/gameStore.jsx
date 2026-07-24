@@ -6,6 +6,7 @@ import { createContext, useContext, useReducer } from "react";
 import { buildInitialRoster } from "../data/players.js";
 import { generateProspects, syncModernCdlChallengers } from "../data/prospects.js";
 import { applyChallengerRatingOverride } from "../data/challengerRatingOverrides.js";
+import { applyModernCdlRatingUpdates, MODERN_CDL_RATING_UPDATE_VERSION } from "../data/modernCdlRatingUpdates.js";
 import { buildCdlRosterNameSet, findDuplicateActivePlayers, isCdlTeamId, isInactivePlayer, normalizePlayerName } from "../utils/playerIdentity.js";
 import { buildSeason, simNextMatch, simMatchday, simUserMatchday, simStage, simMajor, simNextMajorMatch, simMajorRound, advanceOffseason, beginChamps, beginEswc, enterContractPhase, commitUserMatchResult, ensureChallengerTeams, buildChallengerRostersForNewGame, simChallengerQualifier, simNextChallengerQualifierMatch, simChallengerQualifierRound, simUserChallengerQualifierMatch, continueFromChallengerQualifier } from "../engine/seasonEngine.js";
 import { generateMajorFeed, generateChallengerQualFeed, generateRosterMoveFeed, generateOffseasonFeed } from "../engine/feedGenerator.js";
@@ -337,7 +338,7 @@ function createInitialGameState(userTeamId, userTeamType = "cdl", seedOverride =
   // slots below (via migrateHistoricalDynastyState / createHistoricalStateFields).
   const startEraId = careerMode === "historical" ? HISTORICAL_START_ERA_ID : MODERN_ERA_ID;
   applyEraTeamBranding(startEraId, careerMode);
-  const players  = buildInitialRoster().map(applyChallengerRatingOverride);
+  const players  = applyModernCdlRatingUpdates(buildInitialRoster().map(applyChallengerRatingOverride));
   // When a seed is supplied (Challenger team-select preview), use it for the
   // prospect pool too so the previewed roster OVRs match the started save.
   const prospectSeed = seedOverride != null
@@ -363,6 +364,7 @@ function createInitialGameState(userTeamId, userTeamType = "cdl", seedOverride =
   const state = {
     userTeamId,
     userTeamType: challengerMode ? "challenger" : "cdl",
+    modernCdlRatingUpdateVersion: MODERN_CDL_RATING_UPDATE_VERSION,
     season: 1,
     players,      // all pro players + any signed prospects (Roster reads from here)
     prospects,    // unsigned challengers pool only
@@ -570,6 +572,13 @@ export function __diagnoseReducer(state, action) {
       };
       ensureChallengerTeams(loaded);
       const loadedWithEra = migrateHistoricalDynastyState(loaded);
+      // Apply the Modern CDL correction as a delta for old saves so any
+      // progression already earned remains intact. Historical careers never
+      // enter this path.
+      if (loadedWithEra.careerMode !== "historical" && loadedWithEra.modernCdlRatingUpdateVersion !== MODERN_CDL_RATING_UPDATE_VERSION) {
+        loadedWithEra.players = applyModernCdlRatingUpdates(loadedWithEra.players, { preserveProgress: true });
+        loadedWithEra.modernCdlRatingUpdateVersion = MODERN_CDL_RATING_UPDATE_VERSION;
+      }
       const cleaned = ensureCdlRosterIntegrity(cleanupDuplicateActiveAssignments(loadedWithEra), { windowType: "load_migration" });
       cleaned.challengerTransactions = cleaned.challengerTransactions ?? [];
       // Migrate staff: old saves without staff get the full starting pool
@@ -1871,7 +1880,7 @@ export function useGame() {
 // identity + roster OVR estimates for the new-game team picker. Passing the
 // same seed to NEW_GAME yields a save whose rosters match this preview.
 export function buildChallengerPreview(seed) {
-  const players = buildInitialRoster().map(applyChallengerRatingOverride);
+  const players = applyModernCdlRatingUpdates(buildInitialRoster().map(applyChallengerRatingOverride));
   const prospectSeed = (((seed % 999983) + 999983) % 999983) | 0;
   const rawProspects = removeActiveCdlPlayersFromProspectPool(
     generateProspects(prospectSeed).map(applyChallengerRatingOverride), players
