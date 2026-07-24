@@ -53,11 +53,14 @@ import { getMorale, getPopupRequiredMoraleEvents, moodForLevel, moraleColor } fr
 
 export default function App() {
   const { state, dispatch } = useGame();
-  const [screen, setScreen]           = useState("home");
+  // Initial screen/feed can be requested via ?screen=roster / ?feed=1 — used by
+  // the /v0-dashboard-test sidebar and panel links to deep-link back into the
+  // real app. Read once on mount; normal in-app navigation still uses setScreen.
+  const [screen, setScreen]           = useState(() => new URLSearchParams(window.location.search).get("screen") || "home");
   const [confirmNew, setConfirmNew]   = useState(false);
   const [showMatchOverlay, setShowMatchOverlay] = useState(false);
   const [showCircuitReveal, setShowCircuitReveal] = useState(false);
-  const [showFeed, setShowFeed]       = useState(false);
+  const [showFeed, setShowFeed]       = useState(() => new URLSearchParams(window.location.search).get("feed") === "1");
   const [activeMoraleMeeting, setActiveMoraleMeeting] = useState(null);
   const [suppressedMoralePrompts, setSuppressedMoralePrompts] = useState([]);
 
@@ -68,6 +71,15 @@ export default function App() {
       dispatch({ type: "LOAD_GAME", state: saved });
     }
   }, [dispatch]);
+
+  // Clean the ?screen=/?feed= params out of the URL once consumed, so normal
+  // in-app navigation (which doesn't touch the URL) isn't confused by a stale
+  // query string on refresh.
+  useEffect(() => {
+    if (window.location.search) {
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }, []);
 
   // Auto-save only complete, playable game states. This prevents a reset to
   // team select from persisting over a deliberately cleared save.
