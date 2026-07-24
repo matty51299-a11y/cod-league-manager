@@ -20,7 +20,7 @@ import NextMatchControl  from "./components/NextMatchControl.jsx";
 import NextMatchOverlay  from "./components/NextMatchOverlay.jsx";
 import Dashboard         from "./components/Dashboard.jsx";
 import ChallengerDashboard from "./components/ChallengerDashboard.jsx";
-import HistoricalDashboard from "./components/HistoricalDashboard.jsx";
+import V0DashboardPage    from "./v0-dashboard/Page.jsx";
 import Standings         from "./components/Standings.jsx";
 import Schedule          from "./components/Schedule.jsx";
 import KDLeaders         from "./components/KDLeaders.jsx";
@@ -141,113 +141,137 @@ export default function App() {
     setConfirmNew(false);
   }
 
+  // The v0 dashboard is the redesigned home screen for Historical Dynasty
+  // (open-circuit) careers — the mode the v0 design was built for. Other
+  // screens and the other career modes keep the existing shell for now.
+  const isV0Home = screen === "home" && historicalMode;
+
+  // Overlays + toast + morale prompts. Rendered once, inside `.app` (so they
+  // inherit the team-theme shell vars) but OUTSIDE `.v0-root` (so the v0
+  // dashboard's scoped Tailwind reset/palette can't reach their hand-written
+  // CSS). Shared by both the v0-home branch and the normal-shell branch.
+  const sharedOverlays = (
+    <>
+      {notification && <div className="toast">{notification}</div>}
+      <NextMatchOverlay
+        isOpen={showMatchOverlay}
+        onClose={() => setShowMatchOverlay(false)}
+      />
+      <MatchCenterOverlay />
+      <CircuitTournamentOverlay />
+      <CircuitMatchOverlay isOpen={showCircuitReveal} onClose={() => setShowCircuitReveal(false)} />
+      <ChallengerQualifierOverlay />
+      <MajorEntryOverlay />
+      <MajorTournamentOverlay />
+      <TeamHubOverlay />
+      <PlayerProfileOverlay />
+      <SeasonAwardsOverlay />
+      <BoardReviewOverlay />
+      <TransferAcceptedModal setScreen={setScreen} />
+      <NotificationsFeed isOpen={showFeed} onClose={() => setShowFeed(false)} />
+      <AppMoralePrompt
+        state={state}
+        event={appMoralePrompt}
+        onTalkNow={(ev) => {
+          setSuppressedMoralePrompts(prev => prev.includes(ev.id) ? prev : [...prev, ev.id]);
+          setActiveMoraleMeeting({ player: ev.player, event: ev });
+        }}
+        onLater={(ev) => {
+          setSuppressedMoralePrompts(prev => prev.includes(ev.id) ? prev : [...prev, ev.id]);
+          dispatch({ type: "DELAY_MORALE_CONVERSATION", eventId: ev.id });
+        }}
+        onGoDynamics={(ev) => {
+          setSuppressedMoralePrompts(prev => prev.includes(ev.id) ? prev : [...prev, ev.id]);
+          setScreen("dynamics");
+        }}
+      />
+      {activeMoraleMeeting && (
+        <ConversationModal
+          player={activeMoraleMeeting.player}
+          event={activeMoraleMeeting.event}
+          onClose={() => setActiveMoraleMeeting(null)}
+        />
+      )}
+    </>
+  );
+
   return (
     <ErrorBoundary>
     <MatchCenterProvider>
     <TeamHubProvider>
     <PlayerProfileProvider>
     <div className="app" style={teamThemeStyle}>
-      {/* ── Top bar ── */}
-      <header className="topbar">
-        <div className="topbar-left">
-          <span className="app-title">{historicalMode ? "DYNASTY MANAGER" : challengerMode ? "CHALLENGER MANAGER" : "CDL MANAGER"}</span>
-          <span className="season-badge">S{state.season}</span>
-          {team && (
-            <span className="user-team-badge" style={{ color: "var(--shell-text)" }}>
-              <strong>{team.tag}</strong>
-              <span className="user-team-name">{team.name}</span>
-            </span>
-          )}
+      {isV0Home ? (
+        /* Redesigned home. Its own sidebar/topbar; nav is client-side via
+           setScreen (seamless, no reload). Wrapped in `.v0-root dark` so the
+           scoped Tailwind theme applies to it and nothing else. */
+        <div className="v0-root dark" style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+          <V0DashboardPage
+            onNavigate={setScreen}
+            onOpenFeed={() => setShowFeed(true)}
+            onPlayEvent={playNextCircuitEvent}
+          />
         </div>
-        <div className="topbar-right">
-          {/* Next Match launcher — opens NextMatchOverlay (no direct sim) */}
-          <NextMatchControl onOpen={() => setShowMatchOverlay(true)} onPlayCircuitEvent={playNextCircuitEvent} />
+      ) : (
+        <>
+          {/* ── Top bar ── */}
+          <header className="topbar">
+            <div className="topbar-left">
+              <span className="app-title">{historicalMode ? "DYNASTY MANAGER" : challengerMode ? "CHALLENGER MANAGER" : "CDL MANAGER"}</span>
+              <span className="season-badge">S{state.season}</span>
+              {team && (
+                <span className="user-team-badge" style={{ color: "var(--shell-text)" }}>
+                  <strong>{team.tag}</strong>
+                  <span className="user-team-name">{team.name}</span>
+                </span>
+              )}
+            </div>
+            <div className="topbar-right">
+              {/* Next Match launcher — opens NextMatchOverlay (no direct sim) */}
+              <NextMatchControl onOpen={() => setShowMatchOverlay(true)} onPlayCircuitEvent={playNextCircuitEvent} />
 
-          {!confirmNew ? (
-            <button className="btn-new-game" onClick={() => setConfirmNew(true)}>
-              New Game
-            </button>
-          ) : (
-            <span className="confirm-row">
-              <span className="confirm-text">Erase save?</span>
-              <button className="btn-danger-sm" onClick={handleNewGame}>Yes</button>
-              <button className="btn-secondary-sm" onClick={() => setConfirmNew(false)}>Cancel</button>
-            </span>
-          )}
-        </div>
-      </header>
+              {!confirmNew ? (
+                <button className="btn-new-game" onClick={() => setConfirmNew(true)}>
+                  New Game
+                </button>
+              ) : (
+                <span className="confirm-row">
+                  <span className="confirm-text">Erase save?</span>
+                  <button className="btn-danger-sm" onClick={handleNewGame}>Yes</button>
+                  <button className="btn-secondary-sm" onClick={() => setConfirmNew(false)}>Cancel</button>
+                </span>
+              )}
+            </div>
+          </header>
 
-      {/* ── Notification toast ── */}
-      {notification && (
-        <div className="toast">{notification}</div>
+          {/* ── App body: sidebar + main ── */}
+          <div className="app-body">
+            <Sidebar screen={screen} setScreen={setScreen} onOpenFeed={() => setShowFeed(true)} />
+
+            {/* Screen content */}
+            <main className="main-content">
+              {screen === "home"      && (challengerMode ? <ChallengerDashboard setScreen={setScreen} /> : <Dashboard setScreen={setScreen} />)}
+              {screen === "inbox"    && <Inbox setScreen={setScreen} />}
+              {screen === "standings" && <Standings />}
+              {screen === "schedule"  && <Schedule />}
+              {screen === "kdleaders" && <KDLeaders />}
+              {screen === "roster"    && <Roster setScreen={setScreen} />}
+              {screen === "dynamics"  && <Dynamics />}
+              {screen === "board"     && (challengerMode ? <ChallengerBoard /> : <BoardObjectives />)}
+              {screen === "fa"        && <FreeAgency />}
+              {screen === "prospects" && <Prospects />}
+              {screen === "circuit"   && <Circuit />}
+              {screen === "scouting"  && <Scouting />}
+              {screen === "transfers" && <TransferCentre />}
+              {screen === "devreport" && <OffseasonReport />}
+              {screen === "staff"     && <StaffPanel />}
+              {screen === "log"       && <MatchLog />}
+            </main>
+          </div>
+        </>
       )}
 
-      {/* ── App body: sidebar + main ── */}
-      <div className="app-body">
-        <Sidebar screen={screen} setScreen={setScreen} onOpenFeed={() => setShowFeed(true)} />
-
-        {/* Event overlays — sit above sidebar + main content */}
-        <NextMatchOverlay
-          isOpen={showMatchOverlay}
-          onClose={() => setShowMatchOverlay(false)}
-        />
-        <MatchCenterOverlay />
-        <CircuitTournamentOverlay />
-        <CircuitMatchOverlay isOpen={showCircuitReveal} onClose={() => setShowCircuitReveal(false)} />
-        <ChallengerQualifierOverlay />
-        <MajorEntryOverlay />
-        <MajorTournamentOverlay />
-        <TeamHubOverlay />
-        <PlayerProfileOverlay />
-        <SeasonAwardsOverlay />
-        <BoardReviewOverlay />
-        <TransferAcceptedModal setScreen={setScreen} />
-        <NotificationsFeed isOpen={showFeed} onClose={() => setShowFeed(false)} />
-        <AppMoralePrompt
-          state={state}
-          event={appMoralePrompt}
-          onTalkNow={(ev) => {
-            setSuppressedMoralePrompts(prev => prev.includes(ev.id) ? prev : [...prev, ev.id]);
-            setActiveMoraleMeeting({ player: ev.player, event: ev });
-          }}
-          onLater={(ev) => {
-            setSuppressedMoralePrompts(prev => prev.includes(ev.id) ? prev : [...prev, ev.id]);
-            dispatch({ type: "DELAY_MORALE_CONVERSATION", eventId: ev.id });
-          }}
-          onGoDynamics={(ev) => {
-            setSuppressedMoralePrompts(prev => prev.includes(ev.id) ? prev : [...prev, ev.id]);
-            setScreen("dynamics");
-          }}
-        />
-        {activeMoraleMeeting && (
-          <ConversationModal
-            player={activeMoraleMeeting.player}
-            event={activeMoraleMeeting.event}
-            onClose={() => setActiveMoraleMeeting(null)}
-          />
-        )}
-
-
-        {/* Screen content */}
-        <main className="main-content">
-          {screen === "home"      && (historicalMode ? <HistoricalDashboard setScreen={setScreen} onPlayEvent={playNextCircuitEvent} /> : challengerMode ? <ChallengerDashboard setScreen={setScreen} /> : <Dashboard setScreen={setScreen} />)}
-          {screen === "inbox"    && <Inbox setScreen={setScreen} />}
-          {screen === "standings" && <Standings />}
-          {screen === "schedule"  && <Schedule />}
-          {screen === "kdleaders" && <KDLeaders />}
-          {screen === "roster"    && <Roster setScreen={setScreen} />}
-          {screen === "dynamics"  && <Dynamics />}
-          {screen === "board"     && (challengerMode ? <ChallengerBoard /> : <BoardObjectives />)}
-          {screen === "fa"        && <FreeAgency />}
-          {screen === "prospects" && <Prospects />}
-          {screen === "circuit"   && <Circuit />}
-          {screen === "scouting"  && <Scouting />}
-          {screen === "transfers" && <TransferCentre />}
-          {screen === "devreport" && <OffseasonReport />}
-          {screen === "staff"     && <StaffPanel />}
-          {screen === "log"       && <MatchLog />}
-        </main>
-      </div>
+      {sharedOverlays}
     </div>
     </PlayerProfileProvider>
     </TeamHubProvider>
