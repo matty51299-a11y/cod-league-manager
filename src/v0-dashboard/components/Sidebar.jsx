@@ -24,15 +24,20 @@ const SCREEN_ID = {
   Feed: null, // opens an overlay in the real app, not a screen — handled separately
 }
 
-export function Sidebar({ team, unreadInbox }) {
+export function Sidebar({ team, unreadInbox, onNavigate, onOpenFeed, seasonLabel }) {
+  // Integrated into the main app, onNavigate/onOpenFeed switch screens
+  // client-side (seamless, no reload). In the standalone /v0-dashboard-test
+  // bundle they're absent, so fall back to a URL hand-off to the main app.
   function navigate(item) {
     const screenId = SCREEN_ID[item.label]
     if (item.label === 'Feed') {
-      window.location.href = '/?screen=home&feed=1'
+      if (onOpenFeed) onOpenFeed()
+      else window.location.assign('/?screen=home&feed=1')
       return
     }
     if (!screenId) return
-    window.location.href = `/?screen=${screenId}`
+    if (onNavigate) onNavigate(screenId)
+    else window.location.assign(`/?screen=${screenId}`)
   }
 
   return (
@@ -46,7 +51,7 @@ export function Sidebar({ team, unreadInbox }) {
           <div className="truncate font-condensed text-sm font-semibold uppercase tracking-wide text-foreground">
             {team?.name ?? 'Your Organisation'}
           </div>
-          <div className="text-[11px] text-muted-foreground">Open Circuit · S1</div>
+          <div className="text-[11px] text-muted-foreground">Open Circuit · {seasonLabel ?? 'S1'}</div>
         </div>
       </div>
 

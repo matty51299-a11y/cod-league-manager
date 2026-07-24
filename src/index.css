@@ -11886,3 +11886,22 @@ body { background: #111317; }
   text-align: center;
   padding: 26px 18px !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CIRCUIT CHAMPION SCREEN — reachable "Return" + side-by-side placements
+   The base .mto-backdrop is overflow:hidden and .mto-backdrop-champ centered
+   the screen vertically, so a full 28-team placements list pushed the
+   "Return to Circuit →" button off-screen with no way to scroll to it. Make
+   the champ backdrop scroll and use margin:auto centering (centers when it
+   fits, scrolls without clipping the top when tall). Widen the card so the
+   two-column placements (set in CircuitTournamentOverlay.jsx) breathe.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.mto-backdrop-champ {
+  overflow-y: auto !important;
+  justify-content: flex-start !important;
+  padding: 24px 12px !important;
+}
+.mto-champion-screen {
+  width: min(760px, 96vw) !important;
+  margin: auto !important;
+}

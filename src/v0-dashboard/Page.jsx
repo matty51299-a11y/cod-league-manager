@@ -1,6 +1,14 @@
 // Adapted from the v0 project's app/page.tsx — overall layout/markup is
-// unchanged (Phase 2). Phase 3 wires it to real game state: same store,
-// same engine actions the main app uses.
+// unchanged (Phase 2). Phase 3 wires it to real game state.
+//
+// Renders in two contexts from the same code:
+//  - As the real home screen inside the main app (src/App.jsx passes
+//    onNavigate/onOpenFeed/onPlayEvent + overlaysMounted): navigation is
+//    client-side via setScreen and events run through the overlays that are
+//    already mounted in the app tree.
+//  - In the standalone /v0-dashboard-test bundle (no props): navigation and
+//    interactive-event starts hand off to the main app via the URL, since
+//    that bundle deliberately doesn't mount the (non-Tailwind) overlays.
 import { useEffect, useState } from 'react'
 import { useGame, saveGame } from '../store/gameStore.jsx'
 import { useDashboardData } from './useDashboardData.js'
@@ -16,21 +24,17 @@ import {
   TeamNewsPanel,
 } from './components/HomePanels.jsx'
 
-function goto(screen) {
-  window.location.href = `/?screen=${screen}`
-}
-
-function NoCareerPrompt() {
+function NoCareerPrompt({ nav }) {
   return (
     <div className="flex h-full min-h-[400px] flex-col items-center justify-center gap-3 rounded-sm border border-border bg-panel p-10 text-center">
       <div className="font-condensed text-xl font-bold uppercase tracking-wide text-foreground">
         No Active Career
       </div>
       <p className="max-w-sm text-[13px] text-muted-foreground">
-        Start or load a game in the main app to see your real dashboard here.
+        Start or load a game to see your real dashboard here.
       </p>
       <button
-        onClick={() => goto('home')}
+        onClick={() => nav('home')}
         className="mt-1 rounded-sm bg-gold px-4 py-2 font-condensed text-sm font-bold uppercase tracking-wide text-gold-foreground transition-colors hover:brightness-105"
       >
         Go to Team Select
@@ -39,26 +43,31 @@ function NoCareerPrompt() {
   )
 }
 
-export default function Page() {
+export default function Page({ onNavigate, onOpenFeed, onPlayEvent }) {
   const { state, dispatch } = useGame()
   const data = useDashboardData(state)
-  // Set when an action needs the main app's overlays (e.g. starting an
-  // interactive tournament — see main.jsx for why those aren't mounted
-  // here). The effect below waits for the dispatch to actually land in
-  // `state` before saving + navigating, so the hand-off never races ahead
-  // of the state update.
-  const [handoffAfterDispatch, setHandoffAfterDispatch] = useState(false)
 
+  // Client-side nav when integrated; URL hand-off in the standalone bundle.
+  const nav = onNavigate || ((screen) => window.location.assign(`/?screen=${screen}`))
+
+  // Standalone-only: after dispatching an interactive tournament start, wait
+  // for it to land in state, then save + hand off to the main app (whose
+  // overlays render the bracket). Unused when overlaysMounted (integrated).
+  const [handoffAfterDispatch, setHandoffAfterDispatch] = useState(false)
   useEffect(() => {
     if (!handoffAfterDispatch || !state) return
     saveGame(state)
-    goto('home')
+    window.location.assign('/?screen=home')
   }, [handoffAfterDispatch, state])
 
   function playOrAdvance() {
     if (!data) return
     if (data.nextEvent) {
-      if (data.nextEvent.interactive) {
+      if (onPlayEvent) {
+        // Integrated: main app's tested play flow (interactive tournament,
+        // online-cup reveal, roster checks) with overlays already mounted.
+        onPlayEvent()
+      } else if (data.nextEvent.interactive) {
         dispatch({ type: 'START_CIRCUIT_EVENT' })
         setHandoffAfterDispatch(true)
       } else {
@@ -105,11 +114,17 @@ export default function Page() {
           onSave={() => state && saveGame(state)}
         />
         <div className="flex min-h-0 flex-1">
-          <Sidebar team={data?.team} unreadInbox={data?.unreadInbox} />
+          <Sidebar
+            team={data?.team}
+            unreadInbox={data?.unreadInbox}
+            onNavigate={onNavigate}
+            onOpenFeed={onOpenFeed}
+            seasonLabel={state?.season ? `S${state.season}` : undefined}
+          />
           <main className="min-w-0 flex-1 overflow-y-auto">
             <div className="w-full min-w-0 space-y-3 p-3">
               {!data ? (
-                <NoCareerPrompt />
+                <NoCareerPrompt nav={nav} />
               ) : (
                 <>
                   <TeamHeader
@@ -129,14 +144,14 @@ export default function Page() {
                         event={data.nextEvent}
                         onPlay={playOrAdvance}
                         playLabel={`Play ${data.nextEvent?.typeLabel ?? ''}`}
-                        onManageSquad={() => goto('roster')}
-                        onProPointsTable={() => goto('standings')}
-                        onTransferCentre={() => goto('transfers')}
+                        onManageSquad={() => nav('roster')}
+                        onProPointsTable={() => nav('standings')}
+                        onTransferCentre={() => nav('transfers')}
                       />
                       <SquadPanel
                         roster={data.squad}
-                        onPlayer={() => goto('roster')}
-                        onManageRoster={() => goto('roster')}
+                        onPlayer={() => nav('roster')}
+                        onManageRoster={() => nav('roster')}
                       />
                     </div>
                     <div className="space-y-3 lg:col-span-5">
@@ -144,7 +159,7 @@ export default function Page() {
                       <FixturesPanel fixtures={data.fixtures} />
                     </div>
                     <div className="space-y-3 lg:col-span-3">
-                      <ProPointsPanel rows={data.proPoints} onFullTable={() => goto('standings')} />
+                      <ProPointsPanel rows={data.proPoints} onFullTable={() => nav('standings')} />
                       <TeamNewsPanel news={data.teamNews} />
                     </div>
                   </div>

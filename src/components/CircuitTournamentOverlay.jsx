@@ -163,7 +163,10 @@ function PlacementsPanel({ bracket, uid, sch, complete, compact }) {
   return (
     <div className={compact ? "mto-aside-card" : ""} style={compact ? undefined : { padding: 12 }}>
       {compact && <div className="mto-aside-title">Placements &amp; Points</div>}
-      <div style={{ display: "grid", gap: 4 }}>
+      {/* Full placements (champion screen / placements tab) go side-by-side in
+          two columns so a 28-team field isn't one very tall list; the aside
+          "compact" variant stays single-column. */}
+      <div style={{ display: "grid", gap: 4, gridTemplateColumns: compact ? "1fr" : "repeat(2, minmax(0, 1fr))" }}>
         {rows.map(row => (
           <div key={row.teamId} style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 8px", borderRadius: 6, fontSize: 13, background: row.teamId === uid ? "rgba(120,140,255,0.14)" : "rgba(255,255,255,0.02)", fontWeight: row.teamId === uid ? 700 : 400 }}>
             <span style={{ width: 34, opacity: 0.7 }}>{ordinal(row.place)}</span>
