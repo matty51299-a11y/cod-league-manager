@@ -16,7 +16,7 @@ import torontoKoiLogo from "../assets/logos/Toronto_KOI_logo.png";
 import vancouverSurgeLogo from "../assets/logos/Vancouver_Surge_logo.png";
 
 // budgetTier: 2–6 franchise spending capacity.
-//   6 = Riyadh Falcons only — highest budget in the CDL
+//   6 = RYD Falcons only — highest budget in the CDL
 //   5 = top spenders (OpTic, FaZe, Paris) — can build star-heavy rosters
 //   4 = upper-mid orgs (LAT, Toronto, Miami, G2) — one star + solid depth
 //   3 = (fallback default — no teams currently here)
@@ -28,18 +28,18 @@ import vancouverSurgeLogo from "../assets/logos/Vancouver_Surge_logo.png";
 //     ambition  0–100: how aggressively the board sets targets
 //     patience  0–100: how forgiving the board is when targets are missed
 export const CDL_TEAMS = [
-  { id: "boston",    name: "Boston Breach",          tag: "BOS",  color: "#C8102E", budgetTier: 2, logo: bostonBreachLogo,           owner: { name: "Huntsmen Gaming Group", ambition: 55, patience: 65 } },
-  { id: "carolina",  name: "Carolina Royal Ravens",  tag: "CAR",  color: "#7B2D8B", budgetTier: 2, logo: carolinaRoyalRavensLogo,    owner: { name: "Pittsburgh Knights Group", ambition: 45, patience: 70 } },
-  { id: "cloud9",    name: "Cloud9 New York",        tag: "C9",   color: "#1B94DB", budgetTier: 2, logo: cloud9NewYorkLogo,          owner: { name: "Cloud9 Ownership", ambition: 70, patience: 45 } },
-  { id: "faze",      name: "FaZe Vegas",             tag: "FaZe", color: "#CC0000", budgetTier: 5, logo: atlantaFazeLogo,            owner: { name: "FaZe Holdings Board", ambition: 90, patience: 50 } },
-  { id: "g2",        name: "G2 Minnesota",           tag: "G2",   color: "#56BE5A", budgetTier: 4, logo: g2MinnesotaLogo,            owner: { name: "G2 Esports Board", ambition: 65, patience: 55 } },
-  { id: "lat",       name: "Los Angeles Thieves",    tag: "LAT",  color: "#FF4500", budgetTier: 4, logo: laThievesLogo,             owner: { name: "100 Thieves Board", ambition: 80, patience: 45 } },
-  { id: "miami",     name: "Miami Heretics",         tag: "MIA",  color: "#00B2A9", budgetTier: 4, logo: miamiHereticsLogo,          owner: { name: "Heretics Ownership", ambition: 60, patience: 60 } },
-  { id: "optic",     name: "OpTic Texas",            tag: "OTX",  color: "#3BA03A", budgetTier: 5, logo: opticTexasLogo,             owner: { name: "Envy / OpTic Board", ambition: 88, patience: 40 } },
-  { id: "paris",     name: "Paris Gentle Mates",     tag: "PGM",  color: "#0055A4", budgetTier: 5, logo: parisGentleMatesLogo,       owner: { name: "Gentle Mates Board", ambition: 75, patience: 55 } },
-  { id: "riyadh",    name: "Riyadh Falcons",         tag: "RFL",  color: "#006C35", budgetTier: 6, logo: riyadhFalconsLogo,          owner: { name: "Falcons Esports Board", ambition: 95, patience: 35 } },
-  { id: "toronto",   name: "Toronto KOI",            tag: "TOR",  color: "#9B1CDB", budgetTier: 4, logo: torontoKoiLogo,             owner: { name: "OverActive Media", ambition: 70, patience: 50 } },
-  { id: "vancouver", name: "Vancouver Surge",        tag: "VAN",  color: "#00AEEF", budgetTier: 2, logo: vancouverSurgeLogo,         owner: { name: "Surge Ownership Group", ambition: 50, patience: 65 } },
+  { id: "boston",    name: "BOS Breach",          tag: "BOS",  color: "#C8102E", budgetTier: 2, logo: bostonBreachLogo,           owner: { name: "Huntsmen Gaming Group", ambition: 55, patience: 65 } },
+  { id: "carolina",  name: "CAR Royal Ravens",  tag: "CAR",  color: "#7B2D8B", budgetTier: 2, logo: carolinaRoyalRavensLogo,    owner: { name: "Pittsburgh Knights Group", ambition: 45, patience: 70 } },
+  { id: "cloud9",    name: "Cloud9 NY",        tag: "NY",   color: "#1B94DB", budgetTier: 2, logo: cloud9NewYorkLogo,          owner: { name: "Cloud9 Ownership", ambition: 70, patience: 45 } },
+  { id: "faze",      name: "FaZe VGS",             tag: "VGS", color: "#CC0000", budgetTier: 5, logo: atlantaFazeLogo,            owner: { name: "FaZe Holdings Board", ambition: 90, patience: 50 } },
+  { id: "g2",        name: "G2 MIN",           tag: "G2",   color: "#56BE5A", budgetTier: 4, logo: g2MinnesotaLogo,            owner: { name: "G2 Esports Board", ambition: 65, patience: 55 } },
+  { id: "lat",       name: "LA Thieves",    tag: "LAT",  color: "#FF4500", budgetTier: 4, logo: laThievesLogo,             owner: { name: "100 Thieves Board", ambition: 80, patience: 45 } },
+  { id: "miami",     name: "MIA Heretics",         tag: "MIA",  color: "#00B2A9", budgetTier: 4, logo: miamiHereticsLogo,          owner: { name: "Heretics Ownership", ambition: 60, patience: 60 } },
+  { id: "optic",     name: "OpTic TEX",            tag: "TEX",  color: "#3BA03A", budgetTier: 5, logo: opticTexasLogo,             owner: { name: "Envy / OpTic Board", ambition: 88, patience: 40 } },
+  { id: "paris",     name: "PAR Gentle Mates",     tag: "PAR",  color: "#0055A4", budgetTier: 5, logo: parisGentleMatesLogo,       owner: { name: "Gentle Mates Board", ambition: 75, patience: 55 } },
+  { id: "riyadh",    name: "RYD Falcons",         tag: "RYD",  color: "#006C35", budgetTier: 6, logo: riyadhFalconsLogo,          owner: { name: "Falcons Esports Board", ambition: 95, patience: 35 } },
+  { id: "toronto",   name: "TOR KOI",            tag: "TOR",  color: "#9B1CDB", budgetTier: 4, logo: torontoKoiLogo,             owner: { name: "OverActive Media", ambition: 70, patience: 50 } },
+  { id: "vancouver", name: "VAN Surge",        tag: "VAN",  color: "#00AEEF", budgetTier: 2, logo: vancouverSurgeLogo,         owner: { name: "Surge Ownership Group", ambition: 50, patience: 65 } },
 ];
 
 // ── Runtime team branding (Historical Dynasty) ────────────────────────────────

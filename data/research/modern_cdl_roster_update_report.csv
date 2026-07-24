@@ -1,0 +1,25 @@
+playerId,displayName,oldTeam,newTeam,oldStatus,newStatus,action,notes
+faze_04,O4,FaZe Vegas,FaZe VGS,active,active,assigned_to_cdl_team,Display-name correction; stable ID retained.
+boston_nastie,Nastie,Boston Breach,G2 MIN,active,active,assigned_to_cdl_team,Existing ratings preserved.
+carolina_nero,Nero,CAR Royal Ravens,VAN Surge,active,active,assigned_to_cdl_team,Existing ratings preserved.
+carolina_craze,Craze,CAR Royal Ravens,VAN Surge,active,active,assigned_to_cdl_team,Existing ratings preserved.
+g2_estreal,Estreal,G2 MIN,PAR Gentle Mates,active,active,assigned_to_cdl_team,Existing ratings preserved.
+g2_mamba,Mamba,G2 MIN,VAN Surge,active,active,assigned_to_cdl_team,Existing ratings preserved.
+toronto_reeal,ReeaL,TOR KOI,MIA Heretics,active,active,assigned_to_cdl_team,Existing ratings preserved.
+paris_envoy,Envoy,PAR Gentle Mates,G2 MIN,active,active,assigned_to_cdl_team,Existing ratings preserved.
+toronto_joedeceives,JoeDeceives,TOR KOI,PAR Gentle Mates,active,active,assigned_to_cdl_team,Existing ratings preserved.
+vancouver_abe,Abe,VAN Surge,TOR KOI,active,active,assigned_to_cdl_team,Existing ratings preserved.
+vancouver_tjhaly,TJHaLy,VAN Surge,BOS Breach,active,active,assigned_to_cdl_team,Existing ratings preserved.
+riyadh_pred,Pred,RYD Falcons,Challengers/free agency,active,free_agent,moved_to_challengers_pool,Existing ratings preserved.
+paris_neptune,Neptune,PAR Gentle Mates,Challengers/free agency,active,free_agent,moved_to_challengers_pool,Existing ratings preserved.
+boston_cammy,Cammy,BOS Breach,Challengers/free agency,active,free_agent,moved_to_challengers_pool,Existing ratings preserved.
+boston_snoopy,Snoopy,BOS Breach,Challengers/free agency,active,free_agent,moved_to_challengers_pool,Existing ratings preserved.
+cloud9_okis,Okis,Cloud9 NY,Challengers/free agency,active,free_agent,moved_to_challengers_pool,Existing ratings preserved.
+miami_traix,Traix,MIA Heretics,Challengers/free agency,active,free_agent,moved_to_challengers_pool,Existing ratings preserved.
+vancouver_gwinn,Gwinn,VAN Surge,Challengers/free agency,active,free_agent,moved_to_challengers_pool,Existing ratings preserved.
+riyadh_aliuka,Alluka,Challengers pool,RYD Falcons,challengers,active,assigned_to_cdl_team,Corrected name; age 19; 84 OVR and 91 POT; excluded from Challengers.
+cloud9_wevy,Wevy,,Cloud9 NY,,active,created_new_player,Created at 76 OVR and 90 POT.
+prospect_seed_afro,Afro,Challengers pool,BOS Breach,challengers,active,removed_from_challengers_pool,Reconciled by normalized player identity.
+prospect_seed_spart,Spart,Challengers pool,BOS Breach,challengers,active,removed_from_challengers_pool,Reconciled by normalized player identity.
+prospect_seed_standy,Standy,Challengers pool,CAR Royal Ravens,challengers,active,removed_from_challengers_pool,Reconciled by normalized player identity.
+prospect_seed_fire,Fire,Challengers pool,CAR Royal Ravens,challengers,active,removed_from_challengers_pool,Reconciled by normalized player identity.

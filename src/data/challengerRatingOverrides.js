@@ -41,7 +41,7 @@ export const MANUAL_CHALLENGER_OVERRIDES = [
   {"displayName": "Spart", "overall": 79, "potential": 84, "sourceNote": "Manual Challenger ratings review", "ratingSource": "manualChallengerOverride", "statsSnapshot": {"kills": 1467, "kd": 1.05}},
   {"displayName": "PaulEhx", "overall": 79, "potential": 83, "sourceNote": "Manual Challenger ratings review", "ratingSource": "manualChallengerOverride", "statsSnapshot": {"kills": 2307, "kd": 1.04}},
   {"displayName": "Fire", "overall": 79, "potential": 83, "sourceNote": "Manual Challenger ratings review", "ratingSource": "manualChallengerOverride", "statsSnapshot": {"kills": 2041, "kd": 1.04}},
-  {"displayName": "Alluka", "overall": 79, "potential": 90, "sourceNote": "Manual Challenger ratings review", "ratingSource": "manualChallengerOverride", "statsSnapshot": {"kills": 2145, "kd": 1.04}},
+  {"displayName": "Alluka", "overall": 84, "potential": 91, "sourceNote": "Manual Challenger ratings review", "ratingSource": "manualChallengerOverride", "statsSnapshot": {"kills": 2145, "kd": 1.04}},
   {"displayName": "FDot", "overall": 79, "potential": 86, "sourceNote": "Manual Challenger ratings review", "ratingSource": "manualChallengerOverride", "statsSnapshot": {"kills": 2639, "kd": 1.04}},
   {"displayName": "Kips", "overall": 87, "potential": 91, "sourceNote": "Manual Challenger ratings review", "ratingSource": "manualChallengerOverride", "statsSnapshot": {"kills": 1028, "kd": 1.04}},
   {"displayName": "EriKBooM", "overall": 79, "potential": 83, "sourceNote": "Manual Challenger ratings review", "ratingSource": "manualChallengerOverride", "statsSnapshot": {"kills": 2502, "kd": 1.04}},
