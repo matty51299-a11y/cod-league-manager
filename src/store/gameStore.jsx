@@ -4,7 +4,7 @@
 
 import { createContext, useContext, useReducer } from "react";
 import { buildInitialRoster } from "../data/players.js";
-import { generateProspects } from "../data/prospects.js";
+import { generateProspects, syncModernCdlChallengers } from "../data/prospects.js";
 import { applyChallengerRatingOverride } from "../data/challengerRatingOverrides.js";
 import { buildCdlRosterNameSet, findDuplicateActivePlayers, isCdlTeamId, isInactivePlayer, normalizePlayerName } from "../utils/playerIdentity.js";
 import { buildSeason, simNextMatch, simMatchday, simUserMatchday, simStage, simMajor, simNextMajorMatch, simMajorRound, advanceOffseason, beginChamps, beginEswc, enterContractPhase, commitUserMatchResult, ensureChallengerTeams, buildChallengerRostersForNewGame, simChallengerQualifier, simNextChallengerQualifierMatch, simChallengerQualifierRound, simUserChallengerQualifierMatch, continueFromChallengerQualifier } from "../engine/seasonEngine.js";
@@ -217,6 +217,10 @@ function shouldRetireOnRelease(player) {
   return (player.age ?? 25) >= 33 || ((player.age ?? 25) >= 30 && (player.overall ?? 70) < 70);
 }
 
+function removeActiveCdlPlayersFromProspectPool(rawProspects, players) {
+  return syncModernCdlChallengers(rawProspects, players, normalizePlayerName);
+}
+
 function shouldMoveToChallengersOnRelease(player) {
   return ((player.overall ?? 70) >= 75 || (player.age ?? 25) < 29) && !shouldRetireOnRelease(player);
 }
@@ -339,7 +343,9 @@ function createInitialGameState(userTeamId, userTeamType = "cdl", seedOverride =
   const prospectSeed = seedOverride != null
     ? ((seedOverride % 999983) + 999983) % 999983
     : Date.now() % 999983;
-  const rawProspects = generateProspects(prospectSeed).map(applyChallengerRatingOverride);
+  const rawProspects = removeActiveCdlPlayersFromProspectPool(
+    generateProspects(prospectSeed).map(applyChallengerRatingOverride), players
+  );
   const seen = new Set();
   const prospects = rawProspects.filter((p) => {
     const key = normalizePlayerName(p.name);
@@ -1867,7 +1873,9 @@ export function useGame() {
 export function buildChallengerPreview(seed) {
   const players = buildInitialRoster().map(applyChallengerRatingOverride);
   const prospectSeed = (((seed % 999983) + 999983) % 999983) | 0;
-  const rawProspects = generateProspects(prospectSeed).map(applyChallengerRatingOverride);
+  const rawProspects = removeActiveCdlPlayersFromProspectPool(
+    generateProspects(prospectSeed).map(applyChallengerRatingOverride), players
+  );
   const seen = new Set();
   const prospects = rawProspects.filter((p) => {
     const key = normalizePlayerName(p.name);
