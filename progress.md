@@ -1211,3 +1211,12 @@ Only `src/index.css` touched (replaced the v2 FM-SKIN GLASS block).
 - Added richer transfer development Inbox/Event Centre entries for delayed decisions, improved counters, rejected counters, collapsed deals and player review-promise reactions, reusing the Event Centre report-data style.
 - Transfer Centre scouting/intel tables now expose morale risk, squad importance/protected status, estimated acceptance chance and interested teams while preserving the existing glass/dark button styling.
 - Seller resistance and player willingness continue to use OVR/POT, starter/star protection, contract years, club attractiveness/performance, replacement risk, competitor pressure, salary/role terms and morale; protected elite players remain hard to buy and player terms can still collapse an accepted club deal.
+# Update 2026-08-06 (Modern CDL manager career)
+
+- Added a persistent Modern-only `managerCareer` profile layered over the existing board mandate/confidence system: 0–100 reputation and tiers, job security, warning escalation, event reviews, objectives, achievements, appointment history, employment status and job offers.
+- Modern objectives continue to come from `boardEngine`; the career view normalizes one mandatory, one secondary and one stretch target instead of duplicating mandate logic. Event expectations freeze roster-rank/seed-based minimum, board and stretch placements before unfinished Majors/Champs.
+- Completed events are evaluated once via stable event IDs. Board reviews queue behind the tournament placement overlay and explain grade, actual versus expected placement, confidence/reputation deltas, objective outcomes and pressure state.
+- Concern → formal warning → final achievable ultimatum protects against one-result sackings. Dismissal leaves the save/world intact and makes the manager unemployed.
+- Realistic deterministic job interest includes roster, strength, standings, expectation, starting security, term, reason and deadline. Accepting switches only manager control/board mandate; schedule, results, standings, date and rosters remain unchanged.
+- Added Modern-only Career navigation/dashboard, compact Home summary, safe old-save migration, focused achievements, diagnostic coverage and a detailed audit at `data/research/modern_cdl_career_system_audit.md`.
+- Historical Dynasty and Challenger career data paths are guarded out and unchanged.

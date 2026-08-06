@@ -18,6 +18,7 @@ const NAV_ITEMS = [
   { id: "roster",    icon: "♟",  label: "Roster" },
   { id: "dynamics",  icon: "♥",  label: "Dynamics" },
   { id: "board",     icon: "⚖",  label: "Board" },
+  { id: "career",    icon: "★",  label: "Career", modernOnly: true },
   { id: "fa",        icon: "$",  label: "Free Agency", offseasonOnly: true },
   { id: "scouting",  icon: "◎",  label: "Scouting" },
   { id: "transfers", icon: "⇄",  label: "Transfers" },
@@ -84,6 +85,7 @@ export default function Sidebar({ screen, setScreen, onOpenFeed }) {
     if (item.offseasonOnly && !showFreeAgency) return false;
     if (item.openCircuitOnly && !openCircuit) return false;
     if (item.hideInOpenCircuit && openCircuit) return false;
+    if (item.modernOnly && state.userTeamType !== "cdl") return false;
     return true;
   });
 

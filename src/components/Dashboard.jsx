@@ -149,6 +149,12 @@ function BoardWidget({ boardState, onOpen }) {
       {verdict && (
         <div className="bw-verdict">Last verdict: <strong style={{ color: verdict === "Retained" ? "#34d399" : verdict === "Final Warning" ? "#fbbf24" : "#f87171" }}>{verdict}</strong></div>
       )}
+      {state?.managerCareer && <div className="bw-career-summary">
+        <span>Reputation <b>{state.managerCareer.reputation} · {state.managerCareer.reputationTier}</b></span>
+        {state.managerCareer.currentEventExpectation && <span>{state.managerCareer.currentEventExpectation.eventName} target <b>Top {state.managerCareer.currentEventExpectation.expectedPlacement}</b></span>}
+        {state.managerCareer.warningLevel !== "none" && <span className="career-alert">{state.managerCareer.warningLevel} board warning active</span>}
+        {state.managerCareer.jobOffers?.some(o => o.status === "pending") && <span>★ New manager job offer available</span>}
+      </div>}
       {onOpen && (
         <button className="bw-open-btn" onClick={onOpen}>View Board Objectives ›</button>
       )}

@@ -43,6 +43,8 @@ import TeamHubOverlay    from "./components/TeamHubOverlay.jsx";
 import PlayerProfileOverlay from "./components/PlayerProfileOverlay.jsx";
 import SeasonAwardsOverlay from "./components/SeasonAwardsOverlay.jsx";
 import BoardReviewOverlay from "./components/BoardReviewOverlay.jsx";
+import CareerBoardReviewOverlay from "./components/CareerBoardReviewOverlay.jsx";
+import ModernCareer from "./components/ModernCareer.jsx";
 import TransferAcceptedModal from "./components/TransferAcceptedModal.jsx";
 import NotificationsFeed from "./components/NotificationsFeed.jsx";
 import Inbox from "./components/Inbox.jsx";
@@ -167,6 +169,7 @@ export default function App() {
       <PlayerProfileOverlay />
       <SeasonAwardsOverlay />
       <BoardReviewOverlay />
+      <CareerBoardReviewOverlay />
       <TransferAcceptedModal setScreen={setScreen} />
       <NotificationsFeed isOpen={showFeed} onClose={() => setShowFeed(false)} />
       <AppMoralePrompt
@@ -258,6 +261,7 @@ export default function App() {
               {screen === "roster"    && <Roster setScreen={setScreen} />}
               {screen === "dynamics"  && <Dynamics />}
               {screen === "board"     && (challengerMode ? <ChallengerBoard /> : <BoardObjectives />)}
+              {screen === "career"    && <ModernCareer />}
               {screen === "fa"        && <FreeAgency />}
               {screen === "prospects" && <Prospects />}
               {screen === "circuit"   && <Circuit />}
