@@ -21,6 +21,7 @@ import { CDL_TEAMS, resetTeamBranding } from "../data/teams.js";
 import { isValidGameState, isValidTeamId, findPhaseInvariantViolations } from "./gameValidation.js";
 import { migrateStaff, hireStaff, fireStaff, ensureTeamStaff, roleLabel } from "../engine/staffEngine.js";
 import { migrateBoardState, buildBoardObjectives, objectivesNeedRegen, BOARD_OBJ_VERSION, nudgeConfidenceAfterMajor, runBoardReview } from "../engine/boardEngine.js";
+import { migrateModernCdlCareer, evaluateModernCdlEventPerformance, generateModernCdlJobInterest, acceptModernCdlJobOffer, dismissModernCdlManager } from "../engine/modernCdlCareer.js";
 import {
   migratePlayerMorale, applyResultMorale, applyMajorMorale, evaluateAllPromises,
   applyBenchEvent, applyPromoteEvent, applyReleaseEvent, applyBlockedMoveEvent,
@@ -414,7 +415,7 @@ function createInitialGameState(userTeamId, userTeamType = "cdl", seedOverride =
   // Historical open-circuit (Ghosts-era) seasons build their data-driven circuit
   // — calendar, Pro Points, brackets — instead of the modern four-Major system.
   finalState = ensureOpenCircuitSeason(finalState);
-  return finalState;
+  return finalState.userTeamType === "cdl" ? migrateModernCdlCareer(finalState) : finalState;
 }
 
 // ── Board objective (re)generation — sets objectives + explanatory meta ───────
@@ -428,6 +429,9 @@ function regenBoardObjectives(state, boardState) {
 // ── Board nudge helper — applies after a Major completes ──────────────────────
 function withMajorBoardNudge(beforeState, afterState, majorIdx) {
   if (afterState?.userTeamType === "challenger") return afterState;
+  // Modern manager saves use the centralized career evaluation below; do not
+  // also apply the legacy confidence nudge for the same completed event.
+  if (afterState?.userTeamType === "cdl" && afterState?.managerCareer) return afterState;
   if (majorIdx == null || majorIdx > 3 || majorIdx < 0) return afterState;
   if (!afterState.boardState) return afterState;
   const wasCompleted = beforeState.schedule?.majors?.[majorIdx]?.completed ?? true;
@@ -446,6 +450,17 @@ function withMajorBoardNudge(beforeState, afterState, majorIdx) {
     return result;
   }
   return afterState;
+}
+
+// Run the persistent career evaluation exactly once when an event flips to
+// completed. The engine's evaluatedEventIds is a second idempotency guard for
+// reloads and reopened brackets.
+function withModernCareerReview(beforeState, afterState, majorIdx) {
+  if (afterState?.userTeamType !== "cdl" || majorIdx == null) return afterState;
+  const wasCompleted = beforeState.schedule?.majors?.[majorIdx]?.completed ?? true;
+  const nowCompleted = afterState.schedule?.majors?.[majorIdx]?.completed ?? false;
+  if (wasCompleted || !nowCompleted) return afterState;
+  return generateModernCdlJobInterest(evaluateModernCdlEventPerformance(afterState, majorIdx));
 }
 
 // ── Morale nudge helper — applies after a Major / Champs completes ────────────
@@ -617,6 +632,7 @@ export function __diagnoseReducer(state, action) {
       // Save migration: rebuild the open-circuit season from persisted markers.
       // Idempotent — the build key prevents re-running / re-awarding on reload.
       moraleCleaned = ensureOpenCircuitSeason(moraleCleaned);
+      if (moraleCleaned.userTeamType === "cdl") moraleCleaned = migrateModernCdlCareer(moraleCleaned);
       return isValidGameState(moraleCleaned) ? moraleCleaned : null;
     }
 
@@ -734,7 +750,7 @@ export function __diagnoseReducer(state, action) {
       const withFeed = pushFeed(newState, generateMajorFeed(wasCompleted, newState, majorIdx));
       const withBoard = withMajorBoardNudge(state, withFeed, majorIdx);
       const withMorale = withMajorMoraleNudge(state, withBoard, majorIdx);
-      return withMatchInboxEvents(state, withMajorInboxEvents(state, withMorale, majorIdx, wasCompleted), prevLogLen);
+      return withModernCareerReview(state, withMatchInboxEvents(state, withMajorInboxEvents(state, withMorale, majorIdx, wasCompleted), prevLogLen), majorIdx);
       });
     }
 
@@ -747,7 +763,7 @@ export function __diagnoseReducer(state, action) {
       const withFeed = pushFeed(newState, generateMajorFeed(wasCompleted, newState, majorIdx));
       const withBoard = withMajorBoardNudge(state, withFeed, majorIdx);
       const withMorale = withMajorMoraleNudge(state, withBoard, majorIdx);
-      return withMatchInboxEvents(state, withMajorInboxEvents(state, withMorale, majorIdx, wasCompleted), prevLogLen);
+      return withModernCareerReview(state, withMatchInboxEvents(state, withMajorInboxEvents(state, withMorale, majorIdx, wasCompleted), prevLogLen), majorIdx);
       });
     }
 
@@ -760,7 +776,7 @@ export function __diagnoseReducer(state, action) {
       const withFeed = pushFeed(newState, generateMajorFeed(wasCompleted, newState, majorIdx));
       const withBoard = withMajorBoardNudge(state, withFeed, majorIdx);
       const withMorale = withMajorMoraleNudge(state, withBoard, majorIdx);
-      return withMatchInboxEvents(state, withMajorInboxEvents(state, withMorale, majorIdx, wasCompleted), prevLogLen);
+      return withModernCareerReview(state, withMatchInboxEvents(state, withMajorInboxEvents(state, withMorale, majorIdx, wasCompleted), prevLogLen), majorIdx);
       });
     }
 
@@ -794,7 +810,7 @@ export function __diagnoseReducer(state, action) {
       const withBoard = withMajorBoardNudge(state, result, majorIdx);
       const withMorale = majorIdx != null ? withMajorMoraleNudge(state, withBoard, majorIdx) : withBoard;
       const withInbox = majorIdx != null ? withMajorInboxEvents(state, withMorale, majorIdx, wasCompleted) : withMorale;
-      return withMoraleInboxEvents(state, withMatchInboxEvents(state, withInbox, prevLogLen));
+      return withModernCareerReview(state, withMoraleInboxEvents(state, withMatchInboxEvents(state, withInbox, prevLogLen)), majorIdx);
       });
     }
 
@@ -809,6 +825,18 @@ export function __diagnoseReducer(state, action) {
 
     case "DISMISS_MAJOR":
       return { ...state, enteredMajorIdx: null };
+
+    case "DISMISS_CAREER_BOARD_REVIEW":
+      return { ...state, pendingCareerBoardReview: null };
+
+    case "ACCEPT_MANAGER_JOB_OFFER":
+      return acceptModernCdlJobOffer(state, action.offerId);
+
+    case "REJECT_MANAGER_JOB_OFFER":
+      return { ...state, managerCareer: { ...state.managerCareer, jobOffers: (state.managerCareer?.jobOffers || []).map(o => o.id === action.offerId ? { ...o, status: "rejected" } : o) } };
+
+    case "DISMISS_MODERN_MANAGER":
+      return dismissModernCdlManager(state, action.reason);
 
     case "SIM_CHALLENGER_QUALIFIER":
       return runIfUserRosterValid(state, () => simChallengerQualifier({ ...state }));
@@ -938,6 +966,18 @@ export function __diagnoseReducer(state, action) {
       // eras (Ghosts…). Idempotent via the era+season build key; also archives
       // the previous title's Pro Points and generates roster-change inbox news.
       finalOffseasonState = ensureOpenCircuitSeason(finalOffseasonState);
+      if (finalOffseasonState.userTeamType === "cdl") {
+        finalOffseasonState = migrateModernCdlCareer({
+          ...finalOffseasonState,
+          managerCareer: {
+            ...finalOffseasonState.managerCareer,
+            seasonsManaged: Math.max(finalOffseasonState.managerCareer?.seasonsManaged || 1, finalOffseasonState.season),
+            currentObjectives: [],
+            currentEventExpectation: null,
+            currentSeason: finalOffseasonState.season,
+          },
+        });
+      }
       return finalOffseasonState;
       };
       return state.schedule?.phase === "contracts" ? runAdvance() : runIfUserRosterValid(state, runAdvance);
